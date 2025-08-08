@@ -14,7 +14,7 @@
 
 1. **Clone 專案**
    ```bash
-   git clone https://github.com/[username]/personal-manager-frontend.git
+   git clone https://github.com/hn83320589/PersonalManagerFrontend.git
    cd personal-manager-frontend
    ```
 
@@ -196,8 +196,8 @@ npm run build
 
 ## 📞 相關連結
 
-- [主專案倉庫](https://github.com/[username]/personal-manager)
-- [後端專案倉庫](https://github.com/[username]/personal-manager-backend)
+- [主專案倉庫](https://github.com/hn83320589/personal_manager)
+- [後端專案倉庫](https://github.com/hn83320589/PersonalManagerBackend)
 - [設計稿](待建立)
 - [部署網站](待建立)
 
