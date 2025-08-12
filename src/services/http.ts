@@ -1,4 +1,5 @@
-import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios'
+import axios from 'axios'
+import type { AxiosInstance, AxiosResponse, AxiosError } from 'axios'
 import type { ApiResponse } from '@/types/api'
 
 class HttpService {
@@ -57,7 +58,7 @@ class HttpService {
         } else if (error.response?.status === 403) {
           // Forbidden
           console.error('Access forbidden')
-        } else if (error.response?.status >= 500) {
+        } else if (error.response && error.response.status >= 500) {
           // Server error
           console.error('Server error occurred')
         }

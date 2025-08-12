@@ -115,7 +115,7 @@
                 class="text-primary-600 hover:text-primary-700 text-sm font-medium"
                 @click.stop
               >
-                <ExternalLinkIcon class="inline h-4 w-4 mr-1" />
+                <ArrowTopRightOnSquareIcon class="inline h-4 w-4 mr-1" />
                 查看專案
               </a>
               <a
@@ -160,7 +160,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   BriefcaseIcon,
-  ExternalLinkIcon,
+  ArrowTopRightOnSquareIcon,
   CodeBracketIcon
 } from '@heroicons/vue/24/outline'
 import BaseButton from '@/components/ui/BaseButton.vue'
