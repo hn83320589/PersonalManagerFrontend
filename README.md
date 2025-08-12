@@ -23,11 +23,10 @@
    npm install
    ```
 
-3. **設定環境變數**
-   ```bash
-   cp .env.example .env.local
-   # 編輯 .env.local 設定 API 基礎路徑
-   ```
+3. **環境變數設定**
+   - 開發環境: `.env.development` (已設定)
+   - 生產環境: `.env.production` (已設定)
+   - API 基礎路徑: `http://localhost:5002/api`
 
 4. **啟動開發伺服器**
    ```bash
@@ -41,13 +40,13 @@
 ## 🛠️ 技術架構
 
 - **框架**: Vue 3.5 with Composition API
-- **語言**: TypeScript
+- **語言**: TypeScript 嚴格模式
 - **建置工具**: Vite 7.1
-- **路由**: Vue Router 4
-- **狀態管理**: Pinia
-- **HTTP 客戶端**: Axios (計劃中)
-- **UI 框架**: 待選定 (Tailwind CSS / Element Plus)
-- **測試**: Vitest + Playwright
+- **路由**: Vue Router 4 + 認證守衛
+- **狀態管理**: Pinia (authStore + portfolioStore 已實作)
+- **HTTP 客戶端**: Axios + 請求/回應攼截器
+- **UI 框架**: Tailwind CSS + Headless UI + Heroicons
+- **測試**: Vitest + Playwright (已設定)
 
 ## 📁 專案結構
 
@@ -102,18 +101,19 @@ npm run lint
 ## 🌟 功能頁面
 
 ### 公開頁面 (無需登入)
-- [x] 首頁 - 個人介紹概覽
+- [x] 首頁 - 完整 Hero Section + 功能介紹 + 精選作品
 - [ ] 關於我 - 詳細個人介紹
 - [ ] 學經歷 - 教育背景與工作經歷
 - [ ] 專長技能 - 技能展示
-- [ ] 作品集 - 專案作品展示
+- [x] 作品集 - 專案作品展示 (搜尋 + 篩選 + 分頁)
 - [ ] 公開行事曆 - 公開的行程安排
 - [ ] 部落格 - 公開文章列表與內容
 - [ ] 留言板 - 訪客留言功能
 - [ ] 聯絡我 - 聯絡資訊與表單
+- [x] 404 頁面 - 錯誤頁面與導航
 
-### 管理頁面 (需要登入)
-- [ ] 登入頁面 - 使用者登入
+### 管理頁面 (需要登入) - 設定中
+- [ ] 登入頁面 - 使用者登入 (路由已設定)
 - [ ] 管理儀表板 - 個人管理總覽
 - [ ] 個人資料管理 - 編輯個人資訊
 - [ ] 學經歷管理 - 新增/編輯學經歷
@@ -140,17 +140,25 @@ npm run lint
 
 ## 🔌 API 整合
 
-### 基礎設定
+### 基礎設定 (已完成)
 ```typescript
-// 環境變數
-VITE_API_BASE_URL=http://localhost:5000/api
+// 環境變數 (.env.development)
+VITE_API_BASE_URL=http://localhost:5002/api
 VITE_APP_TITLE=Personal Manager
+VITE_DEBUG=true
 ```
 
-### HTTP 攔截器
-- 自動添加認證 Token
-- 統一錯誤處理
-- 請求/回應日誌記錄
+### HTTP 攔截器 (已實作)
+- ✅ 自動添加認證 Token (httpService)
+- ✅ 統一錯誤處理與狀態管理
+- ✅ 請求/回應日誌記錄
+- ✅ 401/403 錯誤自動處理
+
+### API 服務層 (已完成)
+- ✅ authService: 使用者認證
+- ✅ profileService: 個人資料管理  
+- ✅ portfolioService: 作品集管理
+- 🔄 其他服務層開發中
 
 ## 🧪 測試策略
 
@@ -204,6 +212,27 @@ npm run build
 ## 📄 授權
 
 MIT License - 詳見 [LICENSE](LICENSE) 檔案。
+
+## 📈 開發進度總結
+
+### ✅ 已完成 (約 40-50%)
+- **技術架構**: Tailwind CSS + TypeScript + 環境變數管理
+- **API 服務**: HTTP 攔截器 + 3個主要服務 (auth, profile, portfolio)
+- **狀態管理**: Pinia stores (authStore + portfolioStore)
+- **UI 元件**: 5個基礎元件 (Button, Input, Spinner, Header, Footer)
+- **頁面開發**: 首頁 + 作品集列表 + 404頁面
+- **路由系統**: 完整路由 + 認證守衛 + 動態載入
+
+### 🔄 進行中
+- 其他 API 服務層開發
+- 更多頁面元件開發
+- 前後端 API 整合測試
+
+### ⏳ 待開發
+- 管理後台頁面
+- 表單驗證與提交
+- 單元測試與 E2E 測試
+- 效能優化與 SEO
 
 ---
 

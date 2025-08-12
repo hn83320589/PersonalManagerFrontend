@@ -44,6 +44,12 @@ PersonalManagerFrontend/
 
 ## 頁面規劃
 
+- UI風格採取較為簡約的設計，不要有太複雜的色彩樣式，以淡色系低色溫的元素進行開發，並且以冷色調為主，線條為主的設計風格。
+- 以三種色調為主：淺灰色、淺藍色、白色，並且使用圓角矩形的按鈕與輸入框。採取現代化的線條設計風格，包含輸入框、按鈕、卡片等元素。
+- 所有元件需具備良好的可訪問性，確保色彩對比度符合WCAG標準，並提供鍵盤導航支援。
+- 設計樣式盡量是可以調整，未來可能會開放使用者自訂主題色彩。
+- 各元素排版也要保持彈性，未來可能會讓他們調整自己的排版方式。
+
 ### 公開頁面 (無需登入)
 1. **首頁** - 個人介紹概覽
 2. **關於我** - 詳細個人介紹
@@ -71,25 +77,25 @@ PersonalManagerFrontend/
 ## 待辦事項追蹤
 
 ### 基礎設定與工具
-- [ ] 安裝並設定UI框架 (Tailwind CSS / Element Plus)
-- [ ] 安裝並設定Axios HTTP客戶端
-- [ ] 設定環境變數管理
-- [ ] 建立API服務基礎架構
-- [ ] 設定全域樣式與主題
-- [ ] 建立響應式設計系統
+- [x] 安裝並設定UI框架 (Tailwind CSS)
+- [x] 安裝並設定Axios HTTP客戶端
+- [x] 設定環境變數管理 (.env.development, .env.production)
+- [x] 建立API服務基礎架構 (httpService, authService)
+- [x] 設定全域樣式與主題 (Tailwind + 自訂樣式)
+- [x] 建立響應式設計系統 (Tailwind 響應式)
 
 ### 型別定義 (TypeScript)
-- [ ] 定義User相關型別
-- [ ] 定義Profile相關型別
-- [ ] 定義Experience相關型別
-- [ ] 定義Skill相關型別
-- [ ] 定義Project相關型別
-- [ ] 定義Calendar相關型別
-- [ ] 定義Task相關型別
-- [ ] 定義WorkTracking相關型別
-- [ ] 定義BlogPost相關型別
-- [ ] 定義Comment相關型別
-- [ ] 定義API回應格式型別
+- [x] 定義User相關型別
+- [x] 定義Profile相關型別 (PersonalProfile)
+- [x] 定義Experience相關型別 (Education, WorkExperience)
+- [x] 定義Skill相關型別
+- [x] 定義Project相關型別 (Portfolio)
+- [x] 定義Calendar相關型別 (CalendarEvent)
+- [x] 定義Task相關型別 (TodoItem, WorkTask)
+- [x] 定義WorkTracking相關型別 (已整合至Task)
+- [x] 定義BlogPost相關型別
+- [x] 定義Comment相關型別 (GuestBookEntry)
+- [x] 定義API回應格式型別 (ApiResponse)
 
 ### 狀態管理 (Pinia Stores)
 - [ ] 建立authStore (驗證狀態管理)
@@ -105,36 +111,36 @@ PersonalManagerFrontend/
 - [ ] 建立commentStore (留言)
 
 ### API服務層
-- [ ] 建立authService (登入/登出)
-- [ ] 建立profileService
+- [x] 建立authService (登入/登出)
+- [x] 建立profileService (personalProfileService)
 - [ ] 建立experienceService
 - [ ] 建立skillService
-- [ ] 建立projectService
+- [x] 建立projectService (portfolioService)
 - [ ] 建立calendarService
 - [ ] 建立taskService
 - [ ] 建立workTrackingService
 - [ ] 建立blogService
 - [ ] 建立commentService
-- [ ] 建立HTTP攔截器 (請求/回應處理)
+- [x] 建立HTTP攔截器 (請求/回應處理) - httpService
 
 ### 共用元件開發
-- [ ] Header/Navigation 元件
-- [ ] Footer 元件
+- [x] Header/Navigation 元件 (AppHeader)
+- [x] Footer 元件 (AppFooter)
 - [ ] Sidebar 元件
-- [ ] Loading 元件
+- [x] Loading 元件 (LoadingSpinner)
 - [ ] Modal/Dialog 元件
 - [ ] Form 相關元件
 - [ ] Table 元件
 - [ ] Card 元件
-- [ ] Button 元件
-- [ ] Input 元件系列
+- [x] Button 元件 (BaseButton)
+- [x] Input 元件系列 (BaseInput)
 
 ### 公開頁面開發
-- [ ] 首頁 (HomeView)
+- [x] 首頁 (HomeView) - 完整hero section、功能介紹、精選作品展示
 - [ ] 關於我頁面 (AboutView)
 - [ ] 學經歷展示頁面 (ExperienceView)
 - [ ] 專長技能頁面 (SkillView)
-- [ ] 作品集頁面 (ProjectView)
+- [x] 作品集頁面 (PortfolioView) - 含搜尋、篩選、分頁功能
 - [ ] 作品詳細頁面 (ProjectDetailView)
 - [ ] 公開行事曆頁面 (PublicCalendarView)
 - [ ] 部落格列表頁面 (BlogListView)
@@ -157,11 +163,11 @@ PersonalManagerFrontend/
 - [ ] 留言管理 (CommentManageView)
 
 ### 路由設定
-- [ ] 設定公開路由
-- [ ] 設定需要驗證的路由
-- [ ] 實作路由守衛 (Route Guard)
-- [ ] 設定404錯誤頁面
-- [ ] 設定動態路由
+- [x] 設定公開路由 (首頁、關於我、作品集等)
+- [x] 設定需要驗證的路由 (dashboard、admin頁面)
+- [x] 實作路由守衛 (Route Guard) - requiresAuth, requiresGuest
+- [x] 設定404錯誤頁面 (NotFoundView)
+- [x] 設定動態路由 (lazy loading)
 
 ### 功能實作
 - [ ] 使用者登入/登出功能
@@ -232,6 +238,50 @@ npm install -D package-name
 ```
 
 ## 開發紀錄
+
+### 2025/08/12 - 前端核心功能開發完成
+
+**完成的功能與元件:**
+
+1. **技術架構設置**
+   - Tailwind CSS 樣式框架設定與自訂主題
+   - Axios HTTP 客戶端與攼截器設定
+   - 環境變數管理 (.env.development/.production)
+   - TypeScript 型別定義完成 (12個主要模型)
+
+2. **核心服務層**
+   - httpService: HTTP 請求管理與錯誤處理
+   - authService: 使用者認證服務
+   - profileService: 個人資料管理
+   - portfolioService: 作品集管理
+
+3. **狀態管理 (Pinia Stores)**
+   - authStore: 使用者認證狀態管理
+   - portfolioStore: 作品集狀態管理
+
+4. **UI 元件庫**
+   - BaseButton: 多樣式按鈕元件
+   - BaseInput: 表單輸入元件
+   - LoadingSpinner: 載入指示器
+   - AppHeader: 響應式導航列
+   - AppFooter: 頁面頁腳
+
+5. **頁面開發**
+   - HomeView: 完整首頁 (Hero, 功能介紹, 精選作品, CTA)
+   - PortfolioView: 作品集列表 (搜尋, 篩選, 分頁)
+   - NotFoundView: 404 錯誤頁面
+
+6. **路由系統**
+   - 完整路由設定 (公開 + 私有頁面)
+   - 認證守衛 (requiresAuth/requiresGuest)
+   - 動態路由載入 (Lazy Loading)
+   - 頁面標題管理
+
+**測試結果:**
+- 開發伺服器正常啟動 (http://localhost:5173)
+- Tailwind CSS 樣式正常作用
+- Vue Router 路由切換正常
+- TypeScript 編譯無錯誤
 
 ### 2025/08/08 - 前端專案初始化
 - 建立Vue3 + TypeScript專案
