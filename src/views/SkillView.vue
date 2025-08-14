@@ -1,0 +1,390 @@
+<template>
+  <div class="min-h-screen bg-gray-50">
+    <!-- Hero Section -->
+    <section class="bg-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="text-center">
+          <h1 class="text-4xl font-bold text-gray-900 sm:text-5xl lg:text-6xl">
+            Skills & Expertise
+          </h1>
+          <p class="mt-6 text-xl text-gray-600 max-w-3xl mx-auto">
+            A comprehensive overview of my technical skills, tools, and areas of expertise.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div v-if="isLoading" class="flex justify-center">
+        <LoadingSpinner />
+      </div>
+
+      <div v-else-if="skills.length > 0">
+        <!-- Filter Tabs -->
+        <div class="mb-12">
+          <div class="border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8">
+              <button
+                v-for="tab in filterTabs"
+                :key="tab.key"
+                :class="[
+                  'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+                  activeFilter === tab.key
+                    ? 'border-primary-500 text-primary-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ]"
+                @click="activeFilter = tab.key"
+              >
+                {{ tab.label }}
+                <span
+                  v-if="tab.count"
+                  :class="[
+                    'ml-2 py-0.5 px-2 rounded-full text-xs',
+                    activeFilter === tab.key
+                      ? 'bg-primary-100 text-primary-600'
+                      : 'bg-gray-100 text-gray-600'
+                  ]"
+                >
+                  {{ tab.count }}
+                </span>
+              </button>
+            </nav>
+          </div>
+        </div>
+
+        <!-- Skills Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <!-- Expert Skills Highlight -->
+          <div v-if="activeFilter === 'all' && expertSkills.length > 0" class="md:col-span-2 lg:col-span-3">
+            <BaseCard title="Expert Level" class="mb-8 bg-gradient-to-r from-primary-50 to-blue-50 border-primary-200">
+              <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div
+                  v-for="skill in expertSkills"
+                  :key="skill.id"
+                  class="flex items-center space-x-3 p-3 bg-white rounded-lg border border-primary-200"
+                >
+                  <div class="w-3 h-3 bg-gradient-to-r from-primary-500 to-blue-500 rounded-full"></div>
+                  <div class="flex-1">
+                    <h4 class="font-medium text-gray-900">{{ skill.name }}</h4>
+                    <p v-if="skill.yearsOfExperience" class="text-xs text-gray-600">
+                      {{ skill.yearsOfExperience }}+ years
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </BaseCard>
+          </div>
+
+          <!-- Skill Categories or Filtered Skills -->
+          <template v-if="activeFilter === 'all'">
+            <BaseCard
+              v-for="(categorySkills, category) in skillsByCategory"
+              :key="category"
+              :title="category"
+              class="skill-category-card"
+            >
+              <template #actions>
+                <span class="text-sm text-gray-500">{{ categorySkills.length }} skills</span>
+              </template>
+
+              <div class="space-y-4">
+                <div
+                  v-for="skill in categorySkills"
+                  :key="skill.id"
+                  class="skill-item"
+                >
+                  <div class="flex items-center justify-between mb-2">
+                    <h4 class="font-medium text-gray-900">{{ skill.name }}</h4>
+                    <span :class="getSkillLevelBadgeClass(skill.level)">
+                      {{ getSkillLevelLabel(skill.level) }}
+                    </span>
+                  </div>
+
+                  <!-- Skill Level Visualization -->
+                  <div class="flex items-center space-x-3">
+                    <div class="flex-1 bg-gray-200 rounded-full h-2">
+                      <div
+                        :class="getSkillLevelBarClass(skill.level)"
+                        :style="{ width: `${((skill.level + 1) / 4) * 100}%` }"
+                        class="h-2 rounded-full transition-all duration-300"
+                      ></div>
+                    </div>
+                    <div class="flex space-x-1">
+                      <div
+                        v-for="level in 4"
+                        :key="level"
+                        :class="[
+                          'w-2 h-2 rounded-full transition-colors',
+                          level <= skill.level + 1 ? getSkillLevelDotClass(skill.level) : 'bg-gray-200'
+                        ]"
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div v-if="skill.description" class="mt-2 text-sm text-gray-600">
+                    {{ skill.description }}
+                  </div>
+
+                  <div v-if="skill.yearsOfExperience" class="mt-2 text-xs text-gray-500">
+                    {{ skill.yearsOfExperience }} years of experience
+                  </div>
+                </div>
+              </div>
+            </BaseCard>
+          </template>
+
+          <template v-else>
+            <BaseCard
+              v-for="skill in filteredSkills"
+              :key="skill.id"
+              class="skill-card"
+            >
+              <div class="text-center space-y-4">
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900">{{ skill.name }}</h3>
+                  <p v-if="skill.category" class="text-sm text-gray-500">{{ skill.category }}</p>
+                </div>
+
+                <!-- Large Skill Level Circle -->
+                <div class="flex justify-center">
+                  <div class="relative w-24 h-24">
+                    <svg class="w-24 h-24 transform -rotate-90" viewBox="0 0 24 24">
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        fill="none"
+                        class="text-gray-200"
+                      />
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        fill="none"
+                        :class="getSkillLevelColorClass(skill.level)"
+                        :stroke-dasharray="`${((skill.level + 1) / 4) * 62.83} 62.83`"
+                        class="transition-all duration-500"
+                      />
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                      <span class="text-sm font-medium text-gray-900">
+                        {{ Math.round(((skill.level + 1) / 4) * 100) }}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="space-y-2">
+                  <span :class="getSkillLevelBadgeClass(skill.level)">
+                    {{ getSkillLevelLabel(skill.level) }}
+                  </span>
+
+                  <div v-if="skill.yearsOfExperience" class="text-sm text-gray-600">
+                    {{ skill.yearsOfExperience }} years experience
+                  </div>
+
+                  <div v-if="skill.description" class="text-sm text-gray-600">
+                    {{ skill.description }}
+                  </div>
+                </div>
+              </div>
+            </BaseCard>
+          </template>
+        </div>
+
+        <!-- Skills Statistics -->
+        <section class="mt-16">
+          <BaseCard title="Skills Overview" class="bg-gray-50">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div class="text-center">
+                <div class="text-3xl font-bold text-primary-600">{{ skills.length }}</div>
+                <div class="text-sm text-gray-600">Total Skills</div>
+              </div>
+              <div class="text-center">
+                <div class="text-3xl font-bold text-green-600">{{ expertSkills.length }}</div>
+                <div class="text-sm text-gray-600">Expert Level</div>
+              </div>
+              <div class="text-center">
+                <div class="text-3xl font-bold text-blue-600">{{ Object.keys(skillsByCategory).length }}</div>
+                <div class="text-sm text-gray-600">Categories</div>
+              </div>
+              <div class="text-center">
+                <div class="text-3xl font-bold text-purple-600">{{ averageYearsExperience }}+</div>
+                <div class="text-sm text-gray-600">Avg. Years Experience</div>
+              </div>
+            </div>
+          </BaseCard>
+        </section>
+      </div>
+
+      <!-- Empty State -->
+      <div v-else class="text-center py-16">
+        <CodeBracketIcon class="mx-auto h-16 w-16 text-gray-400" />
+        <h3 class="mt-4 text-lg font-medium text-gray-900">No skills available</h3>
+        <p class="mt-2 text-gray-500">Skills information will be displayed here when available.</p>
+      </div>
+
+      <!-- Call to Action -->
+      <section v-if="skills.length > 0" class="mt-16">
+        <BaseCard class="bg-primary-50 border-primary-200">
+          <div class="text-center space-y-4">
+            <h3 class="text-xl font-semibold text-gray-900">
+              See These Skills in Action
+            </h3>
+            <p class="text-gray-600">
+              Check out my portfolio to see how I've applied these skills in real-world projects.
+            </p>
+            <div class="flex justify-center space-x-4">
+              <router-link to="/portfolio">
+                <BaseButton variant="primary">
+                  View Portfolio
+                </BaseButton>
+              </router-link>
+              <router-link to="/contact">
+                <BaseButton variant="outline">
+                  Work Together
+                </BaseButton>
+              </router-link>
+            </div>
+          </div>
+        </BaseCard>
+      </section>
+    </section>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted, computed } from 'vue'
+import { CodeBracketIcon } from '@heroicons/vue/24/outline'
+import { useSkillStore } from '@/stores/skill'
+import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import BaseCard from '@/components/ui/BaseCard.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
+import type { SkillLevel } from '@/types/api'
+
+// Stores
+const skillStore = useSkillStore()
+
+// State
+const isLoading = ref(true)
+const activeFilter = ref('all')
+
+// Computed
+const skills = computed(() => skillStore.publicSkills)
+const skillsByCategory = computed(() => skillStore.skillsByCategory)
+const skillsByLevel = computed(() => skillStore.skillsByLevel)
+const expertSkills = computed(() => skillStore.expertSkills)
+
+const filterTabs = computed(() => [
+  { key: 'all', label: 'All Categories', count: skills.value.length },
+  { key: 'expert', label: 'Expert', count: skillsByLevel.value[3]?.length || 0 },
+  { key: 'advanced', label: 'Advanced', count: skillsByLevel.value[2]?.length || 0 },
+  { key: 'intermediate', label: 'Intermediate', count: skillsByLevel.value[1]?.length || 0 },
+  { key: 'beginner', label: 'Beginner', count: skillsByLevel.value[0]?.length || 0 },
+])
+
+const filteredSkills = computed(() => {
+  switch (activeFilter.value) {
+    case 'expert':
+      return skillsByLevel.value[3] || []
+    case 'advanced':
+      return skillsByLevel.value[2] || []
+    case 'intermediate':
+      return skillsByLevel.value[1] || []
+    case 'beginner':
+      return skillsByLevel.value[0] || []
+    default:
+      return skills.value
+  }
+})
+
+const averageYearsExperience = computed(() => {
+  const skillsWithExperience = skills.value.filter(skill => skill.yearsOfExperience && skill.yearsOfExperience > 0)
+  if (skillsWithExperience.length === 0) return 0
+  
+  const totalYears = skillsWithExperience.reduce((sum, skill) => sum + (skill.yearsOfExperience || 0), 0)
+  return Math.round(totalYears / skillsWithExperience.length)
+})
+
+// Methods
+function getSkillLevelLabel(level: SkillLevel): string {
+  const labels = {
+    [0]: 'Beginner',
+    [1]: 'Intermediate',
+    [2]: 'Advanced',
+    [3]: 'Expert'
+  }
+  return labels[level] || 'Unknown'
+}
+
+function getSkillLevelBadgeClass(level: SkillLevel): string {
+  const baseClasses = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium'
+  const levelClasses = {
+    [0]: 'bg-gray-100 text-gray-800',
+    [1]: 'bg-blue-100 text-blue-800',
+    [2]: 'bg-green-100 text-green-800',
+    [3]: 'bg-purple-100 text-purple-800'
+  }
+  return `${baseClasses} ${levelClasses[level] || levelClasses[0]}`
+}
+
+function getSkillLevelBarClass(level: SkillLevel): string {
+  const classes = {
+    [0]: 'bg-gray-400',
+    [1]: 'bg-blue-500',
+    [2]: 'bg-green-500',
+    [3]: 'bg-purple-500'
+  }
+  return classes[level] || classes[0]
+}
+
+function getSkillLevelDotClass(level: SkillLevel): string {
+  const classes = {
+    [0]: 'bg-gray-400',
+    [1]: 'bg-blue-500',
+    [2]: 'bg-green-500',
+    [3]: 'bg-purple-500'
+  }
+  return classes[level] || classes[0]
+}
+
+function getSkillLevelColorClass(level: SkillLevel): string {
+  const classes = {
+    [0]: 'text-gray-400',
+    [1]: 'text-blue-500',
+    [2]: 'text-green-500',
+    [3]: 'text-purple-500'
+  }
+  return classes[level] || classes[0]
+}
+
+// Lifecycle
+onMounted(async () => {
+  try {
+    await skillStore.fetchSkills()
+  } catch (error) {
+    console.error('Failed to load skills:', error)
+  } finally {
+    isLoading.value = false
+  }
+})
+</script>
+
+<style scoped>
+.skill-category-card {
+  @apply hover:shadow-md transition-shadow duration-200;
+}
+
+.skill-item {
+  @apply pb-4 border-b border-gray-100 last:border-b-0 last:pb-0;
+}
+
+.skill-card {
+  @apply hover:shadow-lg hover:-translate-y-1 transition-all duration-200;
+}
+</style>

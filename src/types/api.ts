@@ -11,6 +11,7 @@ export interface User {
   id: number
   username: string
   email: string
+  role?: string
   isActive: boolean
   lastLoginDate?: string
   createdAt: string
@@ -247,6 +248,14 @@ export interface GuestBookEntry {
   userAgent?: string
   createdAt: string
   updatedAt: string
+  // Additional properties for UI functionality
+  likes?: number
+  isLiked?: boolean
+  isOwner?: boolean
+  reply?: {
+    message: string
+    createdAt: string
+  }
 }
 
 // Contact Method Types

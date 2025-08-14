@@ -1,5 +1,10 @@
 <template>
   <div class="bg-gray-50">
+    <!-- API Test Component (開發用) -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6" v-if="isDevelopment">
+      <ApiTestComponent />
+    </div>
+
     <!-- Hero Section -->
     <section class="relative bg-white overflow-hidden">
       <div class="max-w-7xl mx-auto">
@@ -160,7 +165,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { 
   BriefcaseIcon,
@@ -170,9 +175,13 @@ import {
 } from '@heroicons/vue/24/outline'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import ApiTestComponent from '@/components/debug/ApiTestComponent.vue'
 import { usePortfolioStore } from '@/stores/portfolio'
 
 const portfolioStore = usePortfolioStore()
+
+// 只在開發環境顯示API測試組件
+const isDevelopment = computed(() => import.meta.env.VITE_APP_ENV === 'development')
 
 const features = [
   {

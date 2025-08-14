@@ -20,102 +20,80 @@ const router = createRouter({
       component: () => import('../views/AboutView.vue'),
       meta: { title: '關於我' }
     },
-    // TODO: 待實作
-    // {
-    //   path: '/experience',
-    //   name: 'experience',
-    //   component: () => import('../views/ExperienceView.vue'),
-    //   meta: { title: '學經歷' }
-    // },
-    // {
-    //   path: '/skills',
-    //   name: 'skills',
-    //   component: () => import('../views/SkillsView.vue'),
-    //   meta: { title: '技能專長' }
-    // },
+    {
+      path: '/experience',
+      name: 'experience',
+      component: () => import('../views/ExperienceView.vue'),
+      meta: { title: '學經歷' }
+    },
+    {
+      path: '/skills',
+      name: 'skills',
+      component: () => import('../views/SkillView.vue'),
+      meta: { title: '技能專長' }
+    },
     {
       path: '/portfolio',
       name: 'portfolio',
       component: () => import('../views/PortfolioView.vue'),
       meta: { title: '作品集' }
     },
-    // TODO: 待實作
-    // {
-    //   path: '/portfolio/:id',
-    //   name: 'portfolio-detail',
-    //   component: () => import('../views/PortfolioDetailView.vue'),
-    //   meta: { title: '作品詳情' }
-    // },
-    // {
-    //   path: '/blog',
-    //   name: 'blog',
-    //   component: () => import('../views/BlogView.vue'),
-    //   meta: { title: '部落格' }
-    // },
-    // {
-    //   path: '/blog/:id',
-    //   name: 'blog-detail',
-    //   component: () => import('../views/BlogDetailView.vue'),
-    //   meta: { title: '文章內容' }
-    // },
-    // {
-    //   path: '/guestbook',
-    //   name: 'guestbook',
-    //   component: () => import('../views/GuestbookView.vue'),
-    //   meta: { title: '留言板' }
-    // },
-    // {
-    //   path: '/contact',
-    //   name: 'contact',
-    //   component: () => import('../views/ContactView.vue'),
-    //   meta: { title: '聯絡我' }
-    // },
+    {
+      path: '/portfolio/:id',
+      name: 'portfolio-detail',
+      component: () => import('../views/ProjectDetailView.vue'),
+      meta: { title: '作品詳情' }
+    },
+    {
+      path: '/calendar',
+      name: 'calendar',
+      component: () => import('../views/PublicCalendarView.vue'),
+      meta: { title: '公開行事曆' }
+    },
+    {
+      path: '/blog',
+      name: 'blog',
+      component: () => import('../views/BlogListView.vue'),
+      meta: { title: '部落格' }
+    },
+    {
+      path: '/blog/:slug',
+      name: 'blog-detail',
+      component: () => import('../views/BlogDetailView.vue'),
+      meta: { title: '文章內容' }
+    },
+    {
+      path: '/guestbook',
+      name: 'guestbook',
+      component: () => import('../views/GuestbookView.vue'),
+      meta: { title: '留言板' }
+    },
+    {
+      path: '/contact',
+      name: 'contact',
+      component: () => import('../views/ContactView.vue'),
+      meta: { title: '聯絡我' }
+    },
     
-    // TODO: Auth routes (待實作)
-    // {
-    //   path: '/login',
-    //   name: 'login',
-    //   component: () => import('../views/auth/LoginView.vue'),
-    //   meta: { title: '登入', requiresGuest: true }
-    // },
+    // Auth routes
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('../views/LoginView.vue'),
+      meta: { title: '登入', requiresGuest: true }
+    },
     
-    // TODO: Protected routes (待實作)
-    // {
-    //   path: '/dashboard',
-    //   name: 'dashboard',
-    //   component: () => import('../views/admin/DashboardView.vue'),
-    //   meta: { title: '管理儀表板', requiresAuth: true }
-    // },
-    // {
-    //   path: '/profile',
-    //   name: 'profile-manage',
-    //   component: () => import('../views/admin/ProfileManageView.vue'),
-    //   meta: { title: '個人資料管理', requiresAuth: true }
-    // },
-    // {
-    //   path: '/admin/portfolio',
-    //   name: 'admin-portfolio',
-    //   component: () => import('../views/admin/PortfolioManageView.vue'),
-    //   meta: { title: '作品管理', requiresAuth: true }
-    // },
-    // {
-    //   path: '/admin/blog',
-    //   name: 'admin-blog',
-    //   component: () => import('../views/admin/BlogManageView.vue'),
-    //   meta: { title: '文章管理', requiresAuth: true }
-    // },
-    // {
-    //   path: '/admin/tasks',
-    //   name: 'admin-tasks',
-    //   component: () => import('../views/admin/TaskManageView.vue'),
-    //   meta: { title: '待辦事項', requiresAuth: true }
-    // },
-    // {
-    //   path: '/admin/calendar',
-    //   name: 'admin-calendar',
-    //   component: () => import('../views/admin/CalendarManageView.vue'),
-    //   meta: { title: '行事曆管理', requiresAuth: true }
-    // },
+    // Protected routes (Admin)
+    {
+      path: '/admin',
+      redirect: '/admin/dashboard'
+    },
+    {
+      path: '/admin/dashboard',
+      name: 'dashboard',
+      component: () => import('../views/admin/DashboardView.vue'),
+      meta: { title: '管理儀表板', requiresAuth: true }
+    },
     
     // Catch all 404
     {

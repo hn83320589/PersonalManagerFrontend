@@ -2,8 +2,19 @@ import httpService from './http'
 import type { ApiResponse, PersonalProfile } from '@/types/api'
 
 class ProfileService {
-  async getPublicProfiles(): Promise<ApiResponse<PersonalProfile[]>> {
+  // Get all profiles (admin/authenticated users)
+  async getProfiles(): Promise<ApiResponse<PersonalProfile[]>> {
     return httpService.get<PersonalProfile[]>('/personalprofiles')
+  }
+
+  // Get only public profiles
+  async getPublicProfiles(): Promise<ApiResponse<PersonalProfile[]>> {
+    return httpService.get<PersonalProfile[]>('/personalprofiles/public')
+  }
+
+  // Get the main public profile (for public homepage)
+  async getPublicProfile(): Promise<ApiResponse<PersonalProfile>> {
+    return httpService.get<PersonalProfile>('/personalprofiles/public/main')
   }
 
   async getProfileById(id: number): Promise<ApiResponse<PersonalProfile>> {
