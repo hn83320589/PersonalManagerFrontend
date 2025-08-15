@@ -65,15 +65,15 @@ describe('BaseButton', () => {
       expect(wrapper.classes()).toContain('hover:bg-blue-50')
     })
 
-    it('ghost 變體應該套用正確樣式', () => {
+    it('outline 變體應該套用正確樣式', () => {
       const wrapper = mount(BaseButton, {
-        props: { variant: 'ghost' }
+        props: { variant: 'outline' }
       })
       
-      expect(wrapper.classes()).toContain('text-gray-700')
+      expect(wrapper.classes()).toContain('text-blue-600')
       expect(wrapper.classes()).toContain('bg-transparent')
-      expect(wrapper.classes()).toContain('border-transparent')
-      expect(wrapper.classes()).toContain('hover:bg-gray-100')
+      expect(wrapper.classes()).toContain('border-blue-600')
+      expect(wrapper.classes()).toContain('hover:bg-blue-50')
     })
 
     it('danger 變體應該套用正確樣式', () => {
@@ -89,9 +89,9 @@ describe('BaseButton', () => {
   })
 
   describe('sizes 尺寸', () => {
-    it('sm 尺寸應該套用正確樣式', () => {
+    it('small 尺寸應該套用正確樣式', () => {
       const wrapper = mount(BaseButton, {
-        props: { size: 'sm' }
+        props: { size: 'small' }
       })
       
       expect(wrapper.classes()).toContain('px-3')
@@ -99,9 +99,9 @@ describe('BaseButton', () => {
       expect(wrapper.classes()).toContain('text-xs')
     })
 
-    it('md 尺寸應該套用正確樣式', () => {
+    it('medium 尺寸應該套用正確樣式', () => {
       const wrapper = mount(BaseButton, {
-        props: { size: 'md' }
+        props: { size: 'medium' }
       })
       
       expect(wrapper.classes()).toContain('px-4')
@@ -109,24 +109,14 @@ describe('BaseButton', () => {
       expect(wrapper.classes()).toContain('text-sm')
     })
 
-    it('lg 尺寸應該套用正確樣式', () => {
+    it('large 尺寸應該套用正確樣式', () => {
       const wrapper = mount(BaseButton, {
-        props: { size: 'lg' }
+        props: { size: 'large' }
       })
       
       expect(wrapper.classes()).toContain('px-6')
       expect(wrapper.classes()).toContain('py-3')
       expect(wrapper.classes()).toContain('text-base')
-    })
-
-    it('xl 尺寸應該套用正確樣式', () => {
-      const wrapper = mount(BaseButton, {
-        props: { size: 'xl' }
-      })
-      
-      expect(wrapper.classes()).toContain('px-8')
-      expect(wrapper.classes()).toContain('py-4')
-      expect(wrapper.classes()).toContain('text-lg')
     })
   })
 

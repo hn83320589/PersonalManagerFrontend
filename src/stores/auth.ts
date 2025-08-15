@@ -176,9 +176,4 @@ export const useAuthStore = defineStore('auth', () => {
     initializeAuth,
     clearError,
   }
-}, {
-  persist: {
-    key: 'auth-store',
-    storage: localStorage
-  }
 })

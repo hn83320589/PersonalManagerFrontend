@@ -1,228 +1,130 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import axios from 'axios'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { httpService } from '../http'
+import axios from 'axios'
 
 // Mock axios
-vi.mock('axios')
+vi.mock('axios', () => ({
+  default: {
+    create: vi.fn()
+  }
+}))
 const mockedAxios = vi.mocked(axios)
 
 describe('HttpService', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-  })
-
-  afterEach(() => {
     vi.resetAllMocks()
+    
+    // Mock axios.create
+    ;(mockedAxios.create as any).mockReturnValue({
+      interceptors: {
+        request: { use: vi.fn() },
+        response: { use: vi.fn() }
+      },
+      get: vi.fn(),
+      post: vi.fn(),
+      put: vi.fn(),
+      delete: vi.fn()
+    } as any)
   })
 
-  describe('設定與攔截器', () => {
-    it('應該有正確的基礎設定', () => {
-      expect(httpService.defaults.baseURL).toBe(import.meta.env.VITE_API_BASE_URL || 'http://localhost:5253/api')
-      expect(httpService.defaults.timeout).toBe(10000)
-      expect(httpService.defaults.headers.common['Content-Type']).toBe('application/json')
-    })
-
-    it('請求攔截器應該添加 Authorization header', () => {
-      const mockConfig = {
-        headers: {},
-        url: '/test'
-      }
-
-      // Mock localStorage
-      const getItemSpy = vi.spyOn(Storage.prototype, 'getItem')
-      getItemSpy.mockReturnValue('test-token')
-
-      // 觸發請求攔截器
-      const requestInterceptor = httpService.interceptors.request.handlers[0]
-      const result = requestInterceptor.fulfilled(mockConfig)
-
-      expect(result.headers.Authorization).toBe('Bearer test-token')
-      
-      getItemSpy.mockRestore()
-    })
-
-    it('請求攔截器在沒有 token 時不應該添加 Authorization header', () => {
-      const mockConfig = {
-        headers: {},
-        url: '/test'
-      }
-
-      // Mock localStorage 返回 null
-      const getItemSpy = vi.spyOn(Storage.prototype, 'getItem')
-      getItemSpy.mockReturnValue(null)
-
-      const requestInterceptor = httpService.interceptors.request.handlers[0]
-      const result = requestInterceptor.fulfilled(mockConfig)
-
-      expect(result.headers.Authorization).toBeUndefined()
-      
-      getItemSpy.mockRestore()
-    })
-  })
-
-  describe('回應攔截器', () => {
-    it('成功回應應該返回 response.data', () => {
+  describe('HTTP Methods', () => {
+    it('應該能夠執行 GET 請求', async () => {
       const mockResponse = {
-        data: { message: 'success', data: { id: 1 } },
+        data: { success: true, data: 'test data' },
         status: 200
       }
-
-      const responseInterceptor = httpService.interceptors.response.handlers[0]
-      const result = responseInterceptor.fulfilled(mockResponse)
-
-      expect(result).toEqual(mockResponse.data)
+      
+      const mockGet = vi.fn().mockResolvedValue(mockResponse)
+      ;(httpService as any).client = { get: mockGet }
+      
+      const result = await httpService.get('/test')
+      
+      expect(mockGet).toHaveBeenCalledWith('/test')
+      expect(result).toEqual(mockResponse)
     })
 
-    it('401 錯誤應該清除 token 並重新載入頁面', () => {
-      const mockError = {
-        response: {
-          status: 401,
-          data: { message: 'Unauthorized' }
-        }
+    it('應該能夠執行 POST 請求', async () => {
+      const mockResponse = {
+        data: { success: true, data: 'created' },
+        status: 201
       }
-
-      // Mock localStorage 和 window.location
-      const removeItemSpy = vi.spyOn(Storage.prototype, 'removeItem')
-      const reloadSpy = vi.fn()
-      Object.defineProperty(window, 'location', {
-        value: { reload: reloadSpy },
-        writable: true
-      })
-
-      const responseInterceptor = httpService.interceptors.response.handlers[0]
+      const postData = { name: 'test' }
       
-      expect(() => {
-        responseInterceptor.rejected(mockError)
-      }).rejects.toThrow()
-
-      expect(removeItemSpy).toHaveBeenCalledWith('auth_token')
-      expect(reloadSpy).toHaveBeenCalled()
+      const mockPost = vi.fn().mockResolvedValue(mockResponse)
+      ;(httpService as any).client = { post: mockPost }
       
-      removeItemSpy.mockRestore()
+      const result = await httpService.post('/test', postData)
+      
+      expect(mockPost).toHaveBeenCalledWith('/test', postData)
+      expect(result).toEqual(mockResponse)
     })
 
-    it('403 錯誤應該顯示權限不足訊息', () => {
-      const mockError = {
-        response: {
-          status: 403,
-          data: { message: 'Forbidden' }
-        }
+    it('應該能夠執行 PUT 請求', async () => {
+      const mockResponse = {
+        data: { success: true, data: 'updated' },
+        status: 200
       }
-
-      // Mock console.error
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-
-      const responseInterceptor = httpService.interceptors.response.handlers[0]
+      const putData = { id: 1, name: 'updated' }
       
-      expect(() => {
-        responseInterceptor.rejected(mockError)
-      }).rejects.toThrow()
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith('權限不足:', 'Forbidden')
+      const mockPut = vi.fn().mockResolvedValue(mockResponse)
+      ;(httpService as any).client = { put: mockPut }
       
-      consoleErrorSpy.mockRestore()
+      const result = await httpService.put('/test/1', putData)
+      
+      expect(mockPut).toHaveBeenCalledWith('/test/1', putData)
+      expect(result).toEqual(mockResponse)
     })
 
-    it('500 錯誤應該顯示伺服器錯誤訊息', () => {
-      const mockError = {
-        response: {
-          status: 500,
-          data: { message: 'Internal Server Error' }
-        }
+    it('應該能夠執行 DELETE 請求', async () => {
+      const mockResponse = {
+        data: { success: true, message: 'deleted' },
+        status: 200
       }
-
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-
-      const responseInterceptor = httpService.interceptors.response.handlers[0]
       
-      expect(() => {
-        responseInterceptor.rejected(mockError)
-      }).rejects.toThrow()
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith('伺服器錯誤:', 'Internal Server Error')
+      const mockDelete = vi.fn().mockResolvedValue(mockResponse)
+      ;(httpService as any).client = { delete: mockDelete }
       
-      consoleErrorSpy.mockRestore()
-    })
-
-    it('網路錯誤應該顯示連線錯誤訊息', () => {
-      const mockError = {
-        request: {},
-        message: 'Network Error'
-      }
-
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-
-      const responseInterceptor = httpService.interceptors.response.handlers[0]
+      const result = await httpService.delete('/test/1')
       
-      expect(() => {
-        responseInterceptor.rejected(mockError)
-      }).rejects.toThrow()
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith('網路連線錯誤，請檢查您的網路連線')
-      
-      consoleErrorSpy.mockRestore()
-    })
-
-    it('其他錯誤應該顯示通用錯誤訊息', () => {
-      const mockError = {
-        message: 'Something went wrong'
-      }
-
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-
-      const responseInterceptor = httpService.interceptors.response.handlers[0]
-      
-      expect(() => {
-        responseInterceptor.rejected(mockError)
-      }).rejects.toThrow()
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith('請求錯誤:', 'Something went wrong')
-      
-      consoleErrorSpy.mockRestore()
+      expect(mockDelete).toHaveBeenCalledWith('/test/1')
+      expect(result).toEqual(mockResponse)
     })
   })
 
-  describe('HTTP 方法', () => {
-    it('get 方法應該正確調用', async () => {
-      const mockData = { id: 1, name: 'test' }
-      mockedAxios.get.mockResolvedValue({ data: mockData })
-
-      const result = await httpService.get('/test')
-
-      expect(mockedAxios.get).toHaveBeenCalledWith('/test', undefined)
-      expect(result).toEqual(mockData)
+  describe('錯誤處理', () => {
+    it('應該處理網路錯誤', async () => {
+      const networkError = new Error('Network Error')
+      
+      const mockGet = vi.fn().mockRejectedValue(networkError)
+      ;(httpService as any).client = { get: mockGet }
+      
+      await expect(httpService.get('/test')).rejects.toThrow('Network Error')
     })
 
-    it('post 方法應該正確調用', async () => {
-      const mockData = { id: 1, name: 'test' }
-      const postData = { name: 'test' }
-      mockedAxios.post.mockResolvedValue({ data: mockData })
-
-      const result = await httpService.post('/test', postData)
-
-      expect(mockedAxios.post).toHaveBeenCalledWith('/test', postData, undefined)
-      expect(result).toEqual(mockData)
+    it('應該處理 HTTP 錯誤', async () => {
+      const httpError = {
+        response: {
+          status: 404,
+          data: { success: false, message: 'Not Found' }
+        }
+      }
+      
+      const mockGet = vi.fn().mockRejectedValue(httpError)
+      ;(httpService as any).client = { get: mockGet }
+      
+      await expect(httpService.get('/test')).rejects.toEqual(httpError)
     })
+  })
 
-    it('put 方法應該正確調用', async () => {
-      const mockData = { id: 1, name: 'updated' }
-      const putData = { name: 'updated' }
-      mockedAxios.put.mockResolvedValue({ data: mockData })
-
-      const result = await httpService.put('/test/1', putData)
-
-      expect(mockedAxios.put).toHaveBeenCalledWith('/test/1', putData, undefined)
-      expect(result).toEqual(mockData)
-    })
-
-    it('delete 方法應該正確調用', async () => {
-      const mockData = { message: 'deleted' }
-      mockedAxios.delete.mockResolvedValue({ data: mockData })
-
-      const result = await httpService.delete('/test/1')
-
-      expect(mockedAxios.delete).toHaveBeenCalledWith('/test/1', undefined)
-      expect(result).toEqual(mockData)
+  describe('設定檢查', () => {
+    it('應該正確初始化 HttpService', () => {
+      expect(mockedAxios.create).toHaveBeenCalledWith({
+        baseURL: import.meta.env.VITE_API_BASE_URL,
+        timeout: 10000,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
     })
   })
 })

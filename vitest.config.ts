@@ -14,7 +14,7 @@ export default mergeConfig(
         provider: 'v8',
         reporter: ['text', 'json', 'html'],
         exclude: [
-          ...configDefaults.coverage.exclude,
+          ...(configDefaults.coverage?.exclude ?? []),
           'src/test-utils/**',
           '**/*.spec.ts',
           '**/*.test.ts',
