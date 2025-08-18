@@ -11,7 +11,13 @@ class HttpService {
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
+      // Performance optimizations
+      maxContentLength: 10 * 1024 * 1024, // 10MB
+      maxBodyLength: 10 * 1024 * 1024, // 10MB
+      // Enable compression
+      decompress: true,
     })
 
     this.setupInterceptors()
@@ -83,25 +89,53 @@ class HttpService {
     }
   }
 
-  // Generic HTTP methods
+  // Request retry mechanism
+  private async retryRequest<T>(
+    requestFn: () => Promise<AxiosResponse<ApiResponse<T>>>,
+    maxRetries = 3,
+    delay = 1000
+  ): Promise<ApiResponse<T>> {
+    let lastError: any
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await requestFn()
+        return response.data
+      } catch (error) {
+        lastError = error
+        
+        // Don't retry on client errors (4xx)
+        if (error instanceof Error && 'response' in error) {
+          const axiosError = error as AxiosError
+          if (axiosError.response?.status && axiosError.response.status < 500) {
+            throw error
+          }
+        }
+        
+        if (attempt < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, delay * attempt))
+        }
+      }
+    }
+    
+    throw lastError
+  }
+
+  // Generic HTTP methods with retry
   async get<T>(url: string, params?: any): Promise<ApiResponse<T>> {
-    const response = await this.client.get<ApiResponse<T>>(url, { params })
-    return response.data
+    return this.retryRequest(() => this.client.get<ApiResponse<T>>(url, { params }))
   }
 
   async post<T>(url: string, data?: any): Promise<ApiResponse<T>> {
-    const response = await this.client.post<ApiResponse<T>>(url, data)
-    return response.data
+    return this.retryRequest(() => this.client.post<ApiResponse<T>>(url, data))
   }
 
   async put<T>(url: string, data?: any): Promise<ApiResponse<T>> {
-    const response = await this.client.put<ApiResponse<T>>(url, data)
-    return response.data
+    return this.retryRequest(() => this.client.put<ApiResponse<T>>(url, data))
   }
 
   async delete<T>(url: string): Promise<ApiResponse<T>> {
-    const response = await this.client.delete<ApiResponse<T>>(url)
-    return response.data
+    return this.retryRequest(() => this.client.delete<ApiResponse<T>>(url))
   }
 
   // File upload method
