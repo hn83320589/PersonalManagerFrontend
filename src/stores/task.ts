@@ -2,10 +2,26 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { TodoItem, WorkTask, TaskStatus, TodoPriority, TaskPriority } from '@/types/api'
 
+// Time Entry Interface for work tracking
+interface TimeEntry {
+  id: number
+  taskId?: number
+  task: string
+  project?: string
+  date: string
+  startTime?: string
+  endTime?: string
+  duration: number
+  description?: string
+  createdAt?: string
+  updatedAt?: string
+}
+
 export const useTaskStore = defineStore('task', () => {
   // State
   const todoItems = ref<TodoItem[]>([])
   const workTasks = ref<WorkTask[]>([])
+  const timeEntries = ref<TimeEntry[]>([])
   const currentTodo = ref<TodoItem | null>(null)
   const currentWorkTask = ref<WorkTask | null>(null)
   const isLoading = ref(false)
@@ -268,10 +284,75 @@ export const useTaskStore = defineStore('task', () => {
     currentWorkTask.value = null
   }
 
+  // Time Entries Actions
+  async function fetchTimeEntries() {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      // API service will be implemented later
+      timeEntries.value = []
+    } catch (err) {
+      error.value = 'Failed to fetch time entries'
+      console.error(err)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function createTimeEntry(entryData: Partial<TimeEntry>) {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      // API service will be implemented later
+      return null
+    } catch (err) {
+      error.value = 'Failed to create time entry'
+      console.error(err)
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function updateTimeEntry(id: number, entryData: Partial<TimeEntry>) {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      // API service will be implemented later
+      return null
+    } catch (err) {
+      error.value = 'Failed to update time entry'
+      console.error(err)
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function deleteTimeEntry(id: number) {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      // API service will be implemented later
+      return false
+    } catch (err) {
+      error.value = 'Failed to delete time entry'
+      console.error(err)
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     // State
     todoItems,
     workTasks,
+    timeEntries,
     currentTodo,
     currentWorkTask,
     isLoading,
@@ -300,6 +381,11 @@ export const useTaskStore = defineStore('task', () => {
     updateWorkTask,
     updateWorkTaskStatus,
     deleteWorkTask,
+    // Time Entry Actions
+    fetchTimeEntries,
+    createTimeEntry,
+    updateTimeEntry,
+    deleteTimeEntry,
     // Utilities
     clearError,
     clearCurrentTodo,

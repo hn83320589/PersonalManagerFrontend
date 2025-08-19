@@ -1,27 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Header -->
-    <header class="bg-white shadow">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center py-6">
-          <div>
-            <h1 class="text-3xl font-bold text-gray-900">個人資料管理</h1>
-            <p class="text-gray-600">管理您的個人資訊和公開展示設定</p>
-          </div>
-          <div class="flex space-x-4">
-            <BaseButton variant="outline" @click="router.push('/admin/dashboard')">
-              返回儀表板
-            </BaseButton>
-            <BaseButton variant="outline" @click="router.push('/')">
-              預覽公開頁面
-            </BaseButton>
-          </div>
-        </div>
-      </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <AdminLayout>
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Profile Form -->
         <div class="lg:col-span-2">
@@ -271,8 +249,7 @@
           </BaseCard>
         </div>
       </div>
-    </main>
-  </div>
+  </AdminLayout>
 </template>
 
 <script setup lang="ts">
@@ -288,6 +265,7 @@ import {
   GlobeAltIcon
 } from '@heroicons/vue/24/outline'
 import { useProfileStore } from '@/stores/profile'
+import AdminLayout from '@/components/layout/AdminLayout.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'

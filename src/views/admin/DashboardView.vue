@@ -1,22 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Header -->
-    <header class="bg-white shadow">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center py-6">
-          <div>
-            <h1 class="text-3xl font-bold text-gray-900">管理儀表板</h1>
-            <p class="text-gray-600">歡迎回來，{{ authStore.userDisplayName }}！</p>
-          </div>
-          <BaseButton variant="outline" @click="handleLogout">
-            登出
-          </BaseButton>
-        </div>
-      </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <AdminLayout>
       <!-- Quick Stats -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <BaseCard>
@@ -97,31 +80,47 @@
         <!-- Quick Actions -->
         <BaseCard title="快速操作">
           <div class="grid grid-cols-2 gap-4">
-            <BaseButton variant="primary" class="h-16">
+            <BaseButton 
+              variant="primary" 
+              class="h-16"
+              @click="router.push('/admin/blog/editor')"
+            >
               <div class="text-center">
                 <PlusIcon class="w-5 h-5 mx-auto mb-1" />
                 <span class="text-sm">新增文章</span>
               </div>
             </BaseButton>
             
-            <BaseButton variant="outline" class="h-16">
+            <BaseButton 
+              variant="outline" 
+              class="h-16"
+              @click="router.push('/admin/projects')"
+            >
               <div class="text-center">
                 <FolderPlusIcon class="w-5 h-5 mx-auto mb-1" />
                 <span class="text-sm">新增專案</span>
               </div>
             </BaseButton>
             
-            <BaseButton variant="outline" class="h-16">
+            <BaseButton 
+              variant="outline" 
+              class="h-16"
+              @click="router.push('/admin/calendar')"
+            >
               <div class="text-center">
                 <CalendarDaysIcon class="w-5 h-5 mx-auto mb-1" />
                 <span class="text-sm">管理行程</span>
               </div>
             </BaseButton>
             
-            <BaseButton variant="outline" class="h-16">
+            <BaseButton 
+              variant="outline" 
+              class="h-16"
+              @click="router.push('/admin/profile')"
+            >
               <div class="text-center">
                 <CogIcon class="w-5 h-5 mx-auto mb-1" />
-                <span class="text-sm">系統設定</span>
+                <span class="text-sm">個人設定</span>
               </div>
             </BaseButton>
           </div>
@@ -149,8 +148,7 @@
           </div>
         </BaseCard>
       </div>
-    </main>
-  </div>
+  </AdminLayout>
 </template>
 
 <script setup lang="ts">
@@ -166,6 +164,7 @@ import {
   CogIcon
 } from '@heroicons/vue/24/outline'
 import { useAuthStore } from '@/stores/auth'
+import AdminLayout from '@/components/layout/AdminLayout.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 
@@ -176,14 +175,6 @@ const router = useRouter()
 const authStore = useAuthStore()
 
 // Methods
-async function handleLogout() {
-  try {
-    await authStore.logout()
-    router.push('/')
-  } catch (error) {
-    console.error('Logout error:', error)
-  }
-}
 
 function formatDate(dateString?: string): string {
   if (!dateString) return '從未'

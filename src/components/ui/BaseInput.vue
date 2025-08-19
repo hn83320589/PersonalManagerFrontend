@@ -14,6 +14,9 @@
         :required="required"
         :disabled="disabled"
         :readonly="readonly"
+        :min="min"
+        :max="max"
+        :step="step"
         :class="inputClasses"
         @input="handleInput"
         @blur="handleBlur"
@@ -36,7 +39,7 @@ import { ExclamationCircleIcon } from '@heroicons/vue/24/outline'
 
 interface Props {
   modelValue: string | number
-  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search'
+  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search' | 'date' | 'time' | 'datetime-local'
   label?: string
   placeholder?: string
   required?: boolean
@@ -44,6 +47,9 @@ interface Props {
   readonly?: boolean
   error?: string
   helpText?: string
+  min?: string | number
+  max?: string | number
+  step?: string | number
 }
 
 const props = withDefaults(defineProps<Props>(), {
