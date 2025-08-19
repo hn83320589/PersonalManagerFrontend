@@ -351,7 +351,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { TagIcon } from '@heroicons/vue/24/outline'
-import type { TodoItem } from '@/types/api'
+import type { TodoItem, TaskStatus, TodoPriority } from '@/types/api'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseTextarea from '@/components/ui/BaseTextarea.vue'
 import BaseSelect from '@/components/ui/BaseSelect.vue'
@@ -489,8 +489,8 @@ function handleSubmit() {
   const submitData: Partial<TodoItem> = {
     title: formData.value.title.trim(),
     description: formData.value.description?.trim() || undefined,
-    status: formData.value.status,
-    priority: formData.value.priority,
+    status: formData.value.status as TaskStatus,
+    priority: formData.value.priority as TodoPriority,
     category: formData.value.category?.trim() || undefined,
     tags: formData.value.tags?.trim() || undefined,
     startDate: formData.value.startDate || undefined,
@@ -544,14 +544,14 @@ watch(() => props.task, (newTask) => {
     formData.value = {
       title: newTask.title || '',
       description: newTask.description || '',
-      status: newTask.status || 'pending',
-      priority: newTask.priority || 'medium',
+      status: String(newTask.status) || 'pending',
+      priority: String(newTask.priority) || 'medium',
       category: newTask.category || '',
-      tags: newTask.tags || '',
-      startDate: newTask.startDate?.split('T')[0] || '',
+      tags: '',
+      startDate: newTask.dueDate?.split('T')[0] || '',
       dueDate: newTask.dueDate?.split('T')[0] || '',
-      estimatedHours: newTask.estimatedHours || 0,
-      actualHours: newTask.actualHours || 0,
+      estimatedHours: 0,
+      actualHours: 0,
       isRecurring: newTask.isRecurring || false,
       recurringPattern: newTask.recurringPattern || '',
       hasReminder: newTask.hasReminder || false,

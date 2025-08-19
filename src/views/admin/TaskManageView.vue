@@ -463,7 +463,7 @@ function toggleTaskSelection(taskId: number) {
 
 async function toggleTaskComplete(task: TodoItem) {
   const newStatus = task.status === 'completed' ? 'pending' : 'completed'
-  await taskStore.updateTodoItem(task.id, {
+  await taskStore.updateTodo(task.id, {
     status: newStatus,
     completedAt: newStatus === 'completed' ? new Date().toISOString() : undefined
   })
@@ -483,9 +483,9 @@ function deleteTask(id: number) {
 function duplicateTask(task: TodoItem) {
   const duplicated = {
     ...task,
-    id: undefined,
+    id: 0,
     title: `${task.title} (複製)`,
-    status: 'pending' as const,
+    status: 'pending' as TaskStatus,
     createdAt: undefined,
     completedAt: undefined
   }
@@ -494,15 +494,15 @@ function duplicateTask(task: TodoItem) {
 }
 
 function moveTask(taskId: number, newStatus: string) {
-  taskStore.updateTodoItem(taskId, { status: newStatus })
+  taskStore.updateTodo(taskId, { status: newStatus as TaskStatus })
 }
 
 async function handleSave(data: any) {
   try {
     if (editingTask.value && editingTask.value.id) {
-      await taskStore.updateTodoItem(editingTask.value.id, data)
+      await taskStore.updateTodo(editingTask.value.id, data)
     } else {
-      await taskStore.createTodoItem(data)
+      await taskStore.createTodo(data)
     }
     handleCancel()
   } catch (error) {
@@ -519,7 +519,7 @@ async function batchUpdateStatus(status: string) {
   try {
     await Promise.all(
       selectedTasks.value.map(taskId =>
-        taskStore.updateTodoItem(taskId, {
+        taskStore.updateTodo(taskId, {
           status,
           completedAt: status === 'completed' ? new Date().toISOString() : undefined
         })
@@ -536,7 +536,7 @@ async function batchUpdatePriority(priority: string) {
   try {
     await Promise.all(
       selectedTasks.value.map(taskId =>
-        taskStore.updateTodoItem(taskId, { priority })
+        taskStore.updateTodo(taskId, { priority })
       )
     )
     selectedTasks.value = []
@@ -562,11 +562,11 @@ function batchDelete() {
 async function confirmDelete() {
   try {
     if (deleteType.value === 'single' && deletingId.value) {
-      await taskStore.deleteTodoItem(deletingId.value)
+      await taskStore.deleteTodo(deletingId.value)
       deletingId.value = null
     } else if (deleteType.value === 'batch') {
       await Promise.all(
-        selectedTasks.value.map(taskId => taskStore.deleteTodoItem(taskId))
+        selectedTasks.value.map(taskId => taskStore.deleteTodo(taskId))
       )
       selectedTasks.value = []
     }

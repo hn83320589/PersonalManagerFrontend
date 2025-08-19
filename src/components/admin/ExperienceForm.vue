@@ -406,7 +406,7 @@ async function handleSubmit() {
     // Process skills for work experience
     if (isWork.value && submitData.skills && typeof submitData.skills === 'string') {
       const skillsArray = submitData.skills.split(',').map(s => s.trim()).filter(s => s)
-      submitData.skills = skillsArray
+      submitData.skills = skillsArray.join(',')
     }
     
     // Remove type field from submit data
@@ -424,35 +424,33 @@ function initializeForm() {
   if (props.item) {
     const item = props.item
     
-    // Common fields
-    formData.value.startDate = item.startDate || ''
-    formData.value.endDate = item.endDate || ''
-    formData.value.location = item.location || ''
-    formData.value.description = item.description || ''
-    formData.value.achievements = item.achievements || ''
-    formData.value.websiteUrl = item.websiteUrl || ''
+    // Common fields - check if properties exist
+    formData.value.startDate = (item as any).startDate || ''
+    formData.value.endDate = (item as any).endDate || ''
+    formData.value.location = (item as any).location || ''
+    formData.value.description = (item as any).description || ''
+    formData.value.achievements = (item as any).achievements || ''
+    formData.value.websiteUrl = (item as any).websiteUrl || ''
     formData.value.sortOrder = item.sortOrder || 0
     formData.value.isPublic = item.isPublic ?? true
     
     // Check if it's education or work experience
-    if ('institution' in item) {
+    if ('schoolName' in item) {
       // Education
       formData.value.type = 'education'
-      formData.value.institution = item.institution
-      formData.value.degree = item.degree
-      formData.value.fieldOfStudy = item.fieldOfStudy || ''
-      formData.value.gpa = item.gpa || ''
+      formData.value.institution = (item as Education).schoolName
+      formData.value.degree = (item as Education).degree
+      formData.value.fieldOfStudy = (item as Education).major || ''
+      formData.value.gpa = ''
     } else {
       // Work Experience
       formData.value.type = 'work'
-      formData.value.company = (item as WorkExperience).company
+      formData.value.company = (item as WorkExperience).companyName
       formData.value.position = (item as WorkExperience).position
-      formData.value.department = (item as WorkExperience).department || ''
-      formData.value.employmentType = (item as WorkExperience).employmentType || ''
+      formData.value.department = ''
+      formData.value.employmentType = String((item as WorkExperience).employmentType)
       formData.value.isCurrent = (item as WorkExperience).isCurrent || false
-      formData.value.skills = Array.isArray((item as WorkExperience).skills) 
-        ? (item as WorkExperience).skills.join(', ')
-        : (item as WorkExperience).skills || ''
+      formData.value.skills = ''
     }
   } else {
     formData.value.type = props.type
