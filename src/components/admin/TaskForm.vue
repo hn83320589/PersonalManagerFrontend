@@ -489,22 +489,13 @@ function handleSubmit() {
   const submitData: Partial<TodoItem> = {
     title: formData.value.title.trim(),
     description: formData.value.description?.trim() || undefined,
-    status: formData.value.status as TaskStatus,
-    priority: formData.value.priority as TodoPriority,
+    status: parseInt(formData.value.status as string) as TaskStatus,
+    priority: parseInt(formData.value.priority as string) as TodoPriority,
     category: formData.value.category?.trim() || undefined,
-    tags: formData.value.tags?.trim() || undefined,
     startDate: formData.value.startDate || undefined,
     dueDate: formData.value.dueDate || undefined,
     estimatedHours: formData.value.estimatedHours || undefined,
     actualHours: formData.value.actualHours || undefined,
-    isRecurring: formData.value.isRecurring,
-    recurringPattern: formData.value.isRecurring ? formData.value.recurringPattern : undefined,
-    hasReminder: formData.value.hasReminder,
-    reminderSettings: formData.value.hasReminder ? {
-      type: formData.value.reminderType,
-      value: formData.value.reminderValue,
-      unit: formData.value.reminderUnit
-    } : undefined
   }
 
   // Remove undefined values
@@ -552,12 +543,9 @@ watch(() => props.task, (newTask) => {
       dueDate: newTask.dueDate?.split('T')[0] || '',
       estimatedHours: 0,
       actualHours: 0,
-      isRecurring: newTask.isRecurring || false,
-      recurringPattern: newTask.recurringPattern || '',
-      hasReminder: newTask.hasReminder || false,
-      reminderType: newTask.reminderSettings?.type || 'notification',
-      reminderValue: newTask.reminderSettings?.value || 1,
-      reminderUnit: newTask.reminderSettings?.unit || 'days'
+      // These properties don't exist in the TodoItem model
+      // isRecurring, recurringPattern, hasReminder, reminderSettings
+      // will be implemented in future updates
     }
   } else {
     resetForm()

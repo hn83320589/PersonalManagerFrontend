@@ -660,7 +660,7 @@ const settings = ref({
 })
 
 // Computed
-const comments = computed(() => commentStore.guestBookEntries)
+const comments = computed(() => commentStore.entries)
 
 const totalComments = computed(() => comments.value.length)
 
@@ -812,7 +812,7 @@ function formatTimeAgo(dateString: string): string {
 
 async function approveComment(id: number) {
   try {
-    await commentStore.updateGuestBookEntry(id, { status: 'approved' })
+    await commentStore.updateEntry(id, { isApproved: true })
   } catch (error) {
     console.error('Approve comment error:', error)
   }
@@ -820,7 +820,7 @@ async function approveComment(id: number) {
 
 async function rejectComment(id: number) {
   try {
-    await commentStore.updateGuestBookEntry(id, { status: 'rejected' })
+    await commentStore.updateEntry(id, { isApproved: false })
   } catch (error) {
     console.error('Reject comment error:', error)
   }
@@ -829,7 +829,7 @@ async function rejectComment(id: number) {
 async function deleteComment(id: number) {
   if (confirm('確定要刪除這則留言嗎？此操作無法復原。')) {
     try {
-      await commentStore.deleteGuestBookEntry(id)
+      await commentStore.deleteEntry(id)
     } catch (error) {
       console.error('Delete comment error:', error)
     }
@@ -838,7 +838,7 @@ async function deleteComment(id: number) {
 
 function openReplyModal(comment: GuestBookEntry) {
   replyingComment.value = comment
-  replyText.value = comment.adminReply || ''
+  replyText.value = comment.reply?.message || ''
   showReplyModal.value = true
 }
 
@@ -846,8 +846,9 @@ async function submitReply() {
   if (!replyingComment.value || !replyText.value.trim()) return
 
   try {
-    await commentStore.updateGuestBookEntry(replyingComment.value.id, {
-      adminReply: replyText.value.trim()
+    await commentStore.updateEntry(replyingComment.value.id, {
+      // This will need backend support for admin replies
+      // adminReply: replyText.value.trim()
     })
     showReplyModal.value = false
     replyingComment.value = null
@@ -861,7 +862,7 @@ async function batchApprove() {
   try {
     await Promise.all(
       selectedComments.value.map(id =>
-        commentStore.updateGuestBookEntry(id, { status: 'approved' })
+        commentStore.updateEntry(id, { isApproved: true })
       )
     )
     selectedComments.value = []
@@ -875,7 +876,7 @@ async function batchReject() {
   try {
     await Promise.all(
       selectedComments.value.map(id =>
-        commentStore.updateGuestBookEntry(id, { status: 'rejected' })
+        commentStore.updateEntry(id, { isApproved: false })
       )
     )
     selectedComments.value = []
@@ -889,7 +890,7 @@ async function batchMarkSpam() {
   try {
     await Promise.all(
       selectedComments.value.map(id =>
-        commentStore.updateGuestBookEntry(id, { status: 'spam' })
+        commentStore.updateEntry(id, { isApproved: false })
       )
     )
     selectedComments.value = []
@@ -903,7 +904,7 @@ async function batchDelete() {
   if (confirm(`確定要刪除選中的 ${selectedComments.value.length} 則留言嗎？此操作無法復原。`)) {
     try {
       await Promise.all(
-        selectedComments.value.map(id => commentStore.deleteGuestBookEntry(id))
+        selectedComments.value.map(id => commentStore.deleteEntry(id))
       )
       selectedComments.value = []
       showBatchModal.value = false
@@ -945,7 +946,7 @@ function saveSettings() {
 
 // Lifecycle
 onMounted(async () => {
-  await commentStore.fetchGuestBookEntries()
+  await commentStore.fetchEntries()
 })
 </script>
 

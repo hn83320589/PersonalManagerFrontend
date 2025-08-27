@@ -75,8 +75,8 @@
               <!-- Featured Image Thumbnail -->
               <div class="flex-shrink-0">
                 <img
-                  v-if="post.featuredImage"
-                  :src="post.featuredImage"
+                  v-if="post.featuredImageUrl"
+                  :src="post.featuredImageUrl"
                   :alt="post.title"
                   class="h-10 w-10 rounded object-cover"
                 />
@@ -102,8 +102,8 @@
                     公開
                   </span>
                 </div>
-                <p v-if="post.excerpt" class="mt-1 text-xs text-gray-500 line-clamp-2">
-                  {{ post.excerpt }}
+                <p v-if="post.summary" class="mt-1 text-xs text-gray-500 line-clamp-2">
+                  {{ post.summary }}
                 </p>
                 <div v-if="post.tags" class="mt-2 flex flex-wrap gap-1">
                   <span
@@ -120,10 +120,10 @@
 
           <!-- Status -->
           <td class="px-6 py-4 whitespace-nowrap">
-            <span :class="getStatusBadgeClass(post.status)">
+            <span :class="getStatusBadgeClass(post.isPublished ? 'published' : 'draft')">
               <div class="flex items-center">
-                <div :class="getStatusDotClass(post.status)" class="w-2 h-2 rounded-full mr-2"></div>
-                {{ getStatusLabel(post.status) }}
+                <div :class="getStatusDotClass(post.isPublished ? 'published' : 'draft')" class="w-2 h-2 rounded-full mr-2"></div>
+                {{ getStatusLabel(post.isPublished ? 'published' : 'draft') }}
               </div>
             </span>
           </td>
@@ -141,14 +141,14 @@
 
           <!-- Author -->
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-            {{ post.author || '系統管理員' }}
+            {{ post.user?.username || post.user?.fullName || '系統管理員' }}
           </td>
 
           <!-- Views -->
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
             <div class="flex items-center">
               <EyeIcon class="w-4 h-4 mr-1 text-gray-400" />
-              {{ (post.views || 0).toLocaleString() }}
+              {{ (post.viewCount || 0).toLocaleString() }}
             </div>
           </td>
 
@@ -168,13 +168,13 @@
                 @click="$emit('toggle-publish', post)"
                 :class="[
                   'p-1 rounded transition-colors',
-                  post.status === 'published'
+                  post.isPublished ? 'published' : 'draft' === 'published'
                     ? 'text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50'
                     : 'text-green-600 hover:text-green-700 hover:bg-green-50'
                 ]"
-                :title="post.status === 'published' ? '取消發布' : '發布文章'"
+                :title="post.isPublished ? 'published' : 'draft' === 'published' ? '取消發布' : '發布文章'"
               >
-                <EyeSlashIcon v-if="post.status === 'published'" class="w-4 h-4" />
+                <EyeSlashIcon v-if="post.isPublished ? 'published' : 'draft' === 'published'" class="w-4 h-4" />
                 <EyeIcon v-else class="w-4 h-4" />
               </button>
 

@@ -490,14 +490,14 @@ function duplicatePost(post: BlogPost) {
   }
   
   // This would typically create a new post and then redirect to editor
-  blogStore.createBlogPost(duplicated).then((newPost) => {
+  blogStore.createPost(duplicated).then((newPost) => {
     router.push(`/admin/blog/editor/${newPost.id}`)
   })
 }
 
 async function togglePublish(post: BlogPost) {
   const newStatus = post.status === 'published' ? 'draft' : 'published'
-  await blogStore.updateBlogPost(post.id, {
+  await blogStore.updatePost(post.id, {
     status: newStatus,
     publishedAt: newStatus === 'published' ? new Date().toISOString() : undefined
   })
@@ -513,7 +513,7 @@ async function batchUpdateStatus(status: string) {
   try {
     await Promise.all(
       selectedPosts.value.map(postId =>
-        blogStore.updateBlogPost(postId, {
+        blogStore.updatePost(postId, {
           status,
           publishedAt: status === 'published' ? new Date().toISOString() : undefined
         })
@@ -572,11 +572,11 @@ function batchDelete() {
 async function confirmDelete() {
   try {
     if (deleteType.value === 'single' && deletingId.value) {
-      await blogStore.deleteBlogPost(deletingId.value)
+      await blogStore.deletePost(deletingId.value)
       deletingId.value = null
     } else if (deleteType.value === 'batch') {
       await Promise.all(
-        selectedPosts.value.map(postId => blogStore.deleteBlogPost(postId))
+        selectedPosts.value.map(postId => blogStore.deletePost(postId))
       )
       selectedPosts.value = []
     }
@@ -598,6 +598,6 @@ function handleCategoryDelete(categoryName: string) {
 
 // Lifecycle
 onMounted(async () => {
-  await blogStore.fetchBlogPosts()
+  await blogStore.fetchPosts()
 })
 </script>

@@ -340,6 +340,7 @@ import {
 } from '@heroicons/vue/24/outline'
 import { useTaskStore } from '@/stores/task'
 import type { TodoItem } from '@/types/api'
+import { TaskStatus, TodoPriority } from '@/types/api'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
@@ -374,7 +375,7 @@ const tasks = computed(() => taskStore.todoItems)
 const totalTasks = computed(() => tasks.value.length)
 
 const completedTasks = computed(() => {
-  return tasks.value.filter(task => task.status === 'completed').length
+  return tasks.value.filter(task => task.status === TaskStatus.Completed).length
 })
 
 const completionRate = computed(() => {
@@ -384,7 +385,7 @@ const completionRate = computed(() => {
 const overdueTasks = computed(() => {
   const today = new Date()
   return tasks.value.filter(task => 
-    task.dueDate && new Date(task.dueDate) < today && task.status !== 'completed'
+    task.dueDate && new Date(task.dueDate) < today && task.status !== TaskStatus.Completed
   ).length
 })
 
@@ -438,13 +439,11 @@ const filteredAndSortedTasks = computed(() => {
         if (!b.dueDate) return -1
         return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
       case 'priority':
-        const priorityOrder = { urgent: 0, high: 1, medium: 2, low: 3 }
-        return priorityOrder[a.priority as keyof typeof priorityOrder] - 
-               priorityOrder[b.priority as keyof typeof priorityOrder]
+        return a.priority - b.priority
       case 'title':
         return a.title.localeCompare(b.title)
       case 'status':
-        return a.status.localeCompare(b.status)
+        return a.status - b.status
       default:
         return 0
     }
@@ -462,10 +461,10 @@ function toggleTaskSelection(taskId: number) {
 }
 
 async function toggleTaskComplete(task: TodoItem) {
-  const newStatus = task.status === 'completed' ? 'pending' : 'completed'
+  const newStatus = task.status === TaskStatus.Completed ? TaskStatus.Pending : TaskStatus.Completed
   await taskStore.updateTodo(task.id, {
     status: newStatus,
-    completedAt: newStatus === 'completed' ? new Date().toISOString() : undefined
+    completedAt: newStatus === TaskStatus.Completed ? new Date().toISOString() : undefined
   })
 }
 
@@ -485,7 +484,7 @@ function duplicateTask(task: TodoItem) {
     ...task,
     id: 0,
     title: `${task.title} (複製)`,
-    status: 'pending' as TaskStatus,
+    status: TaskStatus.Pending,
     createdAt: undefined,
     completedAt: undefined
   }
@@ -494,7 +493,19 @@ function duplicateTask(task: TodoItem) {
 }
 
 function moveTask(taskId: number, newStatus: string) {
-  taskStore.updateTodo(taskId, { status: newStatus as TaskStatus })
+  // Convert string to TaskStatus enum
+  const statusMap: Record<string, TaskStatus> = {
+    'pending': TaskStatus.Pending,
+    'planning': TaskStatus.Planning,
+    'inprogress': TaskStatus.InProgress,
+    'testing': TaskStatus.Testing,
+    'completed': TaskStatus.Completed,
+    'onhold': TaskStatus.OnHold,
+    'cancelled': TaskStatus.Cancelled
+  }
+  
+  const status = statusMap[newStatus.toLowerCase()] || TaskStatus.Pending
+  taskStore.updateTodo(taskId, { status })
 }
 
 async function handleSave(data: any) {
