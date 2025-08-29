@@ -226,12 +226,12 @@ const props = withDefaults(defineProps<Props>(), {
 
 // Emits
 const emit = defineEmits<{
-  toggleSelect: [id: number]
-  editPost: [post: BlogPost]
-  deletePost: [id: number]
-  duplicatePost: [post: BlogPost]
-  togglePublish: [post: BlogPost]
-  previewPost: [post: BlogPost]
+  'toggle-select': [id: number]
+  'edit-post': [post: BlogPost]
+  'delete-post': [id: number]
+  'duplicate-post': [post: BlogPost]
+  'toggle-publish': [post: BlogPost]
+  'preview-post': [post: BlogPost]
 }>()
 
 // Methods

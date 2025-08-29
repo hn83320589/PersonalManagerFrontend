@@ -352,7 +352,7 @@ const blogStore = useBlogStore()
 
 // State
 const searchQuery = ref('')
-const selectedStatus = ref('')
+const selectedStatus = ref<'draft' | 'published' | 'archived' | ''>('')
 const selectedCategory = ref('')
 const selectedAuthor = ref('')
 const sortBy = ref<'createdAt' | 'updatedAt' | 'publishedAt' | 'title' | 'views'>('updatedAt')
@@ -366,7 +366,7 @@ const deletingId = ref<number | null>(null)
 const deleteType = ref<'single' | 'batch'>('single')
 
 // Computed
-const posts = computed(() => blogStore.blogPosts)
+const posts = computed(() => blogStore.posts)
 
 const totalPosts = computed(() => posts.value.length)
 
@@ -397,7 +397,7 @@ const authors = computed(() => {
 })
 
 const categoriesWithStats = computed(() => {
-  return categories.value.map(category => ({
+  return categories.value.map((category: string) => ({
     name: category,
     count: posts.value.filter(post => post.category === category).length,
     publishedCount: posts.value.filter(post => post.category === category && post.status === 'published').length
@@ -509,7 +509,7 @@ function previewPost(post: BlogPost) {
   window.open(previewUrl, '_blank')
 }
 
-async function batchUpdateStatus(status: string) {
+async function batchUpdateStatus(status: 'draft' | 'published' | 'archived') {
   try {
     await Promise.all(
       selectedPosts.value.map(postId =>

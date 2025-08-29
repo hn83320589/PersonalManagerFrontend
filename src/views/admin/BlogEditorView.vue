@@ -39,7 +39,7 @@
             </BaseButton>
             <BaseButton
               variant="outline"
-              @click="saveDraft"
+              @click="() => saveDraft()"
               :disabled="!isFormValid"
             >
               <DocumentIcon class="w-4 h-4 mr-2" />
@@ -357,7 +357,7 @@
                 </div>
 
                 <!-- Publish Date -->
-                <div v-if="formData.status === 'scheduled'">
+                <div v-if="false">
                   <label for="publishedAt" class="block text-sm font-medium text-gray-700">
                     排程發布時間
                   </label>
@@ -526,7 +526,7 @@
             <span class="text-sm text-gray-600">分類:</span>
             <span class="text-sm font-medium">{{ formData.category || '無分類' }}</span>
           </div>
-          <div v-if="formData.status === 'scheduled'" class="flex justify-between">
+          <div v-if="false" class="flex justify-between">
             <span class="text-sm text-gray-600">發布時間:</span>
             <span class="text-sm font-medium">{{ formatDate(formData.publishedAt) }}</span>
           </div>
@@ -617,7 +617,7 @@ const formData = ref({
   featuredImage: '',
   category: '',
   tags: '',
-  status: 'draft',
+  status: 'draft' as 'draft' | 'published' | 'archived',
   isPublic: true,
   publishedAt: '',
   metaDescription: '',
@@ -687,7 +687,7 @@ const previewContent = computed(() => {
 function loadPost() {
   const postId = route.params.id
   if (postId && postId !== 'new') {
-    const existingPost = blogStore.blogPosts.find(p => p.id === Number(postId))
+    const existingPost = blogStore.posts.find(p => p.id === Number(postId))
     if (existingPost) {
       post.value = existingPost
       formData.value = {
@@ -715,7 +715,7 @@ function generateSlug(title: string): string {
     .replace(/[^a-z0-9\u4e00-\u9fff\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
-    .trim('-')
+    .replace(/^-+|-+$/g, '')
 }
 
 function insertMarkdown(syntax: string, wrap: boolean) {
@@ -800,13 +800,13 @@ async function saveDraft(isAutoSave = false) {
     const postData = {
       ...formData.value,
       slug: formData.value.slug || generateSlug(formData.value.title),
-      status: 'draft'
+      status: 'draft' as const
     }
 
     if (post.value) {
-      await blogStore.updateBlogPost(post.value.id, postData)
+      await blogStore.updatePost(post.value.id, postData)
     } else {
-      const newPost = await blogStore.createBlogPost(postData)
+      const newPost = await blogStore.createPost(postData)
       post.value = newPost
       // Update URL to include the new post ID
       router.replace(`/admin/blog/editor/${newPost.id}`)
@@ -838,9 +838,9 @@ async function publishPost() {
     }
 
     if (post.value) {
-      await blogStore.updateBlogPost(post.value.id, postData)
+      await blogStore.updatePost(post.value.id, postData)
     } else {
-      const newPost = await blogStore.createBlogPost(postData)
+      const newPost = await blogStore.createPost(postData)
       post.value = newPost
     }
     

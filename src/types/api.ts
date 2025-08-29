@@ -43,8 +43,8 @@ export interface Education {
   schoolName: string
   degree: string
   major?: string
-  startYear: number
-  endYear?: number
+  startYear: number | string  // Allow both number and string
+  endYear?: number | string   // Allow both number and string
   isPublic: boolean
   sortOrder: number
   createdAt: string
@@ -164,24 +164,40 @@ export enum TaskStatus {
   Cancelled = 6
 }
 
+// Add string type for compatibility  
+export type TaskStatusString = 'pending' | 'planning' | 'inProgress' | 'testing' | 'completed' | 'onHold' | 'cancelled'
+
 export enum TodoPriority {
   Low = 0,
   Medium = 1,
   High = 2
 }
 
+// Add string type for compatibility
+export type TodoPriorityString = 'low' | 'medium' | 'high'
+
 export interface TodoItem {
   id: number
   userId: number
   title: string
   description?: string
-  status: TaskStatus
+  status: TaskStatus | TaskStatusString
   isCompleted: boolean
-  priority: TodoPriority
+  priority: TodoPriority | TodoPriorityString
   dueDate?: string
   completedAt?: string
   completedDate?: string
   category?: string
+  tags?: string
+  startDate?: string  // Add startDate property
+  estimatedHours?: number  // Add estimated hours
+  actualHours?: number     // Add actual hours
+  isRecurring?: boolean    // Add recurring properties
+  recurringPattern?: string
+  hasReminder?: boolean    // Add reminder properties
+  reminderType?: string
+  reminderTime?: string
+  reminderUnit?: string
   sortOrder: number
   createdAt: string
   updatedAt: string
@@ -201,7 +217,7 @@ export interface WorkTask {
   userId: number
   title: string
   description?: string
-  status: TaskStatus
+  status: TaskStatus | TaskStatusString
   priority: TaskPriority
   startDate?: string
   dueDate?: string
@@ -224,15 +240,22 @@ export interface BlogPost {
   title: string
   content: string
   summary?: string
+  excerpt?: string  // Add excerpt property for editor
   isPublished: boolean
   isPublic: boolean
   publishedAt?: string
   publishedDate?: string
   slug?: string
   featuredImageUrl?: string
+  featuredImage?: string  // Add featuredImage property for compatibility
   tags?: string
   category?: string
   viewCount: number
+  views?: number  // Add views property for compatibility
+  status: 'draft' | 'published' | 'archived'  // Add status property
+  author?: string  // Add author property
+  metaDescription?: string  // Add SEO meta description
+  metaKeywords?: string  // Add SEO meta keywords
   createdAt: string
   updatedAt: string
   user?: User
@@ -250,6 +273,9 @@ export interface GuestBookEntry {
   isPublic: boolean
   ipAddress?: string
   userAgent?: string
+  status: 'pending' | 'approved' | 'rejected' | 'spam'  // Add status property
+  adminReply?: string  // Add admin reply property
+  reports?: number     // Add reports count property
   createdAt: string
   updatedAt: string
   // Additional properties for UI functionality

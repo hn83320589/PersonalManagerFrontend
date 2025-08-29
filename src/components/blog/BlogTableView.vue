@@ -168,13 +168,13 @@
                 @click="$emit('toggle-publish', post)"
                 :class="[
                   'p-1 rounded transition-colors',
-                  post.isPublished ? 'published' : 'draft' === 'published'
+                  (post.isPublished ? 'published' : 'draft') === 'published'
                     ? 'text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50'
                     : 'text-green-600 hover:text-green-700 hover:bg-green-50'
                 ]"
-                :title="post.isPublished ? 'published' : 'draft' === 'published' ? '取消發布' : '發布文章'"
+                :title="(post.isPublished ? 'published' : 'draft') === 'published' ? '取消發布' : '發布文章'"
               >
-                <EyeSlashIcon v-if="post.isPublished ? 'published' : 'draft' === 'published'" class="w-4 h-4" />
+                <EyeSlashIcon v-if="(post.isPublished ? 'published' : 'draft') === 'published'" class="w-4 h-4" />
                 <EyeIcon v-else class="w-4 h-4" />
               </button>
 
@@ -252,13 +252,13 @@ const props = withDefaults(defineProps<Props>(), {
 
 // Emits
 const emit = defineEmits<{
-  toggleSelect: [id: number]
-  toggleSelectAll: []
-  editPost: [post: BlogPost]
-  deletePost: [id: number]
-  duplicatePost: [post: BlogPost]
-  togglePublish: [post: BlogPost]
-  previewPost: [post: BlogPost]
+  'toggle-select': [id: number]
+  'toggle-select-all': []
+  'edit-post': [post: BlogPost]
+  'delete-post': [id: number]
+  'duplicate-post': [post: BlogPost]
+  'toggle-publish': [post: BlogPost]
+  'preview-post': [post: BlogPost]
 }>()
 
 // Computed
