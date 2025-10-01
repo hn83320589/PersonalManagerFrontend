@@ -172,7 +172,13 @@ const router = createRouter({
       component: () => import('../views/admin/SettingsView.vue'),
       meta: { title: '系統設定', requiresAuth: true }
     },
-    
+    {
+      path: '/admin/rbac',
+      name: 'rbac-manage',
+      component: () => import('../views/admin/RbacManageView.vue'),
+      meta: { title: 'RBAC 權限管理', requiresAuth: true }
+    },
+
     // Catch all 404
     {
       path: '/:pathMatch(.*)*',

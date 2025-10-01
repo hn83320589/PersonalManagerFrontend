@@ -261,6 +261,7 @@ import {
 } from '@heroicons/vue/24/outline'
 import type { CalendarEvent, EventType } from '@/types/api'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import { notify } from '@/services/notificationService'
 
 // Props
 interface Props {
@@ -274,6 +275,7 @@ const emit = defineEmits<{
   edit: [event: CalendarEvent]
   delete: [id: number]
   close: []
+  'view-related': [event: CalendarEvent]
 }>()
 
 // State
@@ -427,10 +429,10 @@ ${props.event.description ? `描述: ${props.event.description}` : ''}
 
   try {
     await navigator.clipboard.writeText(details)
-    // TODO: Show success message
-    console.log('事件詳細已複製到剪貼板')
+    notify('複製成功', '事件詳細已複製到剪貼板', 'success')
   } catch (err) {
     console.error('複製失敗:', err)
+    notify('複製失敗', '無法複製到剪貼板，請稍後再試', 'error')
   }
 }
 
@@ -470,12 +472,48 @@ END:VCALENDAR`
 }
 
 function syncToGoogle() {
-  // TODO: Implement Google Calendar sync
-  console.log('同步到 Google Calendar')
+  /**
+   * Google Calendar 同步功能
+   *
+   * 注意：此功能需要實作 Google Calendar API 整合 (Phase 2.3 已規劃)
+   *
+   * 實作步驟：
+   * 1. 引入 googleCalendarService (已存在於 src/services/googleCalendarService.ts)
+   * 2. 使用 googleCalendarService.exportEvent(props.event) 匯出事件
+   * 3. 處理 OAuth 認證流程（如未授權）
+   * 4. 顯示同步進度與結果通知
+   * 5. 處理錯誤情況（網路、授權、衝突等）
+   *
+   * 相關檔案：
+   * - src/services/googleCalendarService.ts
+   * - src/components/admin/GoogleCalendarSync.vue
+   */
+  notify('功能開發中', 'Google Calendar 同步功能開發中，敬請期待', 'info')
+  console.log('同步到 Google Calendar:', props.event)
 }
 
 function viewRelatedEvent(event: CalendarEvent) {
-  // TODO: Implement related event viewing
+  /**
+   * 查看相關事件功能
+   *
+   * 功能說明：顯示與當前事件相關的其他事件
+   *
+   * 實作建議：
+   * 1. 根據以下條件尋找相關事件：
+   *    - 相同的事件類型 (eventType)
+   *    - 相同的標籤 (tags)
+   *    - 時間接近（前後7天內）
+   *    - 相同的地點 (location)
+   * 2. 使用模態視窗或側邊欄顯示相關事件列表
+   * 3. 支援快速切換到相關事件的詳細資訊
+   * 4. 提供「新增為相關事件」的功能
+   *
+   * 資料結構需求：
+   * - CalendarEvent 可能需要新增 relatedEventIds?: number[] 屬性
+   * - 後端 API 需要支援 /api/calendarevents/{id}/related 端點
+   */
   console.log('查看相關事件:', event)
+  // 暫時功能未實作，可使用 emit 事件通知父組件
+  emit('view-related', event)
 }
 </script>

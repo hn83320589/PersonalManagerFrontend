@@ -138,6 +138,10 @@ class HttpService {
     return this.retryRequest(() => this.client.delete<ApiResponse<T>>(url))
   }
 
+  async patch<T>(url: string, data?: any): Promise<ApiResponse<T>> {
+    return this.retryRequest(() => this.client.patch<ApiResponse<T>>(url, data))
+  }
+
   // File upload method
   async uploadFile<T>(url: string, formData: FormData): Promise<ApiResponse<T>> {
     const response = await this.client.post<ApiResponse<T>>(url, formData, {

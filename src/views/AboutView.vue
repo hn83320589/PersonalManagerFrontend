@@ -228,8 +228,29 @@ onMounted(async () => {
       skillStore.fetchSkills(),
     ])
     
-    // TODO: Fetch contact methods when service is available
-    // contactMethods.value = await contactService.getPublicContactMethods()
+    /**
+     * 聯絡方式功能開發規劃
+     *
+     * 注意：contactService 尚未建立，需要實作以下內容：
+     *
+     * 1. 建立 contactService.ts (src/services/contactService.ts)
+     *    - getPublicContactMethods(): Promise<ContactMethod[]>
+     *    - getContactMethodById(id: number): Promise<ContactMethod>
+     *
+     * 2. 建立 contactStore (src/stores/contact.ts) - 如需狀態管理
+     *    - state: contactMethods, loading, error
+     *    - actions: fetchContactMethods, etc.
+     *
+     * 3. 後端 API 端點確認
+     *    - GET /api/contactmethods/public - 獲取公開聯絡方式
+     *
+     * 4. 目前的替代方案
+     *    - ContactView.vue 已有靜態聯絡資訊顯示
+     *    - 可先使用靜態資料，後續再整合 API
+     *
+     * 實作後取消下行註解：
+     * contactMethods.value = await contactService.getPublicContactMethods()
+     */
   } catch (error) {
     console.error('Failed to load about page data:', error)
   } finally {

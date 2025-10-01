@@ -689,15 +689,27 @@ function deleteEventFromDetail(id: number) {
 }
 
 function createEventOnDate(date: Date) {
-  editingEvent.value = null
+  // 建立包含選定日期的部分事件物件，讓表單能自動填入日期
+  editingEvent.value = {
+    startDate: date.toISOString().split('T')[0], // YYYY-MM-DD 格式
+    startTime: '',
+    endDate: '',
+    endTime: '',
+    isAllDay: false
+  } as Partial<CalendarEvent> as CalendarEvent
   showCreateModal.value = true
-  // TODO: Pass selected date to form
 }
 
 function createEventOnDateTime(date: Date, time: string) {
-  editingEvent.value = null
+  // 建立包含選定日期和時間的部分事件物件
+  editingEvent.value = {
+    startDate: date.toISOString().split('T')[0], // YYYY-MM-DD 格式
+    startTime: time, // HH:mm 格式
+    endDate: '',
+    endTime: '',
+    isAllDay: false
+  } as Partial<CalendarEvent> as CalendarEvent
   showCreateModal.value = true
-  // TODO: Pass selected date and time to form
 }
 
 async function confirmDelete() {
