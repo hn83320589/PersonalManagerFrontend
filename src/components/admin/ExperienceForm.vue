@@ -228,7 +228,7 @@
         <BaseTextarea
           id="description"
           v-model="formData.description"
-          rows="4"
+          :rows="4"
           placeholder="請描述主要內容、成就或學習經驗..."
           class="mt-1"
         />
@@ -242,7 +242,7 @@
         <BaseTextarea
           id="achievements"
           v-model="formData.achievements"
-          rows="3"
+          :rows="3"
           placeholder="列出主要成就或重要項目..."
           class="mt-1"
         />

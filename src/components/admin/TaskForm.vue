@@ -230,7 +230,7 @@
             
             <div class="grid grid-cols-2 gap-3">
               <BaseInput
-                v-model="formData.reminderValue"
+                v-model="formData.reminderTime"
                 type="number"
                 min="1"
                 placeholder="數量"
@@ -243,7 +243,7 @@
             </div>
             
             <p class="text-xs text-gray-500">
-              將在到期前 {{ formData.reminderValue || 0 }} {{ getReminderUnitLabel() }} 提醒
+              將在到期前 {{ formData.reminderTime || 0 }} {{ getReminderUnitLabel() }} 提醒
             </p>
           </div>
         </div>
@@ -390,7 +390,7 @@ const formData = ref({
   recurringPattern: '',
   hasReminder: false,
   reminderType: 'notification',
-  reminderValue: 1,
+  reminderTime: '',
   reminderUnit: 'days'
 })
 
@@ -524,7 +524,7 @@ function resetForm() {
     recurringPattern: '',
     hasReminder: false,
     reminderType: 'notification',
-    reminderValue: 1,
+    reminderTime: '',
     reminderUnit: 'days'
   }
 }
@@ -539,13 +539,16 @@ watch(() => props.task, (newTask) => {
       priority: String(newTask.priority) || 'medium',
       category: newTask.category || '',
       tags: '',
-      startDate: newTask.dueDate?.split('T')[0] || '',
+      startDate: newTask.startDate?.split('T')[0] || '',
       dueDate: newTask.dueDate?.split('T')[0] || '',
-      estimatedHours: 0,
-      actualHours: 0,
-      // These properties don't exist in the TodoItem model
-      // isRecurring, recurringPattern, hasReminder, reminderSettings
-      // will be implemented in future updates
+      estimatedHours: newTask.estimatedHours || 0,
+      actualHours: newTask.actualHours || 0,
+      isRecurring: newTask.isRecurring || false,
+      recurringPattern: newTask.recurringPattern || '',
+      hasReminder: newTask.hasReminder || false,
+      reminderType: newTask.reminderType || 'email',
+      reminderTime: newTask.reminderTime || '',
+      reminderUnit: newTask.reminderUnit || 'hours'
     }
   } else {
     resetForm()

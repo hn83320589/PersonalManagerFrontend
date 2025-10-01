@@ -110,7 +110,7 @@ import {
   PencilIcon, 
   TrashIcon 
 } from '@heroicons/vue/24/outline'
-import type { WorkTask, TaskStatus } from '@/types/api'
+import type { WorkTask, TaskStatus, TaskStatusString } from '@/types/api'
 import BaseButton from '@/components/ui/BaseButton.vue'
 
 // Props
@@ -130,30 +130,44 @@ defineEmits<{
 }>()
 
 // Methods
-function getStatusLabel(status: TaskStatus): string {
-  const statusMap = {
+function getStatusLabel(status: TaskStatus | TaskStatusString): string {
+  const statusMap: Record<string, string> = {
     0: '待處理',
     1: '規劃中',
     2: '進行中',
     3: '測試中',
     4: '已完成',
     5: '暫停',
-    6: '已取消'
+    6: '已取消',
+    'pending': '待處理',
+    'planning': '規劃中',
+    'inProgress': '進行中',
+    'testing': '測試中',
+    'completed': '已完成',
+    'onHold': '暫停',
+    'cancelled': '已取消'
   }
-  return statusMap[status] || '未知'
+  return statusMap[status.toString()] || '未知'
 }
 
-function getStatusStyle(status: TaskStatus): string {
-  const styleMap = {
+function getStatusStyle(status: TaskStatus | TaskStatusString): string {
+  const styleMap: Record<string, string> = {
     0: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800',
     1: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800',
     2: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800',
     3: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800',
     4: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800',
     5: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800',
-    6: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800'
+    6: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800',
+    'pending': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800',
+    'planning': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800',
+    'inProgress': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800',
+    'testing': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800',
+    'completed': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800',
+    'onHold': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800',
+    'cancelled': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800'
   }
-  return styleMap[status] || 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800'
+  return styleMap[status.toString()] || 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800'
 }
 
 function formatDate(dateString: string): string {

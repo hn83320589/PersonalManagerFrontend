@@ -178,8 +178,10 @@ const containerClasses = computed(() => {
   if (props.class) {
     if (typeof props.class === 'string') {
       classes.push(props.class)
+    } else if (Array.isArray(props.class)) {
+      classes.push(...props.class)
     } else {
-      classes.push(props.class)
+      classes.push(props.class as Record<string, boolean>)
     }
   }
   

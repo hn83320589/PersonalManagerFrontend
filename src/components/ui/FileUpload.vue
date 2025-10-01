@@ -300,7 +300,7 @@ function handleDragEnter(event: DragEvent) {
 
 function handleDragLeave(event: DragEvent) {
   event.preventDefault()
-  if (!event.currentTarget.contains(event.relatedTarget as Node)) {
+  if (!(event.currentTarget as Element)?.contains(event.relatedTarget as Node)) {
     isDragging.value = false
   }
 }

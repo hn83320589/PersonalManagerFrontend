@@ -32,13 +32,13 @@
             <input
               type="checkbox"
               :checked="selectedTasks.includes(task.id)"
-              @change="$emit('toggle-select', task.id)"
+              @change="$emit('toggleSelect', task.id)"
               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
 
             <!-- Completion Status -->
             <button
-              @click="$emit('toggle-complete', task)"
+              @click="$emit('toggleComplete', task)"
               :class="[
                 'flex items-center justify-center w-5 h-5 rounded border-2 transition-colors',
                 task.status === 'completed'
@@ -134,7 +134,7 @@
             <BaseButton
               variant="outline"
               size="small"
-              @click="$emit('duplicate-task', task)"
+              @click="$emit('duplicateTask', task)"
               title="複製任務"
             >
               <DocumentDuplicateIcon class="w-4 h-4" />
@@ -142,7 +142,7 @@
             <BaseButton
               variant="outline"
               size="small"
-              @click="$emit('edit-task', task)"
+              @click="$emit('editTask', task)"
               title="編輯任務"
             >
               <PencilIcon class="w-4 h-4" />
@@ -150,7 +150,7 @@
             <BaseButton
               variant="outline"
               size="small"
-              @click="$emit('delete-task', task.id)"
+              @click="$emit('deleteTask', task.id)"
               title="刪除任務"
               class="text-red-600 hover:text-red-700"
             >
@@ -210,44 +210,78 @@ const emit = defineEmits<{
 }>()
 
 // Methods
-function getPriorityLabel(priority: string): string {
+function getPriorityLabel(priority: string | number): string {
+  const priorityStr = String(priority)
   const priorityMap = {
     low: '低',
+    '0': '低',
     medium: '中',
+    '1': '中',
     high: '高',
-    urgent: '緊急'
+    '2': '高',
+    urgent: '緊急',
+    '3': '緊急'
   }
-  return priorityMap[priority as keyof typeof priorityMap] || '中'
+  return priorityMap[priorityStr as keyof typeof priorityMap] || '中'
 }
 
-function getPriorityStyle(priority: string): string {
+function getPriorityStyle(priority: string | number): string {
+  const priorityStr = String(priority)
   const styleMap = {
     low: 'px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full',
+    '0': 'px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full',
     medium: 'px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full',
+    '1': 'px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full',
     high: 'px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full',
-    urgent: 'px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full'
+    '2': 'px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full',
+    urgent: 'px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full',
+    '3': 'px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full'
   }
-  return styleMap[priority as keyof typeof styleMap] || styleMap.medium
+  return styleMap[priorityStr as keyof typeof styleMap] || styleMap.medium || styleMap['1']
 }
 
-function getStatusLabel(status: string): string {
+function getStatusLabel(status: string | number): string {
+  const statusStr = String(status)
   const statusMap = {
     pending: '待處理',
+    '0': '待處理',
+    planning: '規劃中',
+    '1': '規劃中',
     in_progress: '進行中',
+    inProgress: '進行中',
+    '2': '進行中',
+    testing: '測試中',
+    '3': '測試中',
     completed: '已完成',
-    cancelled: '已取消'
+    '4': '已完成',
+    onHold: '暫停',
+    '5': '暫停',
+    cancelled: '已取消',
+    '6': '已取消'
   }
-  return statusMap[status as keyof typeof statusMap] || '待處理'
+  return statusMap[statusStr as keyof typeof statusMap] || '待處理'
 }
 
-function getStatusStyle(status: string): string {
+function getStatusStyle(status: string | number): string {
+  const statusStr = String(status)
   const styleMap = {
     pending: 'px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full',
+    '0': 'px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full',
+    planning: 'px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full',
+    '1': 'px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full',
     in_progress: 'px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full',
+    inProgress: 'px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full',
+    '2': 'px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full',
+    testing: 'px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full',
+    '3': 'px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full',
     completed: 'px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full',
-    cancelled: 'px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full'
+    '4': 'px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full',
+    onHold: 'px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full',
+    '5': 'px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full',
+    cancelled: 'px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full',
+    '6': 'px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full'
   }
-  return styleMap[status as keyof typeof styleMap] || styleMap.pending
+  return styleMap[statusStr as keyof typeof styleMap] || styleMap.pending || styleMap['0']
 }
 
 function formatDate(dateString: string | undefined): string {

@@ -129,6 +129,32 @@
               </router-link>
             </div>
           </div>
+
+          <!-- System Management -->
+          <div class="mt-6">
+            <h3 class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              系統管理
+            </h3>
+            <div class="mt-2 space-y-1">
+              <router-link
+                to="/admin/files"
+                class="nav-link"
+                active-class="nav-link-active"
+              >
+                <FolderIcon class="nav-icon" />
+                檔案管理
+              </router-link>
+
+              <router-link
+                to="/admin/settings"
+                class="nav-link"
+                active-class="nav-link-active"
+              >
+                <Cog6ToothIcon class="nav-icon" />
+                系統設定
+              </router-link>
+            </div>
+          </div>
         </nav>
 
         <!-- User Info & Logout -->
@@ -242,6 +268,8 @@ import {
   CalendarDaysIcon,
   CheckCircleIcon,
   ClockIcon,
+  FolderIcon,
+  Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
   Bars3Icon,
   XMarkIcon,
@@ -278,7 +306,11 @@ async function handleLogout() {
 
 <style scoped>
 .nav-link {
-  @apply group w-full flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors duration-150;
+  @apply w-full flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors duration-150;
+}
+
+.nav-link.group {
+  /* 如果需要 group 功能，在模板中直接添加 class="group" */
 }
 
 .nav-link-active {

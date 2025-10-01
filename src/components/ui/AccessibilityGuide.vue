@@ -150,7 +150,7 @@
                   highContrastDemo ? 'bg-blue-600' : 'bg-gray-200'
                 ]"
                 role="switch"
-                :aria-checked="highContrastDemo.toString()"
+                :aria-checked="highContrastDemo"
               >
                 <span
                   :class="[
@@ -356,7 +356,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import {
-  KeyboardIcon,
+  CommandLineIcon,
   SpeakerWaveIcon,
   EyeIcon,
   ComputerDesktopIcon,
@@ -376,7 +376,7 @@ const sections = [
     id: 'keyboard-navigation',
     title: '鍵盤導航',
     description: '了解如何使用鍵盤操作網站',
-    icon: KeyboardIcon
+    icon: CommandLineIcon
   },
   {
     id: 'screen-reader',

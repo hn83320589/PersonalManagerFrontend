@@ -36,7 +36,7 @@
               'border-l-4 border-l-red-500': isOverdue(task),
               'border-l-4 border-l-yellow-500': isDueSoon(task) && !isOverdue(task)
             }"
-            @click="$emit('edit-task', task)"
+            @click="$emit('editTask', task)"
           >
             <!-- Task Header -->
             <div class="flex items-start justify-between mb-3">
@@ -45,7 +45,7 @@
               </h4>
               <div class="flex items-center space-x-1 ml-2">
                 <button
-                  @click.stop="$emit('toggle-complete', task)"
+                  @click.stop="$emit('toggleComplete', task)"
                   :class="[
                     'flex items-center justify-center w-5 h-5 rounded border-2 transition-colors',
                     task.status === 'completed'
@@ -67,8 +67,8 @@
             <div class="space-y-2">
               <!-- Priority and Category -->
               <div class="flex items-center space-x-2">
-                <span :class="getPriorityStyle(task.priority)">
-                  {{ getPriorityLabel(task.priority) }}
+                <span :class="getPriorityStyle(String(task.priority))">
+                  {{ getPriorityLabel(String(task.priority)) }}
                 </span>
                 <span v-if="task.category" class="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
                   {{ task.category }}
@@ -123,14 +123,14 @@
                 
                 <div class="flex items-center space-x-1">
                   <button
-                    @click.stop="$emit('edit-task', task)"
+                    @click.stop="$emit('editTask', task)"
                     class="p-1 text-gray-400 hover:text-gray-600 transition-colors"
                     title="編輯"
                   >
                     <PencilIcon class="w-3 h-3" />
                   </button>
                   <button
-                    @click.stop="$emit('delete-task', task.id)"
+                    @click.stop="$emit('deleteTask', task.id)"
                     class="p-1 text-gray-400 hover:text-red-600 transition-colors"
                     title="刪除"
                   >
@@ -221,7 +221,7 @@ function getTasksForStatus(status: string): TodoItem[] {
 }
 
 function moveTaskTo(task: TodoItem, newStatus: string) {
-  emit('move-task', task.id, newStatus)
+  emit('moveTask', task.id, newStatus)
 }
 
 function getNextStatus(currentStatus: string): string {

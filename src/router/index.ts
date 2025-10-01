@@ -160,6 +160,18 @@ const router = createRouter({
       component: () => import('../views/admin/CommentManageView.vue'),
       meta: { title: '留言管理', requiresAuth: true }
     },
+    {
+      path: '/admin/files',
+      name: 'file-manage',
+      component: () => import('../views/admin/FileManageView.vue'),
+      meta: { title: '檔案管理', requiresAuth: true }
+    },
+    {
+      path: '/admin/settings',
+      name: 'settings',
+      component: () => import('../views/admin/SettingsView.vue'),
+      meta: { title: '系統設定', requiresAuth: true }
+    },
     
     // Catch all 404
     {

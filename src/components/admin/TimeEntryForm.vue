@@ -255,7 +255,7 @@ import {
   MagnifyingGlassIcon,
   ChevronRightIcon
 } from '@heroicons/vue/24/outline'
-import type { WorkTask, TaskStatus } from '@/types/api'
+import type { WorkTask, TaskStatus, TaskStatusString } from '@/types/api'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseTextarea from '@/components/ui/BaseTextarea.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
@@ -405,8 +405,23 @@ function unlinkTask() {
   formData.value.taskId = undefined
 }
 
-function getStatusLabel(status: TaskStatus): string {
-  const statusMap = {
+function getStatusLabel(status: TaskStatus | TaskStatusString): string {
+  // Convert string status to enum value for consistent mapping
+  let statusNum = status
+  if (typeof status === 'string') {
+    const statusMap: Record<string, number> = {
+      'pending': 0,
+      'planning': 1, 
+      'inProgress': 2,
+      'testing': 3,
+      'completed': 4,
+      'onHold': 5,
+      'cancelled': 6
+    }
+    statusNum = statusMap[status] || 0
+  }
+  
+  const labelMap = {
     0: '待處理',
     1: '規劃中', 
     2: '進行中',
@@ -415,10 +430,25 @@ function getStatusLabel(status: TaskStatus): string {
     5: '暫停',
     6: '已取消'
   }
-  return statusMap[status] || '未知'
+  return labelMap[statusNum] || '未知'
 }
 
-function getStatusStyle(status: TaskStatus): string {
+function getStatusStyle(status: TaskStatus | TaskStatusString): string {
+  // Convert string status to enum value for consistent mapping
+  let statusNum = status
+  if (typeof status === 'string') {
+    const statusMap: Record<string, number> = {
+      'pending': 0,
+      'planning': 1, 
+      'inProgress': 2,
+      'testing': 3,
+      'completed': 4,
+      'onHold': 5,
+      'cancelled': 6
+    }
+    statusNum = statusMap[status] || 0
+  }
+  
   const styleMap = {
     0: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800',
     1: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800',
@@ -428,7 +458,7 @@ function getStatusStyle(status: TaskStatus): string {
     5: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800',
     6: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800'
   }
-  return styleMap[status] || 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800'
+  return styleMap[statusNum] || 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800'
 }
 
 function handleSubmit() {

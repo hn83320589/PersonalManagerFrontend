@@ -223,20 +223,21 @@ const preloading = ref(false)
 const {
   triggerRef,
   loading: infiniteLoading,
-  resetObserver,
-  setup,
-  cleanup
+  finished,
+  error,
+  load,
+  reset,
+  checkIfNearBottom
 } = useInfiniteScroll(
   async () => {
     if (!props.manualMode) {
       emit('loadMore')
     }
+    return [] // 返回空數組，因為實際數據由父組件管理
   },
   {
     threshold: props.threshold,
-    enabled: computed(() => props.enabled && !props.manualMode),
-    hasMore: computed(() => props.hasMore && !props.finished),
-    loading: computed(() => props.loading)
+    enabled: props.enabled && !props.manualMode
   }
 )
 
@@ -250,15 +251,15 @@ const handleLoadMore = () => {
 // 重試
 const retry = () => {
   emit('retry')
-  resetObserver()
+  reset()
 }
 
 // 監聽 enabled 變化
 watch(() => props.enabled, (enabled) => {
   if (enabled) {
-    setup()
+    load()
   } else {
-    cleanup()
+    // 清理邏輯由 composable 內部處理
   }
 })
 
@@ -271,7 +272,8 @@ watch(() => props.threshold, () => {
 // 導出方法
 defineExpose({
   retry,
-  resetObserver,
+  reset,
+  load,
   triggerRef
 })
 </script>

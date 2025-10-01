@@ -146,7 +146,7 @@
                         -
                         {{ education.endYear || 'Present' }}
                         <span v-if="education.endYear" class="ml-2 text-gray-500">
-                          ({{ education.endYear - education.startYear }} years)
+                          ({{ Number(education.endYear) - Number(education.startYear) }} years)
                         </span>
                       </div>
                     </div>

@@ -2,7 +2,7 @@
   <div 
     ref="containerRef"
     class="virtual-list-container"
-    :style="containerStyle"
+    :style="containerStyle as any"
     @scroll="handleScroll"
   >
     <!-- 上方填充區域 -->
@@ -15,7 +15,7 @@
     <!-- 可見項目 -->
     <div
       v-for="{ item, index, style } in visibleItems"
-      :key="getItemKey ? getItemKey(item, index) : index"
+      :key="getItemKey ? getItemKey(item as T, index) : index"
       :style="style"
       class="virtual-list-item"
       :data-index="index"
@@ -170,38 +170,50 @@ const emit = defineEmits<{
 // 使用虛擬滾動
 const itemsRef = computed(() => props.items)
 
-const {
-  containerRef,
-  visibleItems,
-  visibleRange,
-  totalHeight,
-  visibleCount,
-  scrollTop,
-  isScrolling,
-  scrollToItem,
-  scrollToTop,
-  scrollToBottom
-} = useVirtualScroll(itemsRef, {
+const virtualScrollResult = useVirtualScroll(itemsRef.value, {
   itemHeight: props.itemHeight,
   containerHeight: props.containerHeight,
   buffer: props.buffer,
   threshold: props.threshold
 })
 
+// 解構使用的屬性和方法
+const {
+  containerRef,
+  visibleItems,
+  totalHeight,
+  visibleCount,
+  scrollTop,
+  isScrolling,
+  scrollToItem,
+  scrollToTop,
+  scrollToBottom,
+  getVisibleRange
+} = virtualScrollResult
+
+// 創建計算屬性來提供 visibleRange
+const visibleRange = computed(() => {
+  const range = getVisibleRange()
+  return {
+    offsetBefore: range.start * props.itemHeight,
+    offsetAfter: Math.max(0, (props.items.length - range.end - 1) * props.itemHeight)
+  }
+})
+
 // 使用無限滾動
 const {
   triggerRef,
   loading: infiniteLoading,
-  resetObserver
+  reset
 } = useInfiniteScroll(
   async () => {
     emit('loadMore')
+    return []
   },
   {
     threshold: props.threshold,
-    enabled: computed(() => props.hasMore),
-    hasMore: computed(() => props.hasMore && !props.finished),
-    loading: computed(() => props.loading)
+    enabled: props.hasMore && !props.finished,
+    rootMargin: '100px 0px'
   }
 )
 
@@ -250,7 +262,7 @@ defineExpose({
   scrollToItem,
   scrollToTop,
   scrollToBottom,
-  resetObserver,
+  reset,
   containerRef,
   visibleRange,
   visibleItems

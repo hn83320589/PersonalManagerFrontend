@@ -21,7 +21,7 @@
         <button
           type="button"
           @click="toggleHighContrast"
-          :aria-pressed="settings.highContrast.toString()"
+          :aria-pressed="settings.highContrast"
           class="px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 rounded transition-colors"
           title="切換高對比度模式"
         >
@@ -58,7 +58,7 @@
         <button
           type="button"
           @click="toggleReducedMotion"
-          :aria-pressed="settings.reducedMotion.toString()"
+          :aria-pressed="settings.reducedMotion"
           class="px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 rounded transition-colors"
           title="切換減少動畫效果"
         >
@@ -71,7 +71,7 @@
         <button
           type="button"
           @click="showSettings = !showSettings"
-          :aria-expanded="showSettings.toString()"
+          :aria-expanded="showSettings"
           class="px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 rounded transition-colors"
           aria-controls="accessibility-settings-panel"
         >
@@ -221,6 +221,7 @@ const isKeyboardNavigation = ref(false)
 const currentFocusedElement = ref<string>('')
 const currentAriaLabel = ref<string>('')
 const currentRole = ref<string>('')
+const testMode = ref(false)
 
 // 設定狀態
 const settings = reactive<AccessibilitySettings>({

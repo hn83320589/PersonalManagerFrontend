@@ -256,7 +256,7 @@ function handleDragEnter(event: DragEvent) {
 
 function handleDragLeave(event: DragEvent) {
   event.preventDefault()
-  if (!event.currentTarget.contains(event.relatedTarget as Node)) {
+  if (!(event.currentTarget as Element)?.contains(event.relatedTarget as Node)) {
     isDragging.value = false
   }
 }
@@ -350,7 +350,7 @@ async function initCropper() {
   
   try {
     // 動態導入 cropperjs
-    const Cropper = (await import('cropperjs')).default
+    const Cropper = (await import('cropperjs' as any)).default
     
     cropper = new Cropper(cropImage.value, {
       aspectRatio: cropAspectRatio.value || undefined,

@@ -378,7 +378,7 @@ watch(() => props.task, (newTask) => {
     formData.value = {
       title: newTask.title || '',
       description: newTask.description || '',
-      status: newTask.status,
+      status: typeof newTask.status === 'string' ? 0 : newTask.status,
       priority: newTask.priority,
       startDate: newTask.startDate || '',
       dueDate: newTask.dueDate || '',

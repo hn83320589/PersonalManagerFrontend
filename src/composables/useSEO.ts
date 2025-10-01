@@ -390,9 +390,9 @@ export function useSEOPerformance() {
 
   const reportToGoogleAnalytics = (metrics: any) => {
     // 發送 Core Web Vitals 到 Google Analytics
-    if (window.gtag) {
+    if ((window as any).gtag) {
       Object.entries(metrics).forEach(([metric, value]) => {
-        window.gtag('event', metric, {
+        (window as any).gtag('event', metric, {
           event_category: 'Web Vitals',
           value: Math.round(value as number),
           non_interaction: true

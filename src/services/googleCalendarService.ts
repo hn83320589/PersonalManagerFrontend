@@ -159,11 +159,11 @@ export class GoogleCalendarService {
   async initialize(): Promise<boolean> {
     try {
       // 載入 Google API 腳本
-      if (!window.gapi) {
+      if (!(window as any).gapi) {
         await this.loadGoogleAPI()
       }
 
-      this.gapi = window.gapi
+      this.gapi = (window as any).gapi
 
       // 初始化 API
       await new Promise((resolve, reject) => {

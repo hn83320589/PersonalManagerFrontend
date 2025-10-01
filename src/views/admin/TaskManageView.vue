@@ -439,11 +439,11 @@ const filteredAndSortedTasks = computed(() => {
         if (!b.dueDate) return -1
         return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
       case 'priority':
-        return a.priority - b.priority
+        return Number(a.priority) - Number(b.priority)
       case 'title':
         return a.title.localeCompare(b.title)
       case 'status':
-        return a.status - b.status
+        return Number(a.status) - Number(b.status)
       default:
         return 0
     }
@@ -531,7 +531,7 @@ async function batchUpdateStatus(status: string) {
     await Promise.all(
       selectedTasks.value.map(taskId =>
         taskStore.updateTodo(taskId, {
-          status,
+          status: status as any,
           completedAt: status === 'completed' ? new Date().toISOString() : undefined
         })
       )
@@ -547,7 +547,7 @@ async function batchUpdatePriority(priority: string) {
   try {
     await Promise.all(
       selectedTasks.value.map(taskId =>
-        taskStore.updateTodo(taskId, { priority })
+        taskStore.updateTodo(taskId, { priority: priority as any })
       )
     )
     selectedTasks.value = []

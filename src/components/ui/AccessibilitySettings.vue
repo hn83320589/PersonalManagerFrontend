@@ -24,7 +24,7 @@
           id="high-contrast-toggle"
           type="button"
           role="switch"
-          :aria-checked="highContrast.toString()"
+          :aria-checked="highContrast"
           :class="[
             'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
             highContrast ? 'bg-blue-600' : 'bg-gray-200'
@@ -62,7 +62,7 @@
           id="reduced-motion-toggle"
           type="button"
           role="switch"
-          :aria-checked="reducedMotion.toString()"
+          :aria-checked="reducedMotion"
           :class="[
             'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
             reducedMotion ? 'bg-blue-600' : 'bg-gray-200'
@@ -100,7 +100,7 @@
           id="focus-ring-toggle"
           type="button"
           role="switch"
-          :aria-checked="focusVisible.toString()"
+          :aria-checked="focusVisible"
           :class="[
             'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
             focusVisible ? 'bg-blue-600' : 'bg-gray-200'

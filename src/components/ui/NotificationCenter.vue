@@ -5,7 +5,7 @@
       <button
         type="button"
         @click="togglePanel"
-        :aria-expanded="showPanel.toString()"
+        :aria-expanded="showPanel"
         aria-controls="notification-panel"
         class="relative p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
         :title="`通知中心 (${unreadCount} 個未讀)`"
@@ -344,15 +344,16 @@
     </Teleport>
 
     <!-- 通知設定模態 -->
-    <NotificationSettings
+    <!-- <NotificationSettings
       v-if="showSettings"
       @close="showSettings = false"
       @save="handleSettingsUpdate"
-    />
+    /> -->
+    <!-- 通知設定組件暫未實作 -->
 
     <!-- 清空確認對話框 -->
     <BaseDialog
-      v-if="showClearConfirm"
+      :show="showClearConfirm"
       title="清空所有通知"
       message="這將永久刪除所有通知，此操作無法復原。您確定要繼續嗎？"
       confirm-text="清空"
@@ -378,7 +379,7 @@ import {
   XCircleIcon
 } from '@heroicons/vue/24/outline'
 import { useNotifications, type Notification, type NotificationConfig } from '@/services/notificationService'
-import NotificationSettings from './NotificationSettings.vue'
+// import NotificationSettings from './NotificationSettings.vue' // 組件暫未實作
 import BaseDialog from './BaseDialog.vue'
 
 // 服務實例

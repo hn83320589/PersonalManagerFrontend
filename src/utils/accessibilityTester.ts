@@ -160,7 +160,7 @@ export class AccessibilityTester {
           type: 'error',
           rule: 'heading-order',
           message: `標題層級跳躍：從 H${previousLevel} 直接跳到 H${level}`,
-          element: heading,
+          element: heading as HTMLElement,
           severity: 'serious',
           wcagLevel: 'AA',
           wcagCriteria: '1.3.1'
@@ -173,7 +173,7 @@ export class AccessibilityTester {
           type: 'error',
           rule: 'empty-heading',
           message: '標題不能為空',
-          element: heading,
+          element: heading as HTMLElement,
           severity: 'serious',
           wcagLevel: 'A',
           wcagCriteria: '1.3.1'
@@ -573,7 +573,7 @@ export class AccessibilityTester {
           type: 'warning',
           rule: 'empty-list',
           message: '列表不應該為空',
-          element: list,
+          element: list as HTMLElement,
           severity: 'minor',
           wcagLevel: 'A',
           wcagCriteria: '1.3.1'

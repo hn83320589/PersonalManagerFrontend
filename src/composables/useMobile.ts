@@ -276,11 +276,14 @@ export function useMobile() {
     let touchScale = 1
 
     const handleTouchStart = (event: Event) => {
-      const touch = (event as TouchEvent).touches[0]
+      const touchEvent = event as any
+      if (!touchEvent.touches || touchEvent.touches.length === 0) return
+      
+      const touch = touchEvent.touches[0]
       touchStartTime = Date.now()
       touchStartPos = { x: touch.clientX, y: touch.clientY }
       
-      if (recognizer.options.preventZoom && (event as TouchEvent).touches.length > 1) {
+      if (recognizer.options.preventZoom && touchEvent.touches.length > 1) {
         event.preventDefault()
       }
 
@@ -304,13 +307,16 @@ export function useMobile() {
         longPressTimer = null
       }
 
-      const touch = (event as TouchEvent).touches[0]
+      const touchEvent = event as any
+      if (!touchEvent.touches || touchEvent.touches.length === 0) return
+      
+      const touch = touchEvent.touches[0]
       touchEndPos = { x: touch.clientX, y: touch.clientY }
 
       // 捏合手勢檢測
-      if ((event as TouchEvent).touches.length === 2 && config.gestures.pinchZoomEnabled) {
-        const touch1 = (event as TouchEvent).touches[0]
-        const touch2 = (event as TouchEvent).touches[1]
+      if (touchEvent.touches.length === 2 && config.gestures.pinchZoomEnabled) {
+        const touch1 = touchEvent.touches[0]
+        const touch2 = touchEvent.touches[1]
         const distance = Math.sqrt(
           Math.pow(touch2.clientX - touch1.clientX, 2) + 
           Math.pow(touch2.clientY - touch1.clientY, 2)
@@ -583,7 +589,7 @@ export function useMobile() {
   const lockOrientation = async (orientation: 'portrait' | 'landscape') => {
     try {
       if ('orientation' in screen && 'lock' in screen.orientation) {
-        await screen.orientation.lock(orientation)
+        await (screen.orientation as any).lock(orientation)
         config.ui.orientation = orientation
       }
     } catch (error) {
@@ -604,7 +610,7 @@ export function useMobile() {
   // 清理函數
   const cleanup = () => {
     gestureRecognizers.value.forEach(recognizer => {
-      if (recognizer.stopListening) {
+      if ((recognizer as any).stopListening) {
         (recognizer as any).stopListening()
       }
     })

@@ -57,11 +57,11 @@ class FileService {
       }
     })
 
-    return httpService.post(`${this.baseUrl}/upload`, formData, {
+    return (httpService as any).post(`${this.baseUrl}/upload`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       },
-      onUploadProgress: (progressEvent) => {
+      onUploadProgress: (progressEvent: any) => {
         if (onProgress && progressEvent.total) {
           const loaded = progressEvent.loaded
           const total = progressEvent.total

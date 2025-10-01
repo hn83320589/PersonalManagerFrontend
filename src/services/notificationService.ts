@@ -512,8 +512,9 @@ export class NotificationService {
       title,
       message,
       source: 'system',
+      persistent: false,
       ...overrides
-    })
+    } as any)
   }
 
   /**
@@ -596,7 +597,7 @@ export class NotificationService {
    * 顯示瀏覽器通知
    */
   private showBrowserNotification(notification: Notification): void {
-    const options: NotificationOptions = {
+    const options: any = {
       body: notification.message,
       icon: notification.icon || '/favicon.ico',
       image: notification.image,

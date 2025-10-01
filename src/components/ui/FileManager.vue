@@ -384,10 +384,10 @@ const previewFile = ref<FileUploadResponse | null>(null)
 
 // Table columns
 const tableColumns = [
-  { key: 'fileName', label: '檔案名稱', sortable: true },
-  { key: 'fileSize', label: '大小', sortable: true },
-  { key: 'createdAt', label: '上傳時間', sortable: true },
-  { key: 'actions', label: '操作', width: '120px' }
+  { key: 'fileName', title: '檔案名稱', sortable: true },
+  { key: 'fileSize', title: '大小', sortable: true },
+  { key: 'createdAt', title: '上傳時間', sortable: true },
+  { key: 'actions', title: '操作', width: '120px' }
 ]
 
 // Computed

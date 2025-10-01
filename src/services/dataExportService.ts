@@ -827,7 +827,7 @@ export class DataExportService {
       filtered = filtered.map(item => {
         const filteredItem: any = {}
         for (const field of options.fields!) {
-          if (field in item) {
+          if (field in (item as object)) {
             filteredItem[field] = (item as any)[field]
           }
         }

@@ -166,7 +166,7 @@
                 syncSettings.autoSync ? 'bg-blue-600' : 'bg-gray-200'
               ]"
               role="switch"
-              :aria-checked="syncSettings.autoSync.toString()"
+              :aria-checked="syncSettings.autoSync"
             >
               <span
                 :class="[
@@ -349,7 +349,7 @@
 
     <!-- 同步歷史模態 -->
     <BaseModal
-      v-if="showSyncHistory"
+      :show="showSyncHistory"
       @close="showSyncHistory = false"
       title="同步歷史"
       size="large"
@@ -362,7 +362,7 @@
         >
           <div class="flex items-center justify-between mb-2">
             <div class="font-medium text-gray-900 dark:text-gray-100">
-              {{ formatDateTime(history.timestamp) }}
+              {{ formatDateTime((history as any).timestamp || (history as any).createdAt || new Date().toISOString()) }}
             </div>
             <div
               :class="[

@@ -452,9 +452,14 @@ watch(
   }
 )
 
+// Extended HTMLElement for click outside
+interface ExtendedHTMLElement extends HTMLElement {
+  _clickOutside?: (event: Event) => void
+}
+
 // Click outside directive
 const vClickOutside = {
-  mounted(el: HTMLElement, binding: any) {
+  mounted(el: ExtendedHTMLElement, binding: any) {
     el._clickOutside = (event: Event) => {
       if (!(el === event.target || el.contains(event.target as Node))) {
         binding.value()
@@ -462,8 +467,10 @@ const vClickOutside = {
     }
     document.addEventListener('click', el._clickOutside)
   },
-  unmounted(el: HTMLElement) {
-    document.removeEventListener('click', el._clickOutside)
+  unmounted(el: ExtendedHTMLElement) {
+    if (el._clickOutside) {
+      document.removeEventListener('click', el._clickOutside)
+    }
   }
 }
 

@@ -36,19 +36,19 @@
             <input
               type="checkbox"
               :checked="selectedTasks.includes(task.id)"
-              @change="$emit('toggle-select', task.id)"
+              @change="$emit('toggleSelect', task.id)"
               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
 
             <!-- Priority Badge -->
-            <span :class="getPriorityStyle(task.priority)">
-              {{ getPriorityLabel(task.priority) }}
+            <span :class="getPriorityStyle(String(task.priority))">
+              {{ getPriorityLabel(String(task.priority)) }}
             </span>
           </div>
 
           <!-- Completion Toggle -->
           <button
-            @click="$emit('toggle-complete', task)"
+            @click="$emit('toggleComplete', task)"
             :class="[
               'flex items-center justify-center w-6 h-6 rounded border-2 transition-colors',
               task.status === 'completed'
@@ -118,15 +118,15 @@
 
           <!-- Status Badge -->
           <div class="flex justify-between items-center">
-            <span :class="getStatusStyle(task.status)">
-              {{ getStatusLabel(task.status) }}
+            <span :class="getStatusStyle(String(task.status))">
+              {{ getStatusLabel(String(task.status)) }}
             </span>
 
             <div class="flex items-center space-x-1">
               <BaseButton
                 variant="outline"
                 size="small"
-                @click="$emit('duplicate-task', task)"
+                @click="$emit('duplicateTask', task)"
                 title="複製"
               >
                 <DocumentDuplicateIcon class="w-4 h-4" />
@@ -134,7 +134,7 @@
               <BaseButton
                 variant="outline"
                 size="small"
-                @click="$emit('edit-task', task)"
+                @click="$emit('editTask', task)"
                 title="編輯"
               >
                 <PencilIcon class="w-4 h-4" />
@@ -142,7 +142,7 @@
               <BaseButton
                 variant="outline"
                 size="small"
-                @click="$emit('delete-task', task.id)"
+                @click="$emit('deleteTask', task.id)"
                 title="刪除"
                 class="text-red-600 hover:text-red-700"
               >

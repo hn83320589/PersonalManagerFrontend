@@ -1,6 +1,6 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { PerformanceMonitor } from '@/utils/performance'
-import { imageOptimizer } from '@/utils/imageOptimization'
+import { ImageOptimizer } from '@/utils/imageOptimization'
 
 /**
  * 性能優化 Composable
@@ -115,7 +115,7 @@ export function usePerformance() {
  */
 export function useImageOptimization() {
   const isWebPSupported = ref(false)
-  const optimizer = imageOptimizer
+  const optimizer = new ImageOptimizer()
 
   onMounted(async () => {
     isWebPSupported.value = optimizer.supportsWebP()
