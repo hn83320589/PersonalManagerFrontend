@@ -10,8 +10,8 @@ export const useCommentStore = defineStore('comment', () => {
   const error = ref<string | null>(null)
 
   // Getters
-  const publicEntries = computed(() => 
-    entries.value.filter(entry => entry.isPublic && entry.isApproved)
+  const publicEntries = computed(() =>
+    entries.value.filter(entry => entry.isApproved)
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   )
 
@@ -23,17 +23,17 @@ export const useCommentStore = defineStore('comment', () => {
     entries.value.filter(entry => entry.isApproved)
   )
 
-  const topLevelEntries = computed(() => 
-    publicEntries.value.filter(entry => !entry.parentId)
+  const topLevelEntries = computed(() =>
+    publicEntries.value
   )
 
   const recentEntries = computed(() => 
     publicEntries.value.slice(0, 10)
   )
 
-  // Helper function to get replies for a specific entry
-  const getRepliesForEntry = (entryId: number) => {
-    return publicEntries.value.filter(entry => entry.parentId === entryId)
+  // Helper function - no longer applicable since parentId was removed
+  const getRepliesForEntry = (_entryId: number) => {
+    return [] as GuestBookEntry[]
   }
 
   // Actions
@@ -99,9 +99,8 @@ export const useCommentStore = defineStore('comment', () => {
     }
   }
 
-  async function createReply(parentId: number, entryData: Partial<GuestBookEntry>) {
-    const replyData = { ...entryData, parentId }
-    return await createEntry(replyData)
+  async function createReply(_parentId: number, entryData: Partial<GuestBookEntry>) {
+    return await createEntry(entryData)
   }
 
   async function updateEntry(id: number, entryData: Partial<GuestBookEntry>) {
@@ -128,10 +127,10 @@ export const useCommentStore = defineStore('comment', () => {
     return await updateEntry(id, { isApproved: false })
   }
 
-  async function toggleEntryVisibility(id: number) {
+  async function toggleEntryApproval(id: number) {
     const entry = entries.value.find(e => e.id === id)
     if (entry) {
-      return await updateEntry(id, { isPublic: !entry.isPublic })
+      return await updateEntry(id, { isApproved: !entry.isApproved })
     }
     return null
   }
@@ -196,7 +195,7 @@ export const useCommentStore = defineStore('comment', () => {
     updateEntry,
     approveEntry,
     rejectEntry,
-    toggleEntryVisibility,
+    toggleEntryApproval,
     deleteEntry,
     moderateEntry,
     clearError,

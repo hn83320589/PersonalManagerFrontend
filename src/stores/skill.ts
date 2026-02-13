@@ -28,19 +28,21 @@ export const useSkillStore = defineStore('skill', () => {
 
   const skillsByLevel = computed(() => {
     const levels: Record<SkillLevel, Skill[]> = {
-      [0]: [], // Beginner
-      [1]: [], // Intermediate
-      [2]: [], // Advanced
-      [3]: []  // Expert
+      'Beginner': [],
+      'Intermediate': [],
+      'Advanced': [],
+      'Expert': []
     }
     publicSkills.value.forEach(skill => {
-      levels[skill.level].push(skill)
+      if (levels[skill.level]) {
+        levels[skill.level].push(skill)
+      }
     })
     return levels
   })
 
-  const expertSkills = computed(() => 
-    publicSkills.value.filter(skill => skill.level === 3) // Expert
+  const expertSkills = computed(() =>
+    publicSkills.value.filter(skill => skill.level === 'Expert')
   )
 
   // Actions

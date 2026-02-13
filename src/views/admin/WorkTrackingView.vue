@@ -345,7 +345,7 @@ import {
   DocumentChartBarIcon
 } from '@heroicons/vue/24/outline'
 import { useTaskStore } from '@/stores/task'
-import type { WorkTask, TaskStatus, TaskPriority } from '@/types/api'
+import type { WorkTask, WorkTaskStatus, WorkTaskPriority } from '@/types/api'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
@@ -364,8 +364,8 @@ const taskStore = useTaskStore()
 // State
 const searchQuery = ref('')
 const selectedProject = ref('')
-const selectedStatus = ref<TaskStatus | ''>('')
-const selectedPriority = ref<TaskPriority | ''>('')
+const selectedStatus = ref<WorkTaskStatus | ''>('')
+const selectedPriority = ref<WorkTaskPriority | ''>('')
 const currentView = ref<'tasks' | 'projects' | 'timesheet' | 'reports'>('tasks')
 const dateRange = ref({
   start: new Date().toISOString().split('T')[0],
@@ -403,20 +403,20 @@ const workViews = [
 ]
 
 const taskStatuses = [
-  { value: 0, label: '待處理' },
-  { value: 1, label: '規劃中' },
-  { value: 2, label: '進行中' },
-  { value: 3, label: '測試中' },
-  { value: 4, label: '已完成' },
-  { value: 5, label: '暫停' },
-  { value: 6, label: '已取消' }
+  { value: 'Pending', label: '待處理' },
+  { value: 'Planning', label: '規劃中' },
+  { value: 'InProgress', label: '進行中' },
+  { value: 'Testing', label: '測試中' },
+  { value: 'Completed', label: '已完成' },
+  { value: 'OnHold', label: '暫停' },
+  { value: 'Cancelled', label: '已取消' }
 ]
 
 const taskPriorities = [
-  { value: 0, label: '低' },
-  { value: 1, label: '中' },
-  { value: 2, label: '高' },
-  { value: 3, label: '緊急' }
+  { value: 'Low', label: '低' },
+  { value: 'Medium', label: '中' },
+  { value: 'High', label: '高' },
+  { value: 'Urgent', label: '緊急' }
 ]
 
 // Computed
@@ -438,13 +438,13 @@ const todayWorkedHours = computed(() => {
 })
 
 const completedTasksCount = computed(() => {
-  return tasks.value.filter(task => task.status === 4).length
+  return tasks.value.filter(task => task.status === 'Completed').length
 })
 
 const overdueTasks = computed(() => {
   const now = new Date()
   return tasks.value.filter(task => 
-    task.dueDate && new Date(task.dueDate) < now && task.status !== 4
+    task.dueDate && new Date(task.dueDate) < now && task.status !== 'Completed'
   )
 })
 
@@ -483,7 +483,8 @@ const filteredTasks = computed(() => {
   return filtered.sort((a, b) => {
     // Sort by priority, then by due date
     if (a.priority !== b.priority) {
-      return b.priority - a.priority
+      const priorityOrder: Record<string, number> = { 'Urgent': 4, 'High': 3, 'Medium': 2, 'Low': 1 }
+      return (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0)
     }
     if (a.dueDate && b.dueDate) {
       return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
@@ -495,7 +496,7 @@ const filteredTasks = computed(() => {
 const projectStats = computed(() => {
   return projects.value.map(project => {
     const projectTasks = tasks.value.filter(task => task.project === project)
-    const completedTasks = projectTasks.filter(task => task.status === 4)
+    const completedTasks = projectTasks.filter(task => task.status === 'Completed')
     const totalHours = projectTasks.reduce((sum, task) => sum + (task.actualHours || 0), 0)
     const estimatedHours = projectTasks.reduce((sum, task) => sum + (task.estimatedHours || 0), 0)
     
@@ -638,10 +639,10 @@ function deleteTimeEntry(id: number) {
 }
 
 async function toggleTaskComplete(task: WorkTask) {
-  const newStatus = task.status === 4 ? 2 : 4 // Toggle between InProgress and Completed
+  const newStatus: WorkTaskStatus = task.status === 'Completed' ? 'InProgress' : 'Completed'
   await taskStore.updateWorkTask(task.id, {
     status: newStatus,
-    completedAt: newStatus === 4 ? new Date().toISOString() : undefined
+    completedAt: newStatus === 'Completed' ? new Date().toISOString() : undefined
   })
 }
 

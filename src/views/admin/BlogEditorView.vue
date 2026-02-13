@@ -51,7 +51,7 @@
               :disabled="!isFormValid"
             >
               <CloudArrowUpIcon class="w-4 h-4 mr-2" />
-              {{ post?.status === 'published' ? '更新文章' : '發布文章' }}
+              {{ post?.status === 'Published' ? '更新文章' : '發布文章' }}
             </BaseButton>
           </div>
         </div>
@@ -108,18 +108,18 @@
 
                 <!-- Excerpt -->
                 <div>
-                  <label for="excerpt" class="block text-sm font-medium text-gray-700">
+                  <label for="summary" class="block text-sm font-medium text-gray-700">
                     摘要說明
                   </label>
                   <BaseTextarea
-                    id="excerpt"
-                    v-model="formData.excerpt"
+                    id="summary"
+                    v-model="formData.summary"
                     :rows="3"
                     placeholder="簡短描述文章內容，用於搜尋預覽和分享..."
                     class="mt-1"
                   />
                   <p class="mt-1 text-xs text-gray-500">
-                    目前字數: {{ formData.excerpt?.length || 0 }} / 200
+                    目前字數: {{ formData.summary?.length || 0 }} / 200
                   </p>
                 </div>
               </div>
@@ -309,8 +309,8 @@
                 <!-- Preview Content -->
                 <article class="prose prose-sm max-w-none">
                   <h1>{{ formData.title || '文章標題' }}</h1>
-                  <p class="text-gray-600 italic" v-if="formData.excerpt">
-                    {{ formData.excerpt }}
+                  <p class="text-gray-600 italic" v-if="formData.summary">
+                    {{ formData.summary }}
                   </p>
                   <div v-html="previewContent"></div>
                 </article>
@@ -480,7 +480,7 @@
               <div class="space-y-3">
                 <div class="flex justify-between items-center">
                   <span class="text-sm text-gray-600">觀看次數</span>
-                  <span class="font-medium">{{ post.views || 0 }}</span>
+                  <span class="font-medium">{{ post.viewCount || 0 }}</span>
                 </div>
                 <div class="flex justify-between items-center">
                   <span class="text-sm text-gray-600">建立時間</span>
@@ -613,24 +613,22 @@ const formData = ref({
   title: '',
   slug: '',
   content: '',
-  excerpt: '',
+  summary: '',
   featuredImage: '',
   category: '',
   tags: '',
-  status: 'draft' as 'draft' | 'published' | 'archived',
+  status: 'Draft' as 'Draft' | 'Published' | 'Archived',
   isPublic: true,
   publishedAt: '',
   metaDescription: '',
   metaKeywords: '',
-  author: '系統管理員'
 })
 
 // Constants
 const statusOptions = [
-  { value: 'draft', label: '草稿' },
-  { value: 'published', label: '已發布' },
-  { value: 'scheduled', label: '排程發布' },
-  { value: 'archived', label: '已封存' }
+  { value: 'Draft', label: '草稿' },
+  { value: 'Published', label: '已發布' },
+  { value: 'Archived', label: '已封存' }
 ]
 
 const availableCategories = [
@@ -694,16 +692,15 @@ function loadPost() {
         title: existingPost.title,
         slug: existingPost.slug || '',
         content: existingPost.content || '',
-        excerpt: existingPost.excerpt || '',
-        featuredImage: existingPost.featuredImage || '',
+        summary: existingPost.summary || '',
+        featuredImage: '',
         category: existingPost.category || '',
         tags: existingPost.tags || '',
         status: existingPost.status,
         isPublic: existingPost.isPublic ?? true,
         publishedAt: existingPost.publishedAt ? new Date(existingPost.publishedAt).toISOString().slice(0, 16) : '',
-        metaDescription: existingPost.metaDescription || '',
-        metaKeywords: existingPost.metaKeywords || '',
-        author: existingPost.author || '系統管理員'
+        metaDescription: '',
+        metaKeywords: '',
       }
     }
   }
@@ -800,7 +797,7 @@ async function saveDraft(isAutoSave = false) {
     const postData = {
       ...formData.value,
       slug: formData.value.slug || generateSlug(formData.value.title),
-      status: 'draft' as const
+      status: 'Draft' as const
     }
 
     if (post.value) {
@@ -834,7 +831,7 @@ async function publishPost() {
     const postData = {
       ...formData.value,
       slug: formData.value.slug || generateSlug(formData.value.title),
-      publishedAt: formData.value.status === 'published' ? new Date().toISOString() : formData.value.publishedAt
+      publishedAt: formData.value.status === 'Published' ? new Date().toISOString() : formData.value.publishedAt
     }
 
     if (post.value) {

@@ -74,14 +74,7 @@
             <div class="flex items-start space-x-3">
               <!-- Featured Image Thumbnail -->
               <div class="flex-shrink-0">
-                <img
-                  v-if="post.featuredImageUrl"
-                  :src="post.featuredImageUrl"
-                  :alt="post.title"
-                  class="h-10 w-10 rounded object-cover"
-                />
                 <div
-                  v-else
                   class="h-10 w-10 rounded bg-gray-200 flex items-center justify-center"
                 >
                   <DocumentTextIcon class="h-5 w-5 text-gray-400" />
@@ -120,10 +113,10 @@
 
           <!-- Status -->
           <td class="px-6 py-4 whitespace-nowrap">
-            <span :class="getStatusBadgeClass(post.isPublished ? 'published' : 'draft')">
+            <span :class="getStatusBadgeClass(post.status === 'Published' ? 'published' : 'draft')">
               <div class="flex items-center">
-                <div :class="getStatusDotClass(post.isPublished ? 'published' : 'draft')" class="w-2 h-2 rounded-full mr-2"></div>
-                {{ getStatusLabel(post.isPublished ? 'published' : 'draft') }}
+                <div :class="getStatusDotClass(post.status === 'Published' ? 'published' : 'draft')" class="w-2 h-2 rounded-full mr-2"></div>
+                {{ getStatusLabel(post.status === 'Published' ? 'published' : 'draft') }}
               </div>
             </span>
           </td>
@@ -141,7 +134,7 @@
 
           <!-- Author -->
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-            {{ post.user?.username || post.user?.fullName || '系統管理員' }}
+            系統管理員
           </td>
 
           <!-- Views -->
@@ -168,13 +161,13 @@
                 @click="$emit('toggle-publish', post)"
                 :class="[
                   'p-1 rounded transition-colors',
-                  (post.isPublished ? 'published' : 'draft') === 'published'
+                  (post.status === 'Published' ? 'published' : 'draft') === 'published'
                     ? 'text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50'
                     : 'text-green-600 hover:text-green-700 hover:bg-green-50'
                 ]"
-                :title="(post.isPublished ? 'published' : 'draft') === 'published' ? '取消發布' : '發布文章'"
+                :title="(post.status === 'Published' ? 'published' : 'draft') === 'published' ? '取消發布' : '發布文章'"
               >
-                <EyeSlashIcon v-if="(post.isPublished ? 'published' : 'draft') === 'published'" class="w-4 h-4" />
+                <EyeSlashIcon v-if="(post.status === 'Published' ? 'published' : 'draft') === 'published'" class="w-4 h-4" />
                 <EyeIcon v-else class="w-4 h-4" />
               </button>
 

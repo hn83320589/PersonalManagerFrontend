@@ -97,7 +97,7 @@
             <!-- Technology Tags -->
             <div class="flex flex-wrap gap-2 mb-4">
               <span
-                v-for="tech in getTechnologyTags(portfolio.technologyUsed)"
+                v-for="tech in getTechnologyTags(portfolio.technologies)"
                 :key="tech"
                 class="inline-block bg-primary-100 text-primary-800 text-xs px-2 py-1 rounded-full"
               >
@@ -119,8 +119,8 @@
                 查看專案
               </a>
               <a
-                v-if="portfolio.githubUrl"
-                :href="portfolio.githubUrl"
+                v-if="portfolio.repositoryUrl"
+                :href="portfolio.repositoryUrl"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="text-gray-600 hover:text-gray-700 text-sm font-medium"
@@ -178,8 +178,8 @@ const selectedTechnology = ref('')
 const availableTechnologies = computed(() => {
   const techs = new Set<string>()
   portfolioStore.portfolios.forEach(portfolio => {
-    if (portfolio.technologyUsed) {
-      portfolio.technologyUsed.split(',').forEach(tech => {
+    if (portfolio.technologies) {
+      portfolio.technologies.split(',').forEach(tech => {
         techs.add(tech.trim())
       })
     }
@@ -187,17 +187,14 @@ const availableTechnologies = computed(() => {
   return Array.from(techs).sort()
 })
 
-function getTechnologyTags(technologyUsed?: string) {
-  if (!technologyUsed) return []
-  return technologyUsed.split(',').map(tech => tech.trim()).slice(0, 4)
+function getTechnologyTags(technologies?: string) {
+  if (!technologies) return []
+  return technologies.split(',').map(tech => tech.trim()).slice(0, 4)
 }
 
 function handleSearch() {
-  if (searchKeyword.value.trim()) {
-    portfolioStore.searchPortfolios(searchKeyword.value.trim())
-  } else {
-    portfolioStore.fetchPortfolios()
-  }
+  // Client-side search - portfolios are already loaded
+  portfolioStore.fetchPortfolios()
 }
 
 function filterByTechnology() {

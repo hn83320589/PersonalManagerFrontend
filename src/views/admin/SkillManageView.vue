@@ -99,10 +99,10 @@
             class="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">所有等級</option>
-            <option value="0">初學者</option>
-            <option value="1">中級</option>
-            <option value="2">高級</option>
-            <option value="3">專家</option>
+            <option value="Beginner">初學者</option>
+            <option value="Intermediate">中級</option>
+            <option value="Advanced">高級</option>
+            <option value="Expert">專家</option>
           </select>
           <select
             v-model="sortBy"
@@ -178,7 +178,7 @@
                   </div>
                   <div class="ml-4">
                     <div class="text-sm font-medium text-gray-900">{{ skill.name }}</div>
-                    <div class="text-sm text-gray-500">{{ skill.description }}</div>
+                    <div class="text-sm text-gray-500">{{ skill.category || '未分類' }}</div>
                   </div>
                 </div>
               </td>
@@ -191,7 +191,7 @@
                         :key="i"
                         :class="[
                           'w-2 h-2 rounded-full',
-                          i <= (skill.level + 1) ? getLevelColor(skill.level) : 'bg-gray-200'
+                          i <= getLevelNumber(skill.level) ? getLevelColor(skill.level) : 'bg-gray-200'
                         ]"
                       ></div>
                     </div>
@@ -329,7 +329,7 @@ const categories = computed(() => {
 })
 
 const expertSkillsCount = computed(() => {
-  return skills.value.filter(skill => skill.level === 3).length
+  return skills.value.filter(skill => skill.level === 'Expert').length
 })
 
 const categoriesCount = computed(() => {
@@ -348,8 +348,7 @@ const filteredSkills = computed(() => {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(skill =>
       skill.name.toLowerCase().includes(query) ||
-      skill.category?.toLowerCase().includes(query) ||
-      skill.description?.toLowerCase().includes(query)
+      skill.category?.toLowerCase().includes(query)
     )
   }
 
@@ -360,7 +359,7 @@ const filteredSkills = computed(() => {
 
   // Level filter
   if (selectedLevel.value !== '') {
-    filtered = filtered.filter(skill => skill.level === parseInt(selectedLevel.value))
+    filtered = filtered.filter(skill => skill.level === selectedLevel.value)
   }
 
   // Sort
@@ -373,8 +372,8 @@ const filteredSkills = computed(() => {
         bValue = b.name.toLowerCase()
         break
       case 'level':
-        aValue = a.level
-        bValue = b.level
+        aValue = getLevelNumber(a.level)
+        bValue = getLevelNumber(b.level)
         break
       case 'category':
         aValue = a.category || ''
@@ -402,24 +401,34 @@ const filteredSkills = computed(() => {
 })
 
 // Methods
-function getLevelText(level: SkillLevel): string {
-  switch (level) {
-    case 0: return '初學者'
-    case 1: return '中級'
-    case 2: return '高級'
-    case 3: return '專家'
-    default: return '未知'
+function getLevelNumber(level: SkillLevel): number {
+  const map: Record<string, number> = {
+    'Beginner': 1,
+    'Intermediate': 2,
+    'Advanced': 3,
+    'Expert': 4
   }
+  return map[level] || 0
+}
+
+function getLevelText(level: SkillLevel): string {
+  const map: Record<string, string> = {
+    'Beginner': '初學者',
+    'Intermediate': '中級',
+    'Advanced': '高級',
+    'Expert': '專家'
+  }
+  return map[level] || '未知'
 }
 
 function getLevelColor(level: SkillLevel): string {
-  switch (level) {
-    case 0: return 'bg-gray-400'
-    case 1: return 'bg-blue-400'
-    case 2: return 'bg-yellow-400'
-    case 3: return 'bg-green-400'
-    default: return 'bg-gray-400'
+  const map: Record<string, string> = {
+    'Beginner': 'bg-gray-400',
+    'Intermediate': 'bg-blue-400',
+    'Advanced': 'bg-yellow-400',
+    'Expert': 'bg-green-400'
   }
+  return map[level] || 'bg-gray-400'
 }
 
 function editSkill(skill: Skill) {

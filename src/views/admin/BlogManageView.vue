@@ -109,10 +109,9 @@
               class="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">所有狀態</option>
-              <option value="draft">草稿</option>
-              <option value="published">已發布</option>
-              <option value="scheduled">排程發布</option>
-              <option value="archived">已封存</option>
+              <option value="Draft">草稿</option>
+              <option value="Published">已發布</option>
+              <option value="Archived">已封存</option>
             </select>
 
             <select
@@ -125,15 +124,7 @@
               </option>
             </select>
 
-            <select
-              v-model="selectedAuthor"
-              class="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">所有作者</option>
-              <option v-for="author in authors" :key="author" :value="author">
-                {{ author }}
-              </option>
-            </select>
+            <!-- Author filter removed: author field no longer exists on BlogPost -->
           </div>
         </div>
 
@@ -149,7 +140,7 @@
               <option value="updatedAt">更新時間</option>
               <option value="publishedAt">發布時間</option>
               <option value="title">標題</option>
-              <option value="views">觀看數</option>
+              <option value="viewCount">觀看數</option>
             </select>
           </div>
 
@@ -243,7 +234,7 @@
         <div class="space-y-3">
           <BaseButton
             variant="outline"
-            @click="batchUpdateStatus('published')"
+            @click="batchUpdateStatus('Published')"
             class="w-full justify-start"
           >
             <EyeIcon class="w-4 h-4 mr-2" />
@@ -252,7 +243,7 @@
           
           <BaseButton
             variant="outline"
-            @click="batchUpdateStatus('draft')"
+            @click="batchUpdateStatus('Draft')"
             class="w-full justify-start"
           >
             <DocumentIcon class="w-4 h-4 mr-2" />
@@ -352,10 +343,9 @@ const blogStore = useBlogStore()
 
 // State
 const searchQuery = ref('')
-const selectedStatus = ref<'draft' | 'published' | 'archived' | ''>('')
+const selectedStatus = ref<'Draft' | 'Published' | 'Archived' | ''>('')
 const selectedCategory = ref('')
-const selectedAuthor = ref('')
-const sortBy = ref<'createdAt' | 'updatedAt' | 'publishedAt' | 'title' | 'views'>('updatedAt')
+const sortBy = ref<'createdAt' | 'updatedAt' | 'publishedAt' | 'title' | 'viewCount'>('updatedAt')
 const viewMode = ref<'table' | 'grid'>('table')
 const loading = ref(false)
 const showCategoryModal = ref(false)
@@ -371,7 +361,7 @@ const posts = computed(() => blogStore.posts)
 const totalPosts = computed(() => posts.value.length)
 
 const publishedPosts = computed(() => {
-  return posts.value.filter(post => post.status === 'published').length
+  return posts.value.filter(post => post.status === 'Published').length
 })
 
 const publishedRate = computed(() => {
@@ -379,11 +369,11 @@ const publishedRate = computed(() => {
 })
 
 const draftPosts = computed(() => {
-  return posts.value.filter(post => post.status === 'draft').length
+  return posts.value.filter(post => post.status === 'Draft').length
 })
 
 const totalViews = computed(() => {
-  return posts.value.reduce((sum, post) => sum + (post.views || 0), 0)
+  return posts.value.reduce((sum, post) => sum + (post.viewCount || 0), 0)
 })
 
 const categories = computed(() => {
@@ -391,16 +381,11 @@ const categories = computed(() => {
   return Array.from(categorySet).sort()
 })
 
-const authors = computed(() => {
-  const authorSet = new Set(posts.value.map(post => post.author).filter(Boolean))
-  return Array.from(authorSet).sort()
-})
-
 const categoriesWithStats = computed(() => {
   return categories.value.map((category: string) => ({
     name: category,
     count: posts.value.filter(post => post.category === category).length,
-    publishedCount: posts.value.filter(post => post.category === category && post.status === 'published').length
+    publishedCount: posts.value.filter(post => post.category === category && post.status === 'Published').length
   }))
 })
 
@@ -413,7 +398,7 @@ const filteredAndSortedPosts = computed(() => {
     filtered = filtered.filter(post =>
       post.title.toLowerCase().includes(query) ||
       post.content?.toLowerCase().includes(query) ||
-      post.excerpt?.toLowerCase().includes(query) ||
+      post.summary?.toLowerCase().includes(query) ||
       post.tags?.toLowerCase().includes(query)
     )
   }
@@ -426,11 +411,6 @@ const filteredAndSortedPosts = computed(() => {
   // Category filter
   if (selectedCategory.value) {
     filtered = filtered.filter(post => post.category === selectedCategory.value)
-  }
-
-  // Author filter
-  if (selectedAuthor.value) {
-    filtered = filtered.filter(post => post.author === selectedAuthor.value)
   }
 
   // Sort
@@ -446,8 +426,8 @@ const filteredAndSortedPosts = computed(() => {
         return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
       case 'title':
         return a.title.localeCompare(b.title)
-      case 'views':
-        return (b.views || 0) - (a.views || 0)
+      case 'viewCount':
+        return (b.viewCount || 0) - (a.viewCount || 0)
       default:
         return 0
     }
@@ -483,7 +463,7 @@ function duplicatePost(post: BlogPost) {
     ...post,
     id: undefined,
     title: `${post.title} (複製)`,
-    status: 'draft' as const,
+    status: 'Draft' as const,
     publishedAt: undefined,
     createdAt: undefined,
     updatedAt: undefined
@@ -496,10 +476,10 @@ function duplicatePost(post: BlogPost) {
 }
 
 async function togglePublish(post: BlogPost) {
-  const newStatus = post.status === 'published' ? 'draft' : 'published'
+  const newStatus = post.status === 'Published' ? 'Draft' : 'Published'
   await blogStore.updatePost(post.id, {
     status: newStatus,
-    publishedAt: newStatus === 'published' ? new Date().toISOString() : undefined
+    publishedAt: newStatus === 'Published' ? new Date().toISOString() : undefined
   })
 }
 
@@ -509,13 +489,13 @@ function previewPost(post: BlogPost) {
   window.open(previewUrl, '_blank')
 }
 
-async function batchUpdateStatus(status: 'draft' | 'published' | 'archived') {
+async function batchUpdateStatus(status: 'Draft' | 'Published' | 'Archived') {
   try {
     await Promise.all(
       selectedPosts.value.map(postId =>
         blogStore.updatePost(postId, {
           status,
-          publishedAt: status === 'published' ? new Date().toISOString() : undefined
+          publishedAt: status === 'Published' ? new Date().toISOString() : undefined
         })
       )
     )
@@ -544,7 +524,7 @@ function batchExport() {
     tags: post.tags,
     status: post.status,
     publishedAt: post.publishedAt,
-    views: post.views
+    viewCount: post.viewCount
   }))
   
   // Create and download file

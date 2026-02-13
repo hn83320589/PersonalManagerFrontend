@@ -1,10 +1,5 @@
 <template>
   <div class="bg-gray-50">
-    <!-- API Test Component (開發用) -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6" v-if="isDevelopment">
-      <ApiTestComponent />
-    </div>
-
     <!-- Hero Section -->
     <section class="relative bg-white overflow-hidden">
       <div class="max-w-7xl mx-auto">
@@ -100,9 +95,9 @@
 
         <LoadingSpinner v-if="portfolioStore.isLoading" size="medium" text="載入作品中..." />
         
-        <div v-else-if="portfolioStore.featuredPortfolios.length > 0" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div v-else-if="portfolioStore.portfolios.filter(p => p.isFeatured).length > 0" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <div
-            v-for="portfolio in portfolioStore.featuredPortfolios.slice(0, 3)"
+            v-for="portfolio in portfolioStore.portfolios.filter(p => p.isFeatured).slice(0, 3)"
             :key="portfolio.id"
             class="card hover:shadow-lg transition-shadow duration-200 cursor-pointer"
             @click="$router.push(`/portfolio/${portfolio.id}`)"
@@ -118,7 +113,7 @@
               <p class="text-gray-600 text-sm mb-3">{{ portfolio.description?.substring(0, 100) }}...</p>
               <div class="flex flex-wrap gap-2">
                 <span
-                  v-for="tech in portfolio.technologyUsed?.split(',').slice(0, 3)"
+                  v-for="tech in portfolio.technologies?.split(',').slice(0, 3)"
                   :key="tech"
                   class="inline-block bg-primary-100 text-primary-800 text-xs px-2 py-1 rounded"
                 >
@@ -165,7 +160,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
+import { onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { 
   BriefcaseIcon,
@@ -175,13 +170,9 @@ import {
 } from '@heroicons/vue/24/outline'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
-import ApiTestComponent from '@/components/debug/ApiTestComponent.vue'
 import { usePortfolioStore } from '@/stores/portfolio'
 
 const portfolioStore = usePortfolioStore()
-
-// 只在開發環境顯示API測試組件
-const isDevelopment = computed(() => import.meta.env.VITE_APP_ENV === 'development')
 
 const features = [
   {
@@ -208,6 +199,6 @@ const features = [
 
 onMounted(() => {
   // Fetch featured portfolios when component mounts
-  portfolioStore.fetchFeaturedPortfolios()
+  portfolioStore.fetchPortfolios()
 })
 </script>

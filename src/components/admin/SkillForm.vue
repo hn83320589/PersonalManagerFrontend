@@ -71,7 +71,7 @@
                   :key="i"
                   :class="[
                     'w-2 h-2 rounded-full',
-                    i <= (level.value + 1) ? level.color : 'bg-gray-200'
+                    i <= skillLevelIndex(level.value) + 1 ? level.color : 'bg-gray-200'
                   ]"
                 ></div>
               </div>
@@ -110,20 +110,6 @@
       <p class="mt-1 text-xs text-gray-500">
         可以使用小數，如 1.5 年
       </p>
-    </div>
-
-    <!-- Description -->
-    <div>
-      <label for="description" class="block text-sm font-medium text-gray-700">
-        技能描述
-      </label>
-      <BaseTextarea
-        id="description"
-        v-model="formData.description"
-        :rows="3"
-        placeholder="描述您在這個技能上的經驗、專案或成就..."
-        class="mt-1"
-      />
     </div>
 
     <!-- Competencies (Skills breakdown) -->
@@ -234,7 +220,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { PlusIcon, TrashIcon } from '@heroicons/vue/24/outline'
-import type { Skill } from '@/types/api'
+import type { Skill, SkillLevel } from '@/types/api'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseTextarea from '@/components/ui/BaseTextarea.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
@@ -260,10 +246,9 @@ const customCategory = ref('')
 
 const formData = ref({
   name: '',
-  level: 0,
+  level: 'Beginner' as SkillLevel,
   category: '',
   yearsOfExperience: undefined as number | undefined,
-  description: '',
   competencies: [] as Array<{ name: string }>,
   projects: '',
   sortOrder: 0,
@@ -283,32 +268,38 @@ const predefinedCategories = [
   '軟技能'
 ]
 
-const skillLevels = [
+const skillLevels: Array<{ value: SkillLevel; label: string; description: string; color: string }> = [
   {
-    value: 0,
+    value: 'Beginner',
     label: '初學者',
     description: '基礎了解，需要指導',
     color: 'bg-gray-400'
   },
   {
-    value: 1,
+    value: 'Intermediate',
     label: '中級',
     description: '能獨立完成基本任務',
     color: 'bg-blue-400'
   },
   {
-    value: 2,
+    value: 'Advanced',
     label: '高級',
     description: '能處理複雜問題',
     color: 'bg-yellow-400'
   },
   {
-    value: 3,
+    value: 'Expert',
     label: '專家',
     description: '能指導他人，創新解決方案',
     color: 'bg-green-400'
   }
 ]
+
+// Helper to get numeric index for a skill level
+function skillLevelIndex(level: SkillLevel): number {
+  const order: SkillLevel[] = ['Beginner', 'Intermediate', 'Advanced', 'Expert']
+  return order.indexOf(level)
+}
 
 // Watchers
 watch(() => formData.value.category, (newValue) => {
@@ -350,27 +341,13 @@ async function handleSubmit() {
     const competenciesString = submitData.competencies.map(c => c.name).join(', ')
     
     // Prepare final data
-    const finalData = {
+    const finalData: Record<string, any> = {
       name: submitData.name,
       level: submitData.level,
       category: submitData.category || undefined,
       yearsOfExperience: submitData.yearsOfExperience,
-      description: submitData.description || undefined,
-      // Store competencies as description extension or separate field
       sortOrder: submitData.sortOrder,
       isPublic: submitData.isPublic
-    }
-    
-    // Add projects and competencies to description if they exist
-    if (competenciesString || submitData.projects) {
-      let extendedDescription = finalData.description || ''
-      if (competenciesString) {
-        extendedDescription += (extendedDescription ? '\n\n' : '') + '具體能力: ' + competenciesString
-      }
-      if (submitData.projects) {
-        extendedDescription += (extendedDescription ? '\n\n' : '') + '相關專案: ' + submitData.projects
-      }
-      finalData.description = extendedDescription
     }
     
     emit('save', finalData)
@@ -391,43 +368,13 @@ function initializeForm() {
     formData.value.yearsOfExperience = skill.yearsOfExperience
     formData.value.sortOrder = skill.sortOrder
     formData.value.isPublic = skill.isPublic
-    
-    // Parse description for competencies and projects
-    if (skill.description) {
-      const description = skill.description
-      formData.value.description = description
-      
-      // Try to parse competencies and projects from description
-      const competenciesMatch = description.match(/具體能力:\s*(.+?)(?:\n|$)/)
-      const projectsMatch = description.match(/相關專案:\s*(.+?)(?:\n|$)/)
-      
-      if (competenciesMatch) {
-        const competencies = competenciesMatch[1].split(',').map(c => ({ name: c.trim() })).filter(c => c.name)
-        formData.value.competencies = competencies
-      }
-      
-      if (projectsMatch) {
-        formData.value.projects = projectsMatch[1]
-      }
-      
-      // Clean description of parsed parts
-      let cleanDescription = description
-      if (competenciesMatch) {
-        cleanDescription = cleanDescription.replace(/具體能力:\s*.+?(?:\n|$)/, '')
-      }
-      if (projectsMatch) {
-        cleanDescription = cleanDescription.replace(/相關專案:\s*.+?(?:\n|$)/, '')
-      }
-      formData.value.description = cleanDescription.trim()
-    }
   } else {
     // Reset form for new skill
     formData.value = {
       name: '',
-      level: 0,
+      level: 'Beginner' as SkillLevel,
       category: '',
       yearsOfExperience: undefined,
-      description: '',
       competencies: [],
       projects: '',
       sortOrder: 0,

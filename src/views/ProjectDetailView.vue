@@ -38,10 +38,8 @@
                     {{ project.title }}
                   </h1>
                   <div class="flex items-center space-x-4 text-sm text-gray-600">
-                    <span v-if="project.startDate">
-                      📅 {{ formatDate(project.startDate) }}
-                      <span v-if="project.endDate">- {{ formatDate(project.endDate) }}</span>
-                      <span v-else>- Present</span>
+                    <span v-if="project.createdAt">
+                      📅 {{ formatDate(project.createdAt) }}
                     </span>
                     <span v-if="project.isFeatured" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                       ⭐ Featured
@@ -81,8 +79,8 @@
                   </a>
 
                   <a
-                    v-if="project.repositoryUrl || project.githubUrl"
-                    :href="project.repositoryUrl || project.githubUrl"
+                    v-if="project.repositoryUrl"
+                    :href="project.repositoryUrl"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
@@ -98,30 +96,12 @@
             <div class="lg:col-span-1">
               <BaseCard title="Project Details">
                 <div class="space-y-4">
-                  <!-- Project Duration -->
-                  <div v-if="project.startDate">
-                    <h4 class="text-sm font-medium text-gray-900">Duration</h4>
+                  <!-- Created Date -->
+                  <div v-if="project.createdAt">
+                    <h4 class="text-sm font-medium text-gray-900">Created</h4>
                     <p class="text-sm text-gray-600">
-                      {{ formatDate(project.startDate) }}
-                      <span v-if="project.endDate">- {{ formatDate(project.endDate) }}</span>
-                      <span v-else>- Present</span>
+                      {{ formatDate(project.createdAt) }}
                     </p>
-                    <p v-if="projectDuration" class="text-xs text-gray-500">
-                      ({{ projectDuration }})
-                    </p>
-                  </div>
-
-                  <!-- Status -->
-                  <div>
-                    <h4 class="text-sm font-medium text-gray-900">Status</h4>
-                    <span
-                      :class="[
-                        'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                        project.endDate ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                      ]"
-                    >
-                      {{ project.endDate ? 'Completed' : 'In Progress' }}
-                    </span>
                   </div>
 
                   <!-- Visibility -->
@@ -138,7 +118,7 @@
                   </div>
 
                   <!-- Project Links in Sidebar -->
-                  <div v-if="project.projectUrl || project.repositoryUrl || project.githubUrl">
+                  <div v-if="project.projectUrl || project.repositoryUrl">
                     <h4 class="text-sm font-medium text-gray-900 mb-2">Links</h4>
                     <div class="space-y-2">
                       <a
@@ -152,8 +132,8 @@
                         Live Project
                       </a>
                       <a
-                        v-if="project.repositoryUrl || project.githubUrl"
-                        :href="project.repositoryUrl || project.githubUrl"
+                        v-if="project.repositoryUrl"
+                        :href="project.repositoryUrl"
                         target="_blank"
                         rel="noopener noreferrer"
                         class="flex items-center text-sm text-gray-600 hover:text-gray-800 transition-colors"
@@ -278,42 +258,8 @@ const project = computed(() => portfolioStore.currentPortfolio)
 const allProjects = computed(() => portfolioStore.portfolios)
 
 const projectTechnologies = computed(() => {
-  if (!project.value) return []
-  
-  // Parse technologies from different possible fields
-  const techs = []
-  if (project.value.technologyUsed) {
-    techs.push(...project.value.technologyUsed.split(',').map(t => t.trim()))
-  }
-  if (project.value.technologies) {
-    techs.push(...project.value.technologies.split(',').map(t => t.trim()))
-  }
-  
-  // Remove duplicates and empty strings
-  return [...new Set(techs)].filter(Boolean)
-})
-
-const projectDuration = computed(() => {
-  if (!project.value?.startDate) return null
-  
-  const start = new Date(project.value.startDate)
-  const end = project.value.endDate ? new Date(project.value.endDate) : new Date()
-  
-  const diffInMonths = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth())
-  
-  if (diffInMonths < 1) {
-    return 'Less than a month'
-  } else if (diffInMonths < 12) {
-    return `${diffInMonths} month${diffInMonths !== 1 ? 's' : ''}`
-  } else {
-    const years = Math.floor(diffInMonths / 12)
-    const months = diffInMonths % 12
-    let duration = `${years} year${years !== 1 ? 's' : ''}`
-    if (months > 0) {
-      duration += `, ${months} month${months !== 1 ? 's' : ''}`
-    }
-    return duration
-  }
+  if (!project.value?.technologies) return []
+  return project.value.technologies.split(',').map(t => t.trim()).filter(Boolean)
 })
 
 const relatedProjects = computed(() => {

@@ -264,7 +264,7 @@ import {
   CheckIcon,
   ListBulletIcon
 } from '@heroicons/vue/24/outline'
-import type { WorkTask, TaskStatus, TaskStatusString, TaskPriority } from '@/types/api'
+import type { WorkTask, WorkTaskStatus, WorkTaskPriority } from '@/types/api'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseTextarea from '@/components/ui/BaseTextarea.vue'
 import BaseSelect from '@/components/ui/BaseSelect.vue'
@@ -309,12 +309,12 @@ const timerSettings = ref({
 // Computed
 const filteredTasks = computed(() => {
   if (!taskSearchQuery.value) {
-    return props.tasks.filter(task => task.status !== 4) // Exclude completed tasks
+    return props.tasks.filter(task => task.status !== 'Completed') // Exclude completed tasks
   }
-  
+
   const query = taskSearchQuery.value.toLowerCase()
-  return props.tasks.filter(task => 
-    task.status !== 4 && (
+  return props.tasks.filter(task =>
+    task.status !== 'Completed' && (
       task.title.toLowerCase().includes(query) ||
       task.description?.toLowerCase().includes(query) ||
       task.project?.toLowerCase().includes(query)
@@ -400,78 +400,48 @@ function handleSubmit() {
   emit('startTimer', submitData)
 }
 
-function getStatusLabel(status: TaskStatus | TaskStatusString): string {
-  // Convert string status to enum value for consistent mapping
-  let statusNum = status
-  if (typeof status === 'string') {
-    const statusMap: Record<string, number> = {
-      'pending': 0,
-      'planning': 1, 
-      'inProgress': 2,
-      'testing': 3,
-      'completed': 4,
-      'onHold': 5,
-      'cancelled': 6
-    }
-    statusNum = statusMap[status] || 0
+function getStatusLabel(status: WorkTaskStatus): string {
+  const labelMap: Record<WorkTaskStatus, string> = {
+    'Pending': '待處理',
+    'Planning': '規劃中',
+    'InProgress': '進行中',
+    'Testing': '測試中',
+    'Completed': '已完成',
+    'OnHold': '暫停',
+    'Cancelled': '已取消'
   }
-  
-  const labelMap = {
-    0: '待處理',
-    1: '規劃中',
-    2: '進行中',
-    3: '測試中',
-    4: '已完成',
-    5: '暫停',
-    6: '已取消'
-  }
-  return labelMap[statusNum] || '未知'
+  return labelMap[status] || '未知'
 }
 
-function getStatusStyle(status: TaskStatus | TaskStatusString): string {
-  // Convert string status to enum value for consistent mapping
-  let statusNum = status
-  if (typeof status === 'string') {
-    const statusMap: Record<string, number> = {
-      'pending': 0,
-      'planning': 1, 
-      'inProgress': 2,
-      'testing': 3,
-      'completed': 4,
-      'onHold': 5,
-      'cancelled': 6
-    }
-    statusNum = statusMap[status] || 0
+function getStatusStyle(status: WorkTaskStatus): string {
+  const styleMap: Record<WorkTaskStatus, string> = {
+    'Pending': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800',
+    'Planning': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800',
+    'InProgress': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800',
+    'Testing': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800',
+    'Completed': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800',
+    'OnHold': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800',
+    'Cancelled': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800'
   }
-  
-  const styleMap = {
-    0: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800',
-    1: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800',
-    2: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800',
-    3: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800',
-    4: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800',
-    5: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800',
-    6: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800'
-  }
-  return styleMap[statusNum] || 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800'
+  return styleMap[status] || 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800'
 }
 
-function getPriorityLabel(priority: TaskPriority): string {
-  const priorityMap = {
-    0: '低',
-    1: '中',
-    2: '高',
-    3: '緊急'
+function getPriorityLabel(priority: WorkTaskPriority): string {
+  const priorityMap: Record<WorkTaskPriority, string> = {
+    'Low': '低',
+    'Medium': '中',
+    'High': '高',
+    'Urgent': '緊急'
   }
   return priorityMap[priority] || '未知'
 }
 
-function getPriorityStyle(priority: TaskPriority): string {
-  const styleMap = {
-    0: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800',
-    1: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800',
-    2: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800',
-    3: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800'
+function getPriorityStyle(priority: WorkTaskPriority): string {
+  const styleMap: Record<WorkTaskPriority, string> = {
+    'Low': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800',
+    'Medium': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800',
+    'High': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800',
+    'Urgent': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800'
   }
   return styleMap[priority] || 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800'
 }

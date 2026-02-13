@@ -5,16 +5,16 @@
       <div class="flex items-start space-x-3">
         <div
           class="flex-shrink-0 w-4 h-4 rounded-full mt-1"
-          :style="{ backgroundColor: event.color || getEventTypeColor(event.eventType) }"
+          :style="{ backgroundColor: event.color || '#6B7280' }"
         ></div>
         <div>
           <h3 class="text-lg font-semibold text-gray-900">{{ event.title }}</h3>
           <div class="flex items-center space-x-2 mt-1">
             <span :class="[
               'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-              getEventTypeStyle(event.eventType)
+              'bg-gray-100 text-gray-800'
             ]">
-              {{ getEventTypeLabel(event.eventType) }}
+              一般
             </span>
             <span :class="[
               'inline-flex px-2 py-1 text-xs font-semibold rounded-full',
@@ -77,27 +77,6 @@
           </div>
         </div>
 
-        <!-- Location -->
-        <div v-if="event.location">
-          <div class="flex items-center space-x-2 mb-2">
-            <MapPinIcon class="w-5 h-5 text-gray-400" />
-            <h4 class="text-sm font-medium text-gray-700">地點</h4>
-          </div>
-          <div class="ml-7">
-            <div class="text-sm text-gray-900">{{ event.location }}</div>
-            <!-- Quick action to open in maps -->
-            <a
-              v-if="isValidAddress(event.location)"
-              :href="getMapLink(event.location)"
-              target="_blank"
-              class="text-xs text-blue-600 hover:text-blue-800 inline-flex items-center mt-1"
-            >
-              <ArrowTopRightOnSquareIcon class="w-3 h-3 mr-1" />
-              在地圖中開啟
-            </a>
-          </div>
-        </div>
-
         <!-- Description -->
         <div v-if="event.description">
           <div class="flex items-center space-x-2 mb-2">
@@ -122,17 +101,6 @@
             <div class="flex justify-between text-sm">
               <span class="text-gray-500">建立時間:</span>
               <span class="text-gray-900">{{ formatDateTime(event.createdAt) }}</span>
-            </div>
-            <div class="flex justify-between text-sm">
-              <span class="text-gray-500">最後更新:</span>
-              <span class="text-gray-900">{{ formatDateTime(event.updatedAt) }}</span>
-            </div>
-            <div v-if="event.googleEventId" class="flex justify-between text-sm">
-              <span class="text-gray-500">Google Calendar:</span>
-              <span class="text-green-600 inline-flex items-center">
-                <CheckCircleIcon class="w-4 h-4 mr-1" />
-                已同步
-              </span>
             </div>
           </div>
         </div>
@@ -163,7 +131,6 @@
               匯出到行事曆
             </BaseButton>
             <BaseButton
-              v-if="!event.googleEventId"
               variant="outline"
               size="small"
               @click="syncToGoogle"
@@ -248,20 +215,16 @@ import {
   PencilIcon,
   TrashIcon,
   CalendarIcon,
-  MapPinIcon,
   DocumentTextIcon,
   InformationCircleIcon,
   CommandLineIcon,
   ClipboardIcon,
   CalendarDaysIcon,
   CloudArrowUpIcon,
-  BellIcon,
-  CheckCircleIcon,
-  ArrowTopRightOnSquareIcon
+  BellIcon
 } from '@heroicons/vue/24/outline'
-import type { CalendarEvent, EventType } from '@/types/api'
+import type { CalendarEvent } from '@/types/api'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import { notify } from '@/services/notificationService'
 
 // Props
 interface Props {
@@ -285,48 +248,12 @@ const eventReminders = ref<any[]>([]) // Future feature
 // Computed
 const hasReminders = computed(() => eventReminders.value.length > 0)
 
-// Constants
-const eventTypes = [
-  { value: 0, label: '個人' },
-  { value: 1, label: '工作' },
-  { value: 2, label: '會議' },
-  { value: 3, label: '提醒' },
-  { value: 4, label: '其他' }
-]
-
 // Methods
-function getEventTypeColor(eventType: EventType): string {
-  switch (eventType) {
-    case 0: return '#3B82F6' // Personal - Blue
-    case 1: return '#10B981' // Work - Green
-    case 2: return '#F59E0B' // Meeting - Yellow
-    case 3: return '#EF4444' // Reminder - Red
-    case 4: return '#8B5CF6' // Other - Purple
-    default: return '#6B7280' // Gray
-  }
-}
-
-function getEventTypeLabel(eventType: EventType): string {
-  const type = eventTypes.find(t => t.value === eventType)
-  return type?.label || '未知'
-}
-
-function getEventTypeStyle(eventType: EventType): string {
-  switch (eventType) {
-    case 0: return 'bg-blue-100 text-blue-800'
-    case 1: return 'bg-green-100 text-green-800'
-    case 2: return 'bg-yellow-100 text-yellow-800'
-    case 3: return 'bg-red-100 text-red-800'
-    case 4: return 'bg-purple-100 text-purple-800'
-    default: return 'bg-gray-100 text-gray-800'
-  }
-}
-
 function getEventStatus(event: CalendarEvent): string {
   const now = new Date()
-  const start = new Date(event.startDate)
-  const end = event.endDate ? new Date(event.endDate) : start
-  
+  const start = new Date(event.startTime)
+  const end = event.endTime ? new Date(event.endTime) : start
+
   if (start > now) return '即將到來'
   if (start <= now && end >= now) return '進行中'
   return '已結束'
@@ -343,38 +270,42 @@ function getEventStatusStyle(event: CalendarEvent): string {
 }
 
 function formatEventDate(event: CalendarEvent): string {
-  const start = new Date(event.startDate)
-  const end = event.endDate ? new Date(event.endDate) : null
-  
-  const startDate = start.toLocaleDateString('zh-TW', {
+  const start = new Date(event.startTime)
+  const end = event.endTime ? new Date(event.endTime) : null
+
+  const startDateStr = start.toLocaleDateString('zh-TW', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
     weekday: 'long'
   })
-  
+
   if (end && end.toDateString() !== start.toDateString()) {
-    const endDate = end.toLocaleDateString('zh-TW', {
+    const endDateStr = end.toLocaleDateString('zh-TW', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       weekday: 'long'
     })
-    return `${startDate} 至 ${endDate}`
+    return `${startDateStr} 至 ${endDateStr}`
   }
-  
-  return startDate
+
+  return startDateStr
 }
 
 function formatEventTime(event: CalendarEvent): string {
   if (event.isAllDay) return '全天事件'
-  
-  const timeString = `${event.startTime}`
+
+  const startDate = new Date(event.startTime)
+  const startTimeStr = startDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
+
   if (event.endTime && event.endTime !== event.startTime) {
-    return `${timeString} - ${event.endTime}`
+    const endDate = new Date(event.endTime)
+    const endTimeStr = endDate.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
+    return `${startTimeStr} - ${endTimeStr}`
   }
-  
-  return timeString
+
+  return startTimeStr
 }
 
 function formatDateTime(dateString: string): string {
@@ -389,15 +320,17 @@ function formatDateTime(dateString: string): string {
 
 function getEventDuration(event: CalendarEvent): string {
   if (event.isAllDay) return ''
-  
+
   if (!event.endTime || event.endTime === event.startTime) return ''
-  
-  const start = new Date(`2000-01-01T${event.startTime}`)
-  const end = new Date(`2000-01-01T${event.endTime}`)
-  
+
+  const start = new Date(event.startTime)
+  const end = new Date(event.endTime)
+
   const diffMs = end.getTime() - start.getTime()
+  if (diffMs <= 0) return ''
+
   const diffHours = diffMs / (1000 * 60 * 60)
-  
+
   if (diffHours < 1) {
     const diffMinutes = diffMs / (1000 * 60)
     return `${Math.round(diffMinutes)} 分鐘`
@@ -408,40 +341,29 @@ function getEventDuration(event: CalendarEvent): string {
   }
 }
 
-function isValidAddress(address: string): boolean {
-  // Simple check for valid address (contains common address keywords)
-  const addressKeywords = ['路', '街', '巷', '號', '樓', '市', '區', '縣', '台北', '新北', '桃園', '台中', '台南', '高雄']
-  return addressKeywords.some(keyword => address.includes(keyword))
-}
-
-function getMapLink(address: string): string {
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
-}
-
 async function copyEventDetails() {
   const details = `
 事件: ${props.event.title}
 日期: ${formatEventDate(props.event)}
 時間: ${formatEventTime(props.event)}
-${props.event.location ? `地點: ${props.event.location}` : ''}
 ${props.event.description ? `描述: ${props.event.description}` : ''}
 `.trim()
 
   try {
     await navigator.clipboard.writeText(details)
-    notify('複製成功', '事件詳細已複製到剪貼板', 'success')
+    alert('事件詳細已複製到剪貼板')
   } catch (err) {
     console.error('複製失敗:', err)
-    notify('複製失敗', '無法複製到剪貼板，請稍後再試', 'error')
+    alert('無法複製到剪貼板，請稍後再試')
   }
 }
 
 function exportToCalendar() {
   // Generate ICS file for calendar export
   const event = props.event
-  const startDate = new Date(`${event.startDate}T${event.startTime || '00:00'}`)
-  const endDate = event.endDate && event.endTime 
-    ? new Date(`${event.endDate}T${event.endTime}`)
+  const startDate = new Date(event.startTime)
+  const endDate = event.endTime
+    ? new Date(event.endTime)
     : new Date(startDate.getTime() + 60 * 60 * 1000) // Default 1 hour
 
   const formatICSDate = (date: Date) => {
@@ -458,7 +380,6 @@ DTSTART:${formatICSDate(startDate)}
 DTEND:${formatICSDate(endDate)}
 SUMMARY:${event.title}
 ${event.description ? `DESCRIPTION:${event.description.replace(/\n/g, '\\n')}` : ''}
-${event.location ? `LOCATION:${event.location}` : ''}
 END:VEVENT
 END:VCALENDAR`
 
@@ -488,7 +409,7 @@ function syncToGoogle() {
    * - src/services/googleCalendarService.ts
    * - src/components/admin/GoogleCalendarSync.vue
    */
-  notify('功能開發中', 'Google Calendar 同步功能開發中，敬請期待', 'info')
+  alert('Google Calendar 同步功能開發中，敬請期待')
   console.log('同步到 Google Calendar:', props.event)
 }
 
@@ -500,10 +421,8 @@ function viewRelatedEvent(event: CalendarEvent) {
    *
    * 實作建議：
    * 1. 根據以下條件尋找相關事件：
-   *    - 相同的事件類型 (eventType)
    *    - 相同的標籤 (tags)
    *    - 時間接近（前後7天內）
-   *    - 相同的地點 (location)
    * 2. 使用模態視窗或側邊欄顯示相關事件列表
    * 3. 支援快速切換到相關事件的詳細資訊
    * 4. 提供「新增為相關事件」的功能

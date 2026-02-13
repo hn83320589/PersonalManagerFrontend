@@ -64,14 +64,8 @@
                             </span>
                           </h3>
                           <p class="text-primary-600 font-medium">
-                            {{ experience.companyName }}
+                            {{ experience.company }}
                           </p>
-                          <p v-if="experience.location" class="text-sm text-gray-600">
-                            📍 {{ experience.location }}
-                          </p>
-                        </div>
-                        <div class="text-sm text-gray-500">
-                          {{ getEmploymentTypeLabel(experience.employmentType) }}
                         </div>
                       </div>
 
@@ -132,12 +126,12 @@
                       <div>
                         <h3 class="text-lg font-semibold text-gray-900">
                           {{ education.degree }}
-                          <span v-if="education.major" class="text-base font-normal text-gray-600">
-                            in {{ education.major }}
+                          <span v-if="education.fieldOfStudy" class="text-base font-normal text-gray-600">
+                            in {{ education.fieldOfStudy }}
                           </span>
                         </h3>
                         <p class="text-blue-600 font-medium">
-                          {{ education.schoolName }}
+                          {{ education.school }}
                         </p>
                       </div>
 
@@ -185,16 +179,16 @@
                 <div class="flex items-center space-x-2">
                   <div class="flex space-x-1">
                     <div
-                      v-for="level in 4"
-                      :key="level"
+                      v-for="dot in 4"
+                      :key="dot"
                       :class="[
                         'w-2 h-2 rounded-full',
-                        level <= skill.level + 1 ? 'bg-primary-500' : 'bg-gray-200'
+                        dot <= skillLevelToNumber(skill.level) ? 'bg-primary-500' : 'bg-gray-200'
                       ]"
                     ></div>
                   </div>
                   <span class="text-xs text-gray-500">
-                    {{ getSkillLevelLabel(skill.level) }}
+                    {{ skill.level }}
                   </span>
                 </div>
               </div>
@@ -240,7 +234,7 @@ import { useSkillStore } from '@/stores/skill'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import type { EmploymentType, SkillLevel } from '@/types/api'
+import type { SkillLevel } from '@/types/api'
 
 // Stores
 const experienceStore = useExperienceStore()
@@ -256,25 +250,14 @@ const skills = computed(() => skillStore.publicSkills)
 const skillsByCategory = computed(() => skillStore.skillsByCategory)
 
 // Methods
-function getEmploymentTypeLabel(type: EmploymentType): string {
-  const labels = {
-    [0]: 'Full-time',
-    [1]: 'Part-time',
-    [2]: 'Contract',
-    [3]: 'Freelance',
-    [4]: 'Internship'
+function skillLevelToNumber(level: SkillLevel): number {
+  const map: Record<SkillLevel, number> = {
+    'Beginner': 1,
+    'Intermediate': 2,
+    'Advanced': 3,
+    'Expert': 4
   }
-  return labels[type] || 'Unknown'
-}
-
-function getSkillLevelLabel(level: SkillLevel): string {
-  const labels = {
-    [0]: 'Beginner',
-    [1]: 'Intermediate',
-    [2]: 'Advanced',
-    [3]: 'Expert'
-  }
-  return labels[level] || 'Unknown'
+  return map[level] || 0
 }
 
 function formatDate(dateString?: string): string {

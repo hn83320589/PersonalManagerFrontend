@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import authService, { type LoginCredentials } from '@/services/authService'
+import authService from '@/services/authService'
 import type { User } from '@/types/api'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -14,28 +14,22 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => !!(user.value && token.value))
   const userDisplayName = computed(() => user.value?.username || 'Guest')
   const userRole = computed(() => user.value?.role || 'guest')
-  const hasPermission = computed(() => (permission: string) => {
-    // In a real app, this would check user permissions
+  const hasPermission = computed(() => (_permission: string) => {
     return userRole.value === 'admin' || userRole.value === 'owner'
   })
 
   // Actions
-  async function login(credentials: LoginCredentials) {
+  async function login(credentials: { username: string; password: string }) {
     isLoading.value = true
     error.value = null
-    
+
     try {
       const response = await authService.login(credentials)
-      
+
       if (response.success && response.data) {
-        user.value = response.data.user
         token.value = response.data.token
-        
-        // Set up token refresh if expiry is provided
-        if (response.data.expiresIn) {
-          scheduleTokenRefresh(response.data.expiresIn)
-        }
-        
+        // Fetch full user profile after login
+        await fetchCurrentUser()
         return true
       } else {
         error.value = response.message || 'Login failed'
@@ -50,38 +44,9 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function demoLogin() {
-    isLoading.value = true
-    error.value = null
-    
-    try {
-      const response = await authService.demoLogin()
-      
-      if (response.success && response.data) {
-        user.value = response.data.user
-        token.value = response.data.token
-        
-        if (response.data.expiresIn) {
-          scheduleTokenRefresh(response.data.expiresIn)
-        }
-        
-        return true
-      } else {
-        error.value = response.message || 'Demo login failed'
-        return false
-      }
-    } catch (err) {
-      console.error('Demo login error:', err)
-      error.value = 'Demo login failed'
-      return false
-    } finally {
-      isLoading.value = false
-    }
-  }
-
   async function logout() {
     isLoading.value = true
-    
+
     try {
       await authService.logout()
     } catch (err) {
@@ -91,70 +56,35 @@ export const useAuthStore = defineStore('auth', () => {
       token.value = null
       error.value = null
       isLoading.value = false
-      
-      // Clear any scheduled token refresh
-      clearTokenRefresh()
     }
   }
 
-  async function refreshToken() {
+  async function fetchCurrentUser() {
     try {
-      const response = await authService.refreshToken()
+      const response = await authService.getCurrentUser()
       if (response.success && response.data) {
-        token.value = response.data.token
-        
-        if (response.data.expiresIn) {
-          scheduleTokenRefresh(response.data.expiresIn)
-        }
-        
-        return true
+        user.value = response.data
       }
     } catch (err) {
-      console.error('Token refresh error:', err)
-      // If refresh fails, log out the user
-      await logout()
+      console.error('Failed to fetch current user:', err)
     }
-    
-    return false
   }
 
   function initializeAuth() {
-    // Check if user is already logged in
-    const currentUser = authService.getCurrentUser()
     const currentToken = authService.getAuthToken()
-    
-    if (currentUser && currentToken && authService.isAuthenticated()) {
-      user.value = currentUser
+
+    if (currentToken && authService.isAuthenticated()) {
       token.value = currentToken
-      
-      // Try to refresh token on initialization to ensure it's valid
-      refreshToken()
+      // Restore user data from localStorage
+      const userData = authService.getCurrentUserData()
+      if (userData) {
+        user.value = userData as User
+      }
     }
   }
 
   function clearError() {
     error.value = null
-  }
-
-  // Token refresh scheduling
-  let refreshTimeoutId: ReturnType<typeof setTimeout> | null = null
-
-  function scheduleTokenRefresh(expiresInSeconds: number) {
-    clearTokenRefresh()
-    
-    // Schedule refresh 5 minutes before expiry
-    const refreshTime = Math.max(expiresInSeconds - 300, 60) * 1000
-    
-    refreshTimeoutId = setTimeout(() => {
-      refreshToken()
-    }, refreshTime)
-  }
-
-  function clearTokenRefresh() {
-    if (refreshTimeoutId) {
-      clearTimeout(refreshTimeoutId)
-      refreshTimeoutId = null
-    }
   }
 
   return {
@@ -170,9 +100,8 @@ export const useAuthStore = defineStore('auth', () => {
     hasPermission,
     // Actions
     login,
-    demoLogin,
     logout,
-    refreshToken,
+    fetchCurrentUser,
     initializeAuth,
     clearError,
   }

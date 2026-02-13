@@ -135,14 +135,14 @@
                       </div>
                     </div>
                     <div class="ml-4">
-                      <div class="text-sm font-medium text-gray-900">{{ education.schoolName }}</div>
+                      <div class="text-sm font-medium text-gray-900">{{ education.school }}</div>
                       <div class="text-sm text-gray-500">{{ education.startYear }}-{{ education.endYear || '至今' }}</div>
                     </div>
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-900">{{ education.degree }}</div>
-                  <div class="text-sm text-gray-500">{{ education.major }}</div>
+                  <div class="text-sm text-gray-500">{{ education.fieldOfStudy }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {{ education.startYear }}{{ education.endYear ? ` - ${education.endYear}` : ' - 至今' }}
@@ -230,14 +230,14 @@
                       </div>
                     </div>
                     <div class="ml-4">
-                      <div class="text-sm font-medium text-gray-900">{{ work.companyName }}</div>
-                      <div class="text-sm text-gray-500">{{ work.location }}</div>
+                      <div class="text-sm font-medium text-gray-900">{{ work.company }}</div>
+                      <div class="text-sm text-gray-500">{{ work.position }}</div>
                     </div>
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-900">{{ work.position }}</div>
-                  <div class="text-sm text-gray-500">{{ work.employmentType }}</div>
+                  <div class="text-sm text-gray-500">{{ work.isCurrent ? '在職' : '離職' }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {{ formatDateRange(work.startDate, work.endDate) }}
@@ -333,7 +333,7 @@ import {
   TrashIcon
 } from '@heroicons/vue/24/outline'
 import { useExperienceStore } from '@/stores/experience'
-import type { Education, WorkExperience } from '@/types/experience'
+import type { Education, WorkExperience } from '@/types/api'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
@@ -365,9 +365,9 @@ const filteredEducations = computed(() => {
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(education =>
-      education.schoolName.toLowerCase().includes(query) ||
+      education.school.toLowerCase().includes(query) ||
       education.degree.toLowerCase().includes(query) ||
-      education.major?.toLowerCase().includes(query)
+      education.fieldOfStudy?.toLowerCase().includes(query)
     )
   }
 
@@ -401,9 +401,8 @@ const filteredWorkExperiences = computed(() => {
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(work =>
-      work.companyName.toLowerCase().includes(query) ||
-      work.position.toLowerCase().includes(query) ||
-      work.location?.toLowerCase().includes(query)
+      work.company.toLowerCase().includes(query) ||
+      work.position.toLowerCase().includes(query)
     )
   }
 

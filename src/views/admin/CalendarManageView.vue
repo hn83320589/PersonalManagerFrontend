@@ -245,7 +245,7 @@
                   <div class="flex items-center">
                     <div
                       class="flex-shrink-0 h-3 w-3 rounded-full mr-3"
-                      :style="{ backgroundColor: event.color || getEventTypeColor(event.eventType) }"
+                      :style="{ backgroundColor: event.color || '#3B82F6' }"
                     ></div>
                     <div>
                       <div class="text-sm font-medium text-gray-900">{{ event.title }}</div>
@@ -260,15 +260,12 @@
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span :class="[
-                    'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                    getEventTypeStyle(event.eventType)
-                  ]">
-                    {{ getEventTypeLabel(event.eventType) }}
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    事件
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {{ event.location || '-' }}
+                  -
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex flex-col space-y-1">
@@ -399,7 +396,7 @@ import {
   TableCellsIcon
 } from '@heroicons/vue/24/outline'
 import { useCalendarStore } from '@/stores/calendar'
-import type { CalendarEvent, EventType } from '@/types/api'
+import type { CalendarEvent } from '@/types/api'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
@@ -414,7 +411,7 @@ const calendarStore = useCalendarStore()
 
 // State
 const searchQuery = ref('')
-const selectedEventType = ref<EventType | ''>('')
+const selectedEventType = ref<string>('')
 const statusFilter = ref('')
 const sortBy = ref('startDate')
 const sortOrder = ref<'asc' | 'desc'>('asc')
@@ -434,13 +431,7 @@ const calendarViews = [
   { value: 'list', label: '列表', icon: ListBulletIcon }
 ]
 
-const eventTypes = [
-  { value: 0, label: '個人' },
-  { value: 1, label: '工作' },
-  { value: 2, label: '會議' },
-  { value: 3, label: '提醒' },
-  { value: 4, label: '其他' }
-]
+const eventTypes: { value: string, label: string }[] = []
 
 // Computed
 const events = computed(() => calendarStore.events)
@@ -451,7 +442,7 @@ const thisWeekEventsCount = computed(() => {
   const endOfWeek = new Date(now.setDate(startOfWeek.getDate() + 6))
   
   return events.value.filter(event => {
-    const eventDate = new Date(event.startDate)
+    const eventDate = new Date(event.startTime)
     return eventDate >= startOfWeek && eventDate <= endOfWeek
   }).length
 })
@@ -461,7 +452,7 @@ const publicEventsCount = computed(() => {
 })
 
 const meetingEventsCount = computed(() => {
-  return events.value.filter(event => event.eventType === 2).length // Meeting type
+  return 0 // eventType field removed from CalendarEvent
 })
 
 const filteredEvents = computed(() => {
@@ -472,33 +463,30 @@ const filteredEvents = computed(() => {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(event =>
       event.title.toLowerCase().includes(query) ||
-      event.description?.toLowerCase().includes(query) ||
-      event.location?.toLowerCase().includes(query)
+      event.description?.toLowerCase().includes(query)
     )
   }
 
-  // Event type filter
-  if (selectedEventType.value !== '') {
-    filtered = filtered.filter(event => event.eventType === selectedEventType.value)
-  }
+  // Event type filter (disabled: eventType removed from CalendarEvent)
+  // if (selectedEventType.value !== '') { ... }
 
   // Status filter
   if (statusFilter.value) {
     const now = new Date()
     switch (statusFilter.value) {
       case 'upcoming':
-        filtered = filtered.filter(event => new Date(event.startDate) > now)
+        filtered = filtered.filter(event => new Date(event.startTime) > now)
         break
       case 'ongoing':
         filtered = filtered.filter(event => {
-          const start = new Date(event.startDate)
-          const end = event.endDate ? new Date(event.endDate) : start
+          const start = new Date(event.startTime)
+          const end = event.endTime ? new Date(event.endTime) : start
           return start <= now && end >= now
         })
         break
       case 'past':
         filtered = filtered.filter(event => {
-          const end = event.endDate ? new Date(event.endDate) : new Date(event.startDate)
+          const end = event.endTime ? new Date(event.endTime) : new Date(event.startTime)
           return end < now
         })
         break
@@ -517,16 +505,16 @@ const filteredEvents = computed(() => {
 
     switch (sortBy.value) {
       case 'startDate':
-        aValue = new Date(a.startDate).getTime()
-        bValue = new Date(b.startDate).getTime()
+        aValue = new Date(a.startTime).getTime()
+        bValue = new Date(b.startTime).getTime()
         break
       case 'title':
         aValue = a.title.toLowerCase()
         bValue = b.title.toLowerCase()
         break
       case 'eventType':
-        aValue = a.eventType
-        bValue = b.eventType
+        aValue = a.title
+        bValue = b.title
         break
       case 'createdAt':
         aValue = new Date(a.createdAt).getTime()
@@ -585,37 +573,10 @@ function goToToday() {
   currentDate.value = new Date()
 }
 
-function getEventTypeColor(eventType: EventType): string {
-  switch (eventType) {
-    case 0: return '#3B82F6' // Personal - Blue
-    case 1: return '#10B981' // Work - Green
-    case 2: return '#F59E0B' // Meeting - Yellow
-    case 3: return '#EF4444' // Reminder - Red
-    case 4: return '#8B5CF6' // Other - Purple
-    default: return '#6B7280' // Gray
-  }
-}
-
-function getEventTypeLabel(eventType: EventType): string {
-  const type = eventTypes.find(t => t.value === eventType)
-  return type?.label || '未知'
-}
-
-function getEventTypeStyle(eventType: EventType): string {
-  switch (eventType) {
-    case 0: return 'bg-blue-100 text-blue-800'
-    case 1: return 'bg-green-100 text-green-800'
-    case 2: return 'bg-yellow-100 text-yellow-800'
-    case 3: return 'bg-red-100 text-red-800'
-    case 4: return 'bg-purple-100 text-purple-800'
-    default: return 'bg-gray-100 text-gray-800'
-  }
-}
-
 function getEventStatus(event: CalendarEvent): string {
   const now = new Date()
-  const start = new Date(event.startDate)
-  const end = event.endDate ? new Date(event.endDate) : start
+  const start = new Date(event.startTime)
+  const end = event.endTime ? new Date(event.endTime) : start
   
   if (start > now) return '即將到來'
   if (start <= now && end >= now) return '進行中'
@@ -633,8 +594,8 @@ function getEventStatusStyle(event: CalendarEvent): string {
 }
 
 function formatEventDate(event: CalendarEvent): string {
-  const start = new Date(event.startDate)
-  const end = event.endDate ? new Date(event.endDate) : null
+  const start = new Date(event.startTime)
+  const end = event.endTime ? new Date(event.endTime) : null
   
   const startDate = start.toLocaleDateString('zh-TW', {
     month: 'short',
@@ -654,13 +615,17 @@ function formatEventDate(event: CalendarEvent): string {
 
 function formatEventTime(event: CalendarEvent): string {
   if (event.isAllDay) return '全天'
-  
-  const timeString = `${event.startTime}`
-  if (event.endTime && event.endTime !== event.startTime) {
-    return `${timeString} - ${event.endTime}`
+
+  const start = new Date(event.startTime)
+  const end = event.endTime ? new Date(event.endTime) : null
+  const startTimeStr = start.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
+
+  if (end) {
+    const endTimeStr = end.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
+    return `${startTimeStr} - ${endTimeStr}`
   }
-  
-  return timeString
+
+  return startTimeStr
 }
 
 function viewEvent(event: CalendarEvent) {
@@ -691,9 +656,7 @@ function deleteEventFromDetail(id: number) {
 function createEventOnDate(date: Date) {
   // 建立包含選定日期的部分事件物件，讓表單能自動填入日期
   editingEvent.value = {
-    startDate: date.toISOString().split('T')[0], // YYYY-MM-DD 格式
-    startTime: '',
-    endDate: '',
+    startTime: date.toISOString(),
     endTime: '',
     isAllDay: false
   } as Partial<CalendarEvent> as CalendarEvent
@@ -702,10 +665,9 @@ function createEventOnDate(date: Date) {
 
 function createEventOnDateTime(date: Date, time: string) {
   // 建立包含選定日期和時間的部分事件物件
+  const dateStr = date.toISOString().split('T')[0]
   editingEvent.value = {
-    startDate: date.toISOString().split('T')[0], // YYYY-MM-DD 格式
-    startTime: time, // HH:mm 格式
-    endDate: '',
+    startTime: `${dateStr}T${time}:00`,
     endTime: '',
     isAllDay: false
   } as Partial<CalendarEvent> as CalendarEvent

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { TodoItem, WorkTask, TaskStatus, TodoPriority, TaskPriority } from '@/types/api'
+import type { TodoItem, WorkTask, TodoPriority, WorkTaskStatus, WorkTaskPriority } from '@/types/api'
 
 // Time Entry Interface for work tracking
 interface TimeEntry {
@@ -28,19 +28,19 @@ export const useTaskStore = defineStore('task', () => {
   const error = ref<string | null>(null)
 
   // Todo Items Getters
-  const completedTodos = computed(() => 
-    todoItems.value.filter(todo => todo.isCompleted)
+  const completedTodos = computed(() =>
+    todoItems.value.filter(todo => todo.status === 'Completed')
   )
 
-  const pendingTodos = computed(() => 
-    todoItems.value.filter(todo => !todo.isCompleted)
+  const pendingTodos = computed(() =>
+    todoItems.value.filter(todo => todo.status !== 'Completed')
   )
 
   const todosByPriority = computed(() => {
     const priorityMap: Record<TodoPriority, TodoItem[]> = {
-      [0]: [], // Low
-      [1]: [], // Medium
-      [2]: []  // High
+      'Low': [],
+      'Medium': [],
+      'High': []
     }
     todoItems.value.forEach(todo => {
       priorityMap[todo.priority].push(todo)
@@ -50,21 +50,21 @@ export const useTaskStore = defineStore('task', () => {
 
   const overdueTodos = computed(() => {
     const today = new Date().toISOString().split('T')[0]
-    return todoItems.value.filter(todo => 
-      todo.dueDate && todo.dueDate < today && !todo.isCompleted
+    return todoItems.value.filter(todo =>
+      todo.dueDate && todo.dueDate < today && todo.status !== 'Completed'
     )
   })
 
   // Work Tasks Getters
   const workTasksByStatus = computed(() => {
-    const statusMap: Record<TaskStatus, WorkTask[]> = {
-      [0]: [], // Pending
-      [1]: [], // Planning
-      [2]: [], // InProgress
-      [3]: [], // Testing
-      [4]: [], // Completed
-      [5]: [], // OnHold
-      [6]: []  // Cancelled
+    const statusMap: Record<WorkTaskStatus, WorkTask[]> = {
+      'Pending': [],
+      'Planning': [],
+      'InProgress': [],
+      'Testing': [],
+      'Completed': [],
+      'OnHold': [],
+      'Cancelled': []
     }
     workTasks.value.forEach(task => {
       statusMap[task.status].push(task)
@@ -72,18 +72,18 @@ export const useTaskStore = defineStore('task', () => {
     return statusMap
   })
 
-  const activeWorkTasks = computed(() => 
-    workTasks.value.filter(task => 
-      task.status === 2 || task.status === 1 || task.status === 3 // InProgress, Planning, Testing
+  const activeWorkTasks = computed(() =>
+    workTasks.value.filter(task =>
+      task.status === 'InProgress' || task.status === 'Planning' || task.status === 'Testing'
     )
   )
 
   const workTasksByPriority = computed(() => {
-    const priorityMap: Record<TaskPriority, WorkTask[]> = {
-      [0]: [], // Low
-      [1]: [], // Medium
-      [2]: [], // High
-      [3]: []  // Urgent
+    const priorityMap: Record<WorkTaskPriority, WorkTask[]> = {
+      'Low': [],
+      'Medium': [],
+      'High': [],
+      'Urgent': []
     }
     workTasks.value.forEach(task => {
       priorityMap[task.priority].push(task)
@@ -93,8 +93,8 @@ export const useTaskStore = defineStore('task', () => {
 
   const overdueWorkTasks = computed(() => {
     const today = new Date().toISOString().split('T')[0]
-    return workTasks.value.filter(task => 
-      task.dueDate && task.dueDate < today && task.status !== 4 // Not completed
+    return workTasks.value.filter(task =>
+      task.dueDate && task.dueDate < today && task.status !== 'Completed'
     )
   })
 
@@ -164,9 +164,10 @@ export const useTaskStore = defineStore('task', () => {
   async function toggleTodoCompletion(id: number) {
     const todo = todoItems.value.find(t => t.id === id)
     if (todo) {
-      const updatedData = {
-        isCompleted: !todo.isCompleted,
-        completedAt: !todo.isCompleted ? new Date().toISOString() : undefined
+      const isCompleted = todo.status === 'Completed'
+      const updatedData: Partial<TodoItem> = {
+        status: isCompleted ? 'Pending' : 'Completed',
+        completedAt: isCompleted ? undefined : new Date().toISOString()
       }
       return await updateTodo(id, updatedData)
     }
@@ -252,7 +253,7 @@ export const useTaskStore = defineStore('task', () => {
     }
   }
 
-  async function updateWorkTaskStatus(id: number, status: TaskStatus) {
+  async function updateWorkTaskStatus(id: number, status: WorkTaskStatus) {
     return await updateWorkTask(id, { status })
   }
 

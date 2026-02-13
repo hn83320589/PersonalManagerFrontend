@@ -15,24 +15,6 @@
       />
     </div>
 
-    <!-- Event Type -->
-    <div>
-      <label for="eventType" class="block text-sm font-medium text-gray-700">
-        事件類型 <span class="text-red-500">*</span>
-      </label>
-      <select
-        id="eventType"
-        v-model="formData.eventType"
-        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        required
-      >
-        <option value="">選擇事件類型</option>
-        <option v-for="type in eventTypes" :key="type.value" :value="type.value">
-          {{ type.label }}
-        </option>
-      </select>
-    </div>
-
     <!-- Description -->
     <div>
       <label for="description" class="block text-sm font-medium text-gray-700">
@@ -125,20 +107,6 @@
       <label for="isAllDay" class="ml-2 block text-sm text-gray-700">
         全天事件
       </label>
-    </div>
-
-    <!-- Location -->
-    <div>
-      <label for="location" class="block text-sm font-medium text-gray-700">
-        地點
-      </label>
-      <BaseInput
-        id="location"
-        v-model="formData.location"
-        type="text"
-        placeholder="會議室、地址或線上會議連結"
-        class="mt-1"
-      />
     </div>
 
     <!-- Event Color -->
@@ -245,31 +213,6 @@
       </div>
     </div>
 
-    <!-- Google Calendar Integration -->
-    <div class="space-y-4 pt-4 border-t border-gray-200">
-      <h3 class="text-sm font-medium text-gray-700">Google Calendar 整合</h3>
-      
-      <div class="flex items-center justify-between">
-        <div>
-          <label class="text-sm font-medium text-gray-700">同步到 Google Calendar</label>
-          <p class="text-sm text-gray-500">將此事件同步到您的 Google Calendar</p>
-        </div>
-        <input
-          id="syncToGoogle"
-          v-model="formData.syncToGoogle"
-          type="checkbox"
-          class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-        />
-      </div>
-
-      <div v-if="event?.googleEventId" class="text-sm text-gray-600">
-        <span class="inline-flex items-center">
-          <CheckCircleIcon class="w-4 h-4 text-green-500 mr-1" />
-          已同步到 Google Calendar
-        </span>
-      </div>
-    </div>
-
     <!-- Visibility Settings -->
     <div class="space-y-4 pt-4 border-t border-gray-200">
       <h3 class="text-sm font-medium text-gray-700">顯示設定</h3>
@@ -310,8 +253,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
-import { PlusIcon, TrashIcon, CheckCircleIcon } from '@heroicons/vue/24/outline'
-import type { CalendarEvent, EventType } from '@/types/api'
+import { PlusIcon, TrashIcon } from '@heroicons/vue/24/outline'
+import type { CalendarEvent } from '@/types/api'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseTextarea from '@/components/ui/BaseTextarea.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
@@ -336,30 +279,19 @@ const loading = ref(false)
 
 const formData = ref({
   title: '',
-  eventType: '' as EventType | '',
   description: '',
   startDate: '',
   startTime: '',
   endDate: '',
   endTime: '',
   isAllDay: false,
-  location: '',
   color: '#3B82F6',
   recurrence: '',
   reminders: [] as Array<{ value: number, type: string }>,
-  syncToGoogle: false,
   isPublic: false
 })
 
 // Constants
-const eventTypes = [
-  { value: 0, label: '個人' },
-  { value: 1, label: '工作' },
-  { value: 2, label: '會議' },
-  { value: 3, label: '提醒' },
-  { value: 4, label: '其他' }
-]
-
 const eventColors = [
   { name: '藍色', value: '#3B82F6' },
   { name: '綠色', value: '#10B981' },
@@ -425,17 +357,23 @@ async function handleSubmit() {
       submitData.endDate = submitData.startDate
     }
     
+    // Combine date and time into ISO strings for API
+    const startTimeISO = submitData.isAllDay
+      ? `${submitData.startDate}T00:00:00`
+      : `${submitData.startDate}T${submitData.startTime}:00`
+    const endTimeISO = submitData.endDate
+      ? (submitData.isAllDay
+          ? `${submitData.endDate}T23:59:00`
+          : `${submitData.endDate}T${submitData.endTime || '23:59'}:00`)
+      : undefined
+
     // Prepare final data for API
     const finalData = {
       title: submitData.title,
-      eventType: submitData.eventType as EventType,
       description: submitData.description || undefined,
-      startDate: submitData.startDate,
-      startTime: submitData.startTime,
-      endDate: submitData.endDate || undefined,
-      endTime: submitData.endTime || undefined,
+      startTime: startTimeISO,
+      endTime: endTimeISO,
       isAllDay: submitData.isAllDay,
-      location: submitData.location || undefined,
       color: submitData.color,
       isPublic: submitData.isPublic
     }
@@ -451,39 +389,39 @@ async function handleSubmit() {
 function initializeForm() {
   if (props.event) {
     const event = props.event
-    
+
+    // Parse startTime/endTime ISO strings into date and time parts
+    const startDate = event.startTime ? event.startTime.split('T')[0] : ''
+    const startTimePart = event.startTime ? event.startTime.split('T')[1]?.slice(0, 5) : ''
+    const endDate = event.endTime ? event.endTime.split('T')[0] : ''
+    const endTimePart = event.endTime ? event.endTime.split('T')[1]?.slice(0, 5) : ''
+
     formData.value.title = event.title
-    formData.value.eventType = event.eventType
     formData.value.description = event.description || ''
-    formData.value.startDate = event.startDate
-    formData.value.startTime = event.startTime
-    formData.value.endDate = event.endDate || ''
-    formData.value.endTime = event.endTime || ''
+    formData.value.startDate = startDate
+    formData.value.startTime = startTimePart || ''
+    formData.value.endDate = endDate
+    formData.value.endTime = endTimePart || ''
     formData.value.isAllDay = event.isAllDay
-    formData.value.location = event.location || ''
     formData.value.color = event.color || '#3B82F6'
     formData.value.isPublic = event.isPublic
-    formData.value.syncToGoogle = !!event.googleEventId
   } else {
     // Reset form for new event
     const now = new Date()
     const today = now.toISOString().split('T')[0]
     const currentTime = now.toTimeString().slice(0, 5)
-    
+
     formData.value = {
       title: '',
-      eventType: '' as EventType | '',
       description: '',
       startDate: today,
       startTime: currentTime,
       endDate: '',
       endTime: '',
       isAllDay: false,
-      location: '',
       color: '#3B82F6',
       recurrence: '',
       reminders: [],
-      syncToGoogle: false,
       isPublic: false
     }
   }

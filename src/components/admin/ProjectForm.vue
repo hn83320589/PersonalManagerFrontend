@@ -71,43 +71,6 @@
       </div>
     </div>
 
-    <!-- Project Dates -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label for="startDate" class="block text-sm font-medium text-gray-700">
-          開始日期
-        </label>
-        <input
-          id="startDate"
-          v-model="formData.startDate"
-          type="date"
-          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
-      <div>
-        <label for="endDate" class="block text-sm font-medium text-gray-700">
-          結束日期
-        </label>
-        <input
-          id="endDate"
-          v-model="formData.endDate"
-          type="date"
-          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          :disabled="formData.isOngoing"
-        />
-        <div class="mt-2">
-          <label class="flex items-center">
-            <input
-              v-model="formData.isOngoing"
-              type="checkbox"
-              class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-            />
-            <span class="ml-2 text-sm text-gray-600">進行中的專案</span>
-          </label>
-        </div>
-      </div>
-    </div>
-
     <!-- Project URLs -->
     <div class="space-y-4">
       <div>
@@ -339,9 +302,6 @@ const formData = ref({
   title: '',
   description: '',
   technologies: [] as Array<{ name: string }>,
-  startDate: '',
-  endDate: '',
-  isOngoing: false,
   projectUrl: '',
   repositoryUrl: '',
   imageUrl: '',
@@ -369,12 +329,6 @@ const projectCategories = [
 ]
 
 // Watchers
-watch(() => formData.value.isOngoing, (newValue) => {
-  if (newValue) {
-    formData.value.endDate = ''
-  }
-})
-
 watch(() => formData.value.imageUrl, () => {
   imageError.value = false
 })
@@ -411,23 +365,14 @@ async function handleSubmit() {
     const highlights = submitData.highlights
       .filter(highlight => highlight.text.trim())
       .map(highlight => highlight.text.trim())
-    
-    // Handle ongoing projects
-    if (submitData.isOngoing) {
-      submitData.endDate = ''
-    }
-    
+
     // Prepare final data for API
     const finalData = {
       title: submitData.title,
       description: submitData.description || undefined,
       technologies: technologies.join(', '), // Store as comma-separated string
-      technologyUsed: technologies.join(', '), // Backup field
-      startDate: submitData.startDate || undefined,
-      endDate: submitData.endDate || undefined,
       projectUrl: submitData.projectUrl || undefined,
       repositoryUrl: submitData.repositoryUrl || undefined,
-      githubUrl: submitData.repositoryUrl || undefined, // Backup field
       imageUrl: submitData.imageUrl || undefined,
       sortOrder: submitData.sortOrder,
       isPublic: submitData.isPublic,
@@ -455,18 +400,15 @@ function initializeForm() {
     
     formData.value.title = project.title
     formData.value.description = project.description || ''
-    formData.value.startDate = project.startDate || ''
-    formData.value.endDate = project.endDate || ''
-    formData.value.isOngoing = !project.endDate
     formData.value.projectUrl = project.projectUrl || ''
-    formData.value.repositoryUrl = project.repositoryUrl || project.githubUrl || ''
+    formData.value.repositoryUrl = project.repositoryUrl || ''
     formData.value.imageUrl = project.imageUrl || ''
     formData.value.sortOrder = project.sortOrder
     formData.value.isPublic = project.isPublic
     formData.value.isFeatured = project.isFeatured
-    
+
     // Parse technologies
-    const technologies = project.technologies || project.technologyUsed || ''
+    const technologies = project.technologies || ''
     if (technologies) {
       formData.value.technologies = technologies
         .split(/[,;|]/)
@@ -498,9 +440,6 @@ function initializeForm() {
       title: '',
       description: '',
       technologies: [],
-      startDate: '',
-      endDate: '',
-      isOngoing: false,
       projectUrl: '',
       repositoryUrl: '',
       imageUrl: '',

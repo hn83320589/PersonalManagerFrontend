@@ -107,19 +107,6 @@
 
     <!-- Dates and Time -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <!-- Start Date -->
-      <div>
-        <label for="startDate" class="block text-sm font-medium text-gray-700">
-          開始日期
-        </label>
-        <BaseInput
-          id="startDate"
-          v-model="formData.startDate"
-          type="date"
-          class="mt-1"
-        />
-      </div>
-
       <!-- Due Date -->
       <div>
         <label for="dueDate" class="block text-sm font-medium text-gray-700">
@@ -246,7 +233,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { FolderIcon, CheckIcon } from '@heroicons/vue/24/outline'
-import type { WorkTask, TaskStatus, TaskPriority } from '@/types/api'
+import type { WorkTask, WorkTaskStatus, WorkTaskPriority } from '@/types/api'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseTextarea from '@/components/ui/BaseTextarea.vue'
 import BaseSelect from '@/components/ui/BaseSelect.vue'
@@ -272,9 +259,8 @@ const showProjectSelector = ref(false)
 const formData = ref({
   title: '',
   description: '',
-  status: 0 as TaskStatus,
-  priority: 1 as TaskPriority,
-  startDate: '',
+  status: 'Pending' as WorkTaskStatus,
+  priority: 'Medium' as WorkTaskPriority,
   dueDate: '',
   estimatedHours: 0,
   actualHours: 0,
@@ -284,20 +270,20 @@ const formData = ref({
 
 // Constants
 const taskStatuses = [
-  { value: 0, label: '待處理' },
-  { value: 1, label: '規劃中' },
-  { value: 2, label: '進行中' },
-  { value: 3, label: '測試中' },
-  { value: 4, label: '已完成' },
-  { value: 5, label: '暫停' },
-  { value: 6, label: '已取消' }
+  { value: 'Pending', label: '待處理' },
+  { value: 'Planning', label: '規劃中' },
+  { value: 'InProgress', label: '進行中' },
+  { value: 'Testing', label: '測試中' },
+  { value: 'Completed', label: '已完成' },
+  { value: 'OnHold', label: '暫停' },
+  { value: 'Cancelled', label: '已取消' }
 ]
 
 const taskPriorities = [
-  { value: 0, label: '低' },
-  { value: 1, label: '中' },
-  { value: 2, label: '高' },
-  { value: 3, label: '緊急' }
+  { value: 'Low', label: '低' },
+  { value: 'Medium', label: '中' },
+  { value: 'High', label: '高' },
+  { value: 'Urgent', label: '緊急' }
 ]
 
 // Mock available projects (should come from store or API)
@@ -339,7 +325,6 @@ function handleSubmit() {
     description: formData.value.description?.trim() || undefined,
     status: formData.value.status,
     priority: formData.value.priority,
-    startDate: formData.value.startDate || undefined,
     dueDate: formData.value.dueDate || undefined,
     estimatedHours: formData.value.estimatedHours || undefined,
     actualHours: formData.value.actualHours || undefined,
@@ -361,9 +346,8 @@ function resetForm() {
   formData.value = {
     title: '',
     description: '',
-    status: 0,
-    priority: 1,
-    startDate: '',
+    status: 'Pending' as WorkTaskStatus,
+    priority: 'Medium' as WorkTaskPriority,
     dueDate: '',
     estimatedHours: 0,
     actualHours: 0,
@@ -378,9 +362,8 @@ watch(() => props.task, (newTask) => {
     formData.value = {
       title: newTask.title || '',
       description: newTask.description || '',
-      status: typeof newTask.status === 'string' ? 0 : newTask.status,
-      priority: newTask.priority,
-      startDate: newTask.startDate || '',
+      status: newTask.status || 'Pending',
+      priority: newTask.priority || 'Medium',
       dueDate: newTask.dueDate || '',
       estimatedHours: newTask.estimatedHours || 0,
       actualHours: newTask.actualHours || 0,

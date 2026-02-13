@@ -2,39 +2,28 @@ import httpService from './http'
 import type { ApiResponse, PersonalProfile } from '@/types/api'
 
 class ProfileService {
-  // Get all profiles (admin/authenticated users)
   async getProfiles(): Promise<ApiResponse<PersonalProfile[]>> {
-    return httpService.get<PersonalProfile[]>('/personalprofiles')
-  }
-
-  // Get only public profiles
-  async getPublicProfiles(): Promise<ApiResponse<PersonalProfile[]>> {
-    return httpService.get<PersonalProfile[]>('/personalprofiles/public')
-  }
-
-  // Get the main public profile (for public homepage)
-  async getPublicProfile(): Promise<ApiResponse<PersonalProfile>> {
-    return httpService.get<PersonalProfile>('/personalprofiles/public/main')
+    return httpService.get<PersonalProfile[]>('/profiles')
   }
 
   async getProfileById(id: number): Promise<ApiResponse<PersonalProfile>> {
-    return httpService.get<PersonalProfile>(`/personalprofiles/${id}`)
+    return httpService.get<PersonalProfile>(`/profiles/${id}`)
   }
 
-  async getProfileByUserId(userId: number): Promise<ApiResponse<PersonalProfile[]>> {
-    return httpService.get<PersonalProfile[]>(`/personalprofiles/user/${userId}`)
+  async getProfileByUserId(userId: number): Promise<ApiResponse<PersonalProfile>> {
+    return httpService.get<PersonalProfile>(`/profiles/user/${userId}`)
   }
 
   async createProfile(profile: Partial<PersonalProfile>): Promise<ApiResponse<PersonalProfile>> {
-    return httpService.post<PersonalProfile>('/personalprofiles', profile)
+    return httpService.post<PersonalProfile>('/profiles', profile)
   }
 
   async updateProfile(id: number, profile: Partial<PersonalProfile>): Promise<ApiResponse<PersonalProfile>> {
-    return httpService.put<PersonalProfile>(`/personalprofiles/${id}`, profile)
+    return httpService.put<PersonalProfile>(`/profiles/${id}`, profile)
   }
 
   async deleteProfile(id: number): Promise<ApiResponse<void>> {
-    return httpService.delete<void>(`/personalprofiles/${id}`)
+    return httpService.delete<void>(`/profiles/${id}`)
   }
 }
 

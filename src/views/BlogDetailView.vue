@@ -52,14 +52,7 @@
                 {{ post.summary }}
               </p>
 
-              <!-- Featured Image -->
-              <div v-if="post.featuredImageUrl" class="mt-8">
-                <img
-                  :src="post.featuredImageUrl"
-                  :alt="post.title"
-                  class="w-full h-80 object-cover rounded-lg"
-                />
-              </div>
+              <!-- Featured Image placeholder -->
 
               <!-- Tags -->
               <div v-if="post.tags" class="flex flex-wrap gap-2 pt-4">

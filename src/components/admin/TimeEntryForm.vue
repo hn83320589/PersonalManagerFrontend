@@ -255,7 +255,7 @@ import {
   MagnifyingGlassIcon,
   ChevronRightIcon
 } from '@heroicons/vue/24/outline'
-import type { WorkTask, TaskStatus, TaskStatusString } from '@/types/api'
+import type { WorkTask, WorkTaskStatus } from '@/types/api'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseTextarea from '@/components/ui/BaseTextarea.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
@@ -405,60 +405,30 @@ function unlinkTask() {
   formData.value.taskId = undefined
 }
 
-function getStatusLabel(status: TaskStatus | TaskStatusString): string {
-  // Convert string status to enum value for consistent mapping
-  let statusNum = status
-  if (typeof status === 'string') {
-    const statusMap: Record<string, number> = {
-      'pending': 0,
-      'planning': 1, 
-      'inProgress': 2,
-      'testing': 3,
-      'completed': 4,
-      'onHold': 5,
-      'cancelled': 6
-    }
-    statusNum = statusMap[status] || 0
+function getStatusLabel(status: WorkTaskStatus): string {
+  const labelMap: Record<WorkTaskStatus, string> = {
+    'Pending': '待處理',
+    'Planning': '規劃中',
+    'InProgress': '進行中',
+    'Testing': '測試中',
+    'Completed': '已完成',
+    'OnHold': '暫停',
+    'Cancelled': '已取消'
   }
-  
-  const labelMap = {
-    0: '待處理',
-    1: '規劃中', 
-    2: '進行中',
-    3: '測試中',
-    4: '已完成',
-    5: '暫停',
-    6: '已取消'
-  }
-  return labelMap[statusNum] || '未知'
+  return labelMap[status] || '未知'
 }
 
-function getStatusStyle(status: TaskStatus | TaskStatusString): string {
-  // Convert string status to enum value for consistent mapping
-  let statusNum = status
-  if (typeof status === 'string') {
-    const statusMap: Record<string, number> = {
-      'pending': 0,
-      'planning': 1, 
-      'inProgress': 2,
-      'testing': 3,
-      'completed': 4,
-      'onHold': 5,
-      'cancelled': 6
-    }
-    statusNum = statusMap[status] || 0
+function getStatusStyle(status: WorkTaskStatus): string {
+  const styleMap: Record<WorkTaskStatus, string> = {
+    'Pending': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800',
+    'Planning': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800',
+    'InProgress': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800',
+    'Testing': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800',
+    'Completed': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800',
+    'OnHold': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800',
+    'Cancelled': 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800'
   }
-  
-  const styleMap = {
-    0: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800',
-    1: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800',
-    2: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800',
-    3: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800',
-    4: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800',
-    5: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800',
-    6: 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800'
-  }
-  return styleMap[statusNum] || 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800'
+  return styleMap[status] || 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800'
 }
 
 function handleSubmit() {

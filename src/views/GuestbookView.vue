@@ -37,13 +37,6 @@
                 />
               </div>
 
-              <BaseInput
-                v-model="form.website"
-                type="url"
-                label="Website (optional)"
-                placeholder="https://your-website.com"
-              />
-
               <BaseTextarea
                 v-model="form.message"
                 label="Message *"
@@ -121,21 +114,8 @@
                     <div class="flex items-center justify-between mb-2">
                       <div class="flex items-center space-x-2">
                         <h3 class="font-semibold text-gray-900">
-                          <a
-                            v-if="comment.website"
-                            :href="comment.website"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="hover:text-primary-600 transition-colors"
-                          >
-                            {{ comment.name }}
-                            <ArrowTopRightOnSquareIcon class="inline w-4 h-4 ml-1" />
-                          </a>
-                          <span v-else>{{ comment.name }}</span>
+                          {{ comment.name }}
                         </h3>
-                        <span v-if="comment.isOwner" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
-                          Author
-                        </span>
                       </div>
                       <time :datetime="comment.createdAt" class="text-sm text-gray-500">
                         {{ formatDate(comment.createdAt) }}
@@ -146,42 +126,17 @@
                       <p class="text-gray-700 whitespace-pre-wrap">{{ comment.message }}</p>
                     </div>
 
-                    <!-- Reply Section -->
-                    <div v-if="comment.reply" class="mt-4 pl-4 border-l-2 border-primary-200">
+                    <!-- Admin Reply Section -->
+                    <div v-if="comment.adminReply" class="mt-4 pl-4 border-l-2 border-primary-200">
                       <div class="bg-primary-50 rounded-lg p-4">
                         <div class="flex items-center space-x-2 mb-2">
                           <div class="w-6 h-6 bg-primary-600 rounded-full flex items-center justify-center text-white text-xs font-semibold">
                             A
                           </div>
-                          <span class="font-medium text-primary-900">Author Reply</span>
-                          <time :datetime="comment.reply.createdAt" class="text-sm text-primary-600">
-                            {{ formatDate(comment.reply.createdAt) }}
-                          </time>
+                          <span class="font-medium text-primary-900">Admin Reply</span>
                         </div>
-                        <p class="text-primary-800 whitespace-pre-wrap">{{ comment.reply.message }}</p>
+                        <p class="text-primary-800 whitespace-pre-wrap">{{ comment.adminReply }}</p>
                       </div>
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="mt-4 flex items-center space-x-4">
-                      <button
-                        @click="toggleLike(comment)"
-                        :class="[
-                          'flex items-center space-x-1 text-sm transition-colors',
-                          comment.isLiked ? 'text-red-600' : 'text-gray-500 hover:text-red-600'
-                        ]"
-                      >
-                        <HeartIcon :class="['w-4 h-4', comment.isLiked ? 'fill-current' : '']" />
-                        <span>{{ comment.likes || 0 }}</span>
-                      </button>
-
-                      <button
-                        @click="reportComment(comment)"
-                        class="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-                      >
-                        <FlagIcon class="w-4 h-4 inline mr-1" />
-                        Report
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -324,10 +279,7 @@ import { ref, onMounted, computed, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   ChatBubbleLeftEllipsisIcon,
-  HeartIcon,
-  FlagIcon,
-  CheckCircleIcon,
-  ArrowTopRightOnSquareIcon
+  CheckCircleIcon
 } from '@heroicons/vue/24/outline'
 import { useCommentStore } from '@/stores/comment'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
@@ -338,7 +290,6 @@ import BaseTextarea from '@/components/ui/BaseTextarea.vue'
 import BaseSelect from '@/components/ui/BaseSelect.vue'
 import BaseForm from '@/components/ui/BaseForm.vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
-import type { GuestBookEntry } from '@/types/api'
 
 // Router
 const router = useRouter()
@@ -357,7 +308,6 @@ const commentsPerPage = 10
 const form = reactive({
   name: '',
   email: '',
-  website: '',
   message: '',
   subscribe: false
 })
@@ -373,20 +323,17 @@ const isFormValid = computed(() => {
 
 const sortOptions = [
   { label: 'Newest First', value: 'newest' },
-  { label: 'Oldest First', value: 'oldest' },
-  { label: 'Most Liked', value: 'likes' }
+  { label: 'Oldest First', value: 'oldest' }
 ]
 
 const sortedComments = computed(() => {
   const comments = [...approvedComments.value]
-  
+
   switch (sortBy.value) {
     case 'newest':
       return comments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     case 'oldest':
       return comments.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-    case 'likes':
-      return comments.sort((a, b) => (b.likes || 0) - (a.likes || 0))
     default:
       return comments
   }
@@ -470,16 +417,13 @@ async function handleSubmit() {
     await commentStore.createEntry({
       name: form.name.trim(),
       email: form.email.trim(),
-      website: form.website.trim() || undefined,
       message: form.message.trim(),
-      // subscribe: form.subscribe // This would be handled separately
     })
 
     // Reset form
     Object.assign(form, {
       name: '',
       email: '',
-      website: '',
       message: '',
       subscribe: false
     })
@@ -494,25 +438,6 @@ async function handleSubmit() {
   }
 }
 
-async function toggleLike(comment: GuestBookEntry) {
-  try {
-    // Like/unlike functionality would be implemented here
-    console.log('Toggle like for comment:', comment.id)
-  } catch (error) {
-    console.error('Failed to toggle like:', error)
-  }
-}
-
-async function reportComment(comment: GuestBookEntry) {
-  try {
-    // Report functionality would be implemented here
-  console.log('Report comment:', comment.id)
-    // In a real app, you'd show a success message
-    console.log('Comment reported successfully')
-  } catch (error) {
-    console.error('Failed to report comment:', error)
-  }
-}
 
 // Lifecycle
 onMounted(async () => {

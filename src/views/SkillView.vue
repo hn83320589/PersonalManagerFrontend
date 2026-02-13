@@ -106,7 +106,7 @@
                     <div class="flex-1 bg-gray-200 rounded-full h-2">
                       <div
                         :class="getSkillLevelBarClass(skill.level)"
-                        :style="{ width: `${((skill.level + 1) / 4) * 100}%` }"
+                        :style="{ width: `${(skillLevelToNumber(skill.level) / 4) * 100}%` }"
                         class="h-2 rounded-full transition-all duration-300"
                       ></div>
                     </div>
@@ -116,14 +116,10 @@
                         :key="level"
                         :class="[
                           'w-2 h-2 rounded-full transition-colors',
-                          level <= skill.level + 1 ? getSkillLevelDotClass(skill.level) : 'bg-gray-200'
+                          level <= skillLevelToNumber(skill.level) ? getSkillLevelDotClass(skill.level) : 'bg-gray-200'
                         ]"
                       ></div>
                     </div>
-                  </div>
-
-                  <div v-if="skill.description" class="mt-2 text-sm text-gray-600">
-                    {{ skill.description }}
                   </div>
 
                   <div v-if="skill.yearsOfExperience" class="mt-2 text-xs text-gray-500">
@@ -167,13 +163,13 @@
                         stroke-width="2"
                         fill="none"
                         :class="getSkillLevelColorClass(skill.level)"
-                        :stroke-dasharray="`${((skill.level + 1) / 4) * 62.83} 62.83`"
+                        :stroke-dasharray="`${(skillLevelToNumber(skill.level) / 4) * 62.83} 62.83`"
                         class="transition-all duration-500"
                       />
                     </svg>
                     <div class="absolute inset-0 flex items-center justify-center">
                       <span class="text-sm font-medium text-gray-900">
-                        {{ Math.round(((skill.level + 1) / 4) * 100) }}%
+                        {{ Math.round((skillLevelToNumber(skill.level) / 4) * 100) }}%
                       </span>
                     </div>
                   </div>
@@ -188,9 +184,6 @@
                     {{ skill.yearsOfExperience }} years experience
                   </div>
 
-                  <div v-if="skill.description" class="text-sm text-gray-600">
-                    {{ skill.description }}
-                  </div>
                 </div>
               </div>
             </BaseCard>
@@ -282,22 +275,22 @@ const expertSkills = computed(() => skillStore.expertSkills)
 
 const filterTabs = computed(() => [
   { key: 'all', label: 'All Categories', count: skills.value.length },
-  { key: 'expert', label: 'Expert', count: skillsByLevel.value[3]?.length || 0 },
-  { key: 'advanced', label: 'Advanced', count: skillsByLevel.value[2]?.length || 0 },
-  { key: 'intermediate', label: 'Intermediate', count: skillsByLevel.value[1]?.length || 0 },
-  { key: 'beginner', label: 'Beginner', count: skillsByLevel.value[0]?.length || 0 },
+  { key: 'expert', label: 'Expert', count: skillsByLevel.value['Expert']?.length || 0 },
+  { key: 'advanced', label: 'Advanced', count: skillsByLevel.value['Advanced']?.length || 0 },
+  { key: 'intermediate', label: 'Intermediate', count: skillsByLevel.value['Intermediate']?.length || 0 },
+  { key: 'beginner', label: 'Beginner', count: skillsByLevel.value['Beginner']?.length || 0 },
 ])
 
 const filteredSkills = computed(() => {
   switch (activeFilter.value) {
     case 'expert':
-      return skillsByLevel.value[3] || []
+      return skillsByLevel.value['Expert'] || []
     case 'advanced':
-      return skillsByLevel.value[2] || []
+      return skillsByLevel.value['Advanced'] || []
     case 'intermediate':
-      return skillsByLevel.value[1] || []
+      return skillsByLevel.value['Intermediate'] || []
     case 'beginner':
-      return skillsByLevel.value[0] || []
+      return skillsByLevel.value['Beginner'] || []
     default:
       return skills.value
   }
@@ -312,55 +305,59 @@ const averageYearsExperience = computed(() => {
 })
 
 // Methods
-function getSkillLevelLabel(level: SkillLevel): string {
-  const labels = {
-    [0]: 'Beginner',
-    [1]: 'Intermediate',
-    [2]: 'Advanced',
-    [3]: 'Expert'
+function skillLevelToNumber(level: SkillLevel): number {
+  const map: Record<SkillLevel, number> = {
+    'Beginner': 1,
+    'Intermediate': 2,
+    'Advanced': 3,
+    'Expert': 4
   }
-  return labels[level] || 'Unknown'
+  return map[level] || 0
+}
+
+function getSkillLevelLabel(level: SkillLevel): string {
+  return level
 }
 
 function getSkillLevelBadgeClass(level: SkillLevel): string {
   const baseClasses = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium'
-  const levelClasses = {
-    [0]: 'bg-gray-100 text-gray-800',
-    [1]: 'bg-blue-100 text-blue-800',
-    [2]: 'bg-green-100 text-green-800',
-    [3]: 'bg-purple-100 text-purple-800'
+  const levelClasses: Record<SkillLevel, string> = {
+    'Beginner': 'bg-gray-100 text-gray-800',
+    'Intermediate': 'bg-blue-100 text-blue-800',
+    'Advanced': 'bg-green-100 text-green-800',
+    'Expert': 'bg-purple-100 text-purple-800'
   }
-  return `${baseClasses} ${levelClasses[level] || levelClasses[0]}`
+  return `${baseClasses} ${levelClasses[level] || levelClasses['Beginner']}`
 }
 
 function getSkillLevelBarClass(level: SkillLevel): string {
-  const classes = {
-    [0]: 'bg-gray-400',
-    [1]: 'bg-blue-500',
-    [2]: 'bg-green-500',
-    [3]: 'bg-purple-500'
+  const classes: Record<SkillLevel, string> = {
+    'Beginner': 'bg-gray-400',
+    'Intermediate': 'bg-blue-500',
+    'Advanced': 'bg-green-500',
+    'Expert': 'bg-purple-500'
   }
-  return classes[level] || classes[0]
+  return classes[level] || classes['Beginner']
 }
 
 function getSkillLevelDotClass(level: SkillLevel): string {
-  const classes = {
-    [0]: 'bg-gray-400',
-    [1]: 'bg-blue-500',
-    [2]: 'bg-green-500',
-    [3]: 'bg-purple-500'
+  const classes: Record<SkillLevel, string> = {
+    'Beginner': 'bg-gray-400',
+    'Intermediate': 'bg-blue-500',
+    'Advanced': 'bg-green-500',
+    'Expert': 'bg-purple-500'
   }
-  return classes[level] || classes[0]
+  return classes[level] || classes['Beginner']
 }
 
 function getSkillLevelColorClass(level: SkillLevel): string {
-  const classes = {
-    [0]: 'text-gray-400',
-    [1]: 'text-blue-500',
-    [2]: 'text-green-500',
-    [3]: 'text-purple-500'
+  const classes: Record<SkillLevel, string> = {
+    'Beginner': 'text-gray-400',
+    'Intermediate': 'text-blue-500',
+    'Advanced': 'text-green-500',
+    'Expert': 'text-purple-500'
   }
-  return classes[level] || classes[0]
+  return classes[level] || classes['Beginner']
 }
 
 // Lifecycle

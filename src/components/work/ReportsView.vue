@@ -210,7 +210,7 @@ import {
   ShareIcon,
   AcademicCapIcon
 } from '@heroicons/vue/24/outline'
-import type { WorkTask, TaskStatus } from '@/types/api'
+import type { WorkTask, WorkTaskStatus } from '@/types/api'
 import BaseButton from '@/components/ui/BaseButton.vue'
 
 // Time Entry Interface (reused from TimesheetView)
@@ -243,7 +243,7 @@ const totalWorkHours = computed(() => {
 })
 
 const completedTasks = computed(() => {
-  return props.tasks.filter(task => task.status === 4).length
+  return props.tasks.filter(task => task.status === 'Completed').length
 })
 
 const productivityIndex = computed(() => {
@@ -317,49 +317,49 @@ const projectStats = computed(() => {
 
 // Task Status Statistics
 const taskStatusStats = computed(() => {
-  const statusMap: Record<TaskStatus, number> = {
-    0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0
+  const statusMap: Record<string, number> = {
+    'Pending': 0, 'Planning': 0, 'InProgress': 0, 'Testing': 0, 'Completed': 0, 'OnHold': 0, 'Cancelled': 0
   }
-  
+
   props.tasks.forEach(task => {
     statusMap[task.status] = (statusMap[task.status] || 0) + 1
   })
-  
+
   const total = props.tasks.length
-  
+
   return [
     {
       label: '待處理',
-      count: statusMap[0],
-      percentage: total > 0 ? Math.round((statusMap[0] / total) * 100) : 0,
+      count: statusMap['Pending'],
+      percentage: total > 0 ? Math.round((statusMap['Pending'] / total) * 100) : 0,
       bgClass: 'bg-gray-50',
       textClass: 'text-gray-900'
     },
     {
       label: '進行中',
-      count: statusMap[2],
-      percentage: total > 0 ? Math.round((statusMap[2] / total) * 100) : 0,
+      count: statusMap['InProgress'],
+      percentage: total > 0 ? Math.round((statusMap['InProgress'] / total) * 100) : 0,
       bgClass: 'bg-blue-50',
       textClass: 'text-blue-900'
     },
     {
       label: '已完成',
-      count: statusMap[4],
-      percentage: total > 0 ? Math.round((statusMap[4] / total) * 100) : 0,
+      count: statusMap['Completed'],
+      percentage: total > 0 ? Math.round((statusMap['Completed'] / total) * 100) : 0,
       bgClass: 'bg-green-50',
       textClass: 'text-green-900'
     },
     {
       label: '暫停',
-      count: statusMap[5],
-      percentage: total > 0 ? Math.round((statusMap[5] / total) * 100) : 0,
+      count: statusMap['OnHold'],
+      percentage: total > 0 ? Math.round((statusMap['OnHold'] / total) * 100) : 0,
       bgClass: 'bg-yellow-50',
       textClass: 'text-yellow-900'
     },
     {
       label: '已取消',
-      count: statusMap[6],
-      percentage: total > 0 ? Math.round((statusMap[6] / total) * 100) : 0,
+      count: statusMap['Cancelled'],
+      percentage: total > 0 ? Math.round((statusMap['Cancelled'] / total) * 100) : 0,
       bgClass: 'bg-red-50',
       textClass: 'text-red-900'
     }
@@ -374,7 +374,7 @@ const averageDailyHours = computed(() => {
 
 const averageTaskTime = computed(() => {
   const completedTasksWithTime = props.tasks.filter(task => 
-    task.status === 4 && task.actualHours && task.actualHours > 0
+    task.status === 'Completed' && task.actualHours && task.actualHours > 0
   )
   
   if (completedTasksWithTime.length === 0) return 0
@@ -389,7 +389,7 @@ const taskCompletionRate = computed(() => {
 })
 
 const onTimeCompletionRate = computed(() => {
-  const tasksWithDueDate = props.tasks.filter(task => task.dueDate && task.status === 4)
+  const tasksWithDueDate = props.tasks.filter(task => task.dueDate && task.status === 'Completed')
   if (tasksWithDueDate.length === 0) return 100
   
   const onTimeTasks = tasksWithDueDate.filter(task => {

@@ -102,10 +102,9 @@
               class="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">所有狀態</option>
-              <option value="pending">待處理</option>
-              <option value="in_progress">進行中</option>
-              <option value="completed">已完成</option>
-              <option value="cancelled">已取消</option>
+              <option value="Pending">待處理</option>
+              <option value="InProgress">進行中</option>
+              <option value="Completed">已完成</option>
             </select>
 
             <select
@@ -113,21 +112,11 @@
               class="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">所有優先級</option>
-              <option value="low">低</option>
-              <option value="medium">中</option>
-              <option value="high">高</option>
-              <option value="urgent">緊急</option>
+              <option value="Low">低</option>
+              <option value="Medium">中</option>
+              <option value="High">高</option>
             </select>
 
-            <select
-              v-model="selectedCategory"
-              class="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">所有分類</option>
-              <option v-for="category in categories" :key="category" :value="category">
-                {{ category }}
-              </option>
-            </select>
           </div>
         </div>
 
@@ -258,7 +247,7 @@
         <div class="space-y-3">
           <BaseButton
             variant="outline"
-            @click="batchUpdateStatus('completed')"
+            @click="batchUpdateStatus('Completed')"
             class="w-full justify-start"
           >
             <CheckCircleIcon class="w-4 h-4 mr-2" />
@@ -267,7 +256,7 @@
           
           <BaseButton
             variant="outline"
-            @click="batchUpdatePriority('high')"
+            @click="batchUpdatePriority('High')"
             class="w-full justify-start"
           >
             <ExclamationTriangleIcon class="w-4 h-4 mr-2" />
@@ -339,8 +328,7 @@ import {
   TagIcon
 } from '@heroicons/vue/24/outline'
 import { useTaskStore } from '@/stores/task'
-import type { TodoItem } from '@/types/api'
-import { TaskStatus, TodoPriority } from '@/types/api'
+import type { TodoItem, TodoStatus } from '@/types/api'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
@@ -357,7 +345,7 @@ const taskStore = useTaskStore()
 const searchQuery = ref('')
 const selectedStatus = ref('')
 const selectedPriority = ref('')
-const selectedCategory = ref('')
+const selectedCategory = ref('') // kept for filter compatibility
 const sortBy = ref<'createdAt' | 'dueDate' | 'priority' | 'title' | 'status'>('createdAt')
 const viewMode = ref<'list' | 'grid' | 'kanban'>('list')
 const loading = ref(false)
@@ -375,7 +363,7 @@ const tasks = computed(() => taskStore.todoItems)
 const totalTasks = computed(() => tasks.value.length)
 
 const completedTasks = computed(() => {
-  return tasks.value.filter(task => task.status === TaskStatus.Completed).length
+  return tasks.value.filter(task => task.status === 'Completed' as TodoStatus).length
 })
 
 const completionRate = computed(() => {
@@ -385,7 +373,7 @@ const completionRate = computed(() => {
 const overdueTasks = computed(() => {
   const today = new Date()
   return tasks.value.filter(task => 
-    task.dueDate && new Date(task.dueDate) < today && task.status !== TaskStatus.Completed
+    task.dueDate && new Date(task.dueDate) < today && task.status !== 'Completed' as TodoStatus
   ).length
 })
 
@@ -397,8 +385,7 @@ const todayTasks = computed(() => {
 })
 
 const categories = computed(() => {
-  const categorySet = new Set(tasks.value.map(task => task.category).filter(Boolean))
-  return Array.from(categorySet).sort()
+  return [] as string[]
 })
 
 const filteredAndSortedTasks = computed(() => {
@@ -409,8 +396,7 @@ const filteredAndSortedTasks = computed(() => {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(task =>
       task.title.toLowerCase().includes(query) ||
-      task.description?.toLowerCase().includes(query) ||
-      task.category?.toLowerCase().includes(query)
+      task.description?.toLowerCase().includes(query)
     )
   }
 
@@ -424,10 +410,6 @@ const filteredAndSortedTasks = computed(() => {
     filtered = filtered.filter(task => task.priority === selectedPriority.value)
   }
 
-  // Category filter
-  if (selectedCategory.value) {
-    filtered = filtered.filter(task => task.category === selectedCategory.value)
-  }
 
   // Sort
   return filtered.sort((a, b) => {
@@ -461,10 +443,10 @@ function toggleTaskSelection(taskId: number) {
 }
 
 async function toggleTaskComplete(task: TodoItem) {
-  const newStatus = task.status === TaskStatus.Completed ? TaskStatus.Pending : TaskStatus.Completed
+  const newStatus = task.status === 'Completed' as TodoStatus ? 'Pending' as TodoStatus : 'Completed' as TodoStatus
   await taskStore.updateTodo(task.id, {
     status: newStatus,
-    completedAt: newStatus === TaskStatus.Completed ? new Date().toISOString() : undefined
+    completedAt: newStatus === 'Completed' as TodoStatus ? new Date().toISOString() : undefined
   })
 }
 
@@ -484,7 +466,7 @@ function duplicateTask(task: TodoItem) {
     ...task,
     id: 0,
     title: `${task.title} (複製)`,
-    status: TaskStatus.Pending,
+    status: 'Pending' as TodoStatus,
     createdAt: undefined,
     completedAt: undefined
   }
@@ -493,18 +475,13 @@ function duplicateTask(task: TodoItem) {
 }
 
 function moveTask(taskId: number, newStatus: string) {
-  // Convert string to TaskStatus enum
-  const statusMap: Record<string, TaskStatus> = {
-    'pending': TaskStatus.Pending,
-    'planning': TaskStatus.Planning,
-    'inprogress': TaskStatus.InProgress,
-    'testing': TaskStatus.Testing,
-    'completed': TaskStatus.Completed,
-    'onhold': TaskStatus.OnHold,
-    'cancelled': TaskStatus.Cancelled
+  const statusMap: Record<string, TodoStatus> = {
+    'pending': 'Pending',
+    'inprogress': 'InProgress',
+    'completed': 'Completed',
   }
-  
-  const status = statusMap[newStatus.toLowerCase()] || TaskStatus.Pending
+
+  const status = statusMap[newStatus.toLowerCase()] || 'Pending'
   taskStore.updateTodo(taskId, { status })
 }
 
@@ -532,7 +509,7 @@ async function batchUpdateStatus(status: string) {
       selectedTasks.value.map(taskId =>
         taskStore.updateTodo(taskId, {
           status: status as any,
-          completedAt: status === 'completed' ? new Date().toISOString() : undefined
+          completedAt: status === 'Completed' ? new Date().toISOString() : undefined
         })
       )
     )

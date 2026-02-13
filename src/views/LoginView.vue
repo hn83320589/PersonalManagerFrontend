@@ -202,17 +202,10 @@ async function handleLogin() {
   authStore.clearError()
 
   try {
-    let success = false
-    
-    // Check if this is demo credentials
-    if (form.username.trim() === 'admin' && form.password.trim() === 'demo123') {
-      success = await authStore.demoLogin()
-    } else {
-      success = await authStore.login({
-        username: form.username.trim(),
-        password: form.password.trim()
-      })
-    }
+    const success = await authStore.login({
+      username: form.username.trim(),
+      password: form.password.trim()
+    })
 
     if (success) {
       // Redirect to intended page or dashboard

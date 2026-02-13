@@ -108,8 +108,7 @@
             class="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="title">標題</option>
-            <option value="startDate">開始日期</option>
-            <option value="endDate">結束日期</option>
+            <option value="createdAt">建立日期</option>
             <option value="sortOrder">排序</option>
             <option value="createdAt">建立時間</option>
           </select>
@@ -201,13 +200,7 @@
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                <div>
-                  <div>{{ formatDate(project.startDate) }}</div>
-                  <div v-if="project.endDate" class="text-xs text-gray-400">
-                    至 {{ formatDate(project.endDate) }}
-                  </div>
-                  <div v-else class="text-xs text-green-600">進行中</div>
-                </div>
+                <div>{{ formatDate(project.createdAt) }}</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 <div class="flex space-x-2">
@@ -221,8 +214,8 @@
                     <GlobeAltIcon class="w-4 h-4" />
                   </a>
                   <a
-                    v-if="project.repositoryUrl || project.githubUrl"
-                    :href="project.repositoryUrl || project.githubUrl"
+                    v-if="project.repositoryUrl"
+                    :href="project.repositoryUrl"
                     target="_blank"
                     class="text-gray-600 hover:text-gray-900"
                     title="查看源碼"
@@ -423,13 +416,9 @@ const filteredProjects = computed(() => {
         aValue = a.title.toLowerCase()
         bValue = b.title.toLowerCase()
         break
-      case 'startDate':
-        aValue = new Date(a.startDate || '').getTime()
-        bValue = new Date(b.startDate || '').getTime()
-        break
-      case 'endDate':
-        aValue = new Date(a.endDate || '9999-12-31').getTime()
-        bValue = new Date(b.endDate || '9999-12-31').getTime()
+      case 'createdAt':
+        aValue = new Date(a.createdAt || '').getTime()
+        bValue = new Date(b.createdAt || '').getTime()
         break
       case 'sortOrder':
         aValue = a.sortOrder
@@ -454,7 +443,7 @@ const filteredProjects = computed(() => {
 
 // Methods
 function getProjectTechnologies(project: Portfolio): string[] {
-  const technologies = project.technologies || project.technologyUsed || ''
+  const technologies = project.technologies || ''
   return technologies
     .split(/[,;|]/)
     .map(tech => tech.trim())

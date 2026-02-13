@@ -1,13 +1,9 @@
 import httpService from './http'
-import type { ApiResponse, Skill, SkillLevel } from '@/types/api'
+import type { ApiResponse, Skill } from '@/types/api'
 
 class SkillService {
   async getSkills(): Promise<ApiResponse<Skill[]>> {
     return httpService.get<Skill[]>('/skills')
-  }
-
-  async getPublicSkills(): Promise<ApiResponse<Skill[]>> {
-    return httpService.get<Skill[]>('/skills/public')
   }
 
   async getSkillById(id: number): Promise<ApiResponse<Skill>> {
@@ -18,16 +14,12 @@ class SkillService {
     return httpService.get<Skill[]>(`/skills/user/${userId}`)
   }
 
-  async getSkillsByCategory(category: string): Promise<ApiResponse<Skill[]>> {
-    return httpService.get<Skill[]>(`/skills/category/${encodeURIComponent(category)}`)
+  async getPublicSkillsByUserId(userId: number): Promise<ApiResponse<Skill[]>> {
+    return httpService.get<Skill[]>(`/skills/user/${userId}/public`)
   }
 
-  async getSkillsByLevel(level: SkillLevel): Promise<ApiResponse<Skill[]>> {
-    return httpService.get<Skill[]>(`/skills/level/${level}`)
-  }
-
-  async getSkillCategories(): Promise<ApiResponse<string[]>> {
-    return httpService.get<string[]>('/skills/categories')
+  async getSkillsByCategory(userId: number, category: string): Promise<ApiResponse<Skill[]>> {
+    return httpService.get<Skill[]>(`/skills/user/${userId}/category/${encodeURIComponent(category)}`)
   }
 
   async createSkill(skill: Partial<Skill>): Promise<ApiResponse<Skill>> {
@@ -40,27 +32,6 @@ class SkillService {
 
   async deleteSkill(id: number): Promise<ApiResponse<void>> {
     return httpService.delete<void>(`/skills/${id}`)
-  }
-
-  async updateSkillOrder(skillId: number, newOrder: number): Promise<ApiResponse<void>> {
-    return httpService.put<void>(`/skills/${skillId}/order`, { sortOrder: newOrder })
-  }
-
-  async bulkUpdateSkills(skills: Partial<Skill>[]): Promise<ApiResponse<Skill[]>> {
-    return httpService.put<Skill[]>('/skills/bulk', { skills })
-  }
-
-  // Search and filter methods
-  async searchSkills(keyword: string): Promise<ApiResponse<Skill[]>> {
-    return httpService.get<Skill[]>(`/skills/search`, { keyword })
-  }
-
-  async getSkillStatistics(): Promise<ApiResponse<{
-    totalSkills: number
-    skillsByLevel: Record<SkillLevel, number>
-    skillsByCategory: Record<string, number>
-  }>> {
-    return httpService.get('/skills/statistics')
   }
 }
 

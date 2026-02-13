@@ -50,12 +50,12 @@ export const useProfileStore = defineStore('profile', () => {
     }
   }
 
-  async function fetchPublicProfile() {
+  async function fetchPublicProfile(userId: number) {
     isLoading.value = true
     error.value = null
 
     try {
-      const response = await profileService.getPublicProfile()
+      const response = await profileService.getProfileByUserId(userId)
       if (response.success && response.data) {
         publicProfile.value = response.data
       } else {
@@ -75,8 +75,8 @@ export const useProfileStore = defineStore('profile', () => {
 
     try {
       const response = await profileService.getProfileByUserId(userId)
-      if (response.success && response.data && response.data.length > 0) {
-        currentProfile.value = response.data[0] // 取第一個profile
+      if (response.success && response.data) {
+        currentProfile.value = response.data
       } else {
         error.value = response.message || 'No profile found for current user'
       }

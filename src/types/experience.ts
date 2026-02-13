@@ -2,7 +2,6 @@
 export type {
   Education,
   WorkExperience,
-  EmploymentType,
   User
 } from './api'
 

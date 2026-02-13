@@ -27,9 +27,9 @@
             <div class="space-y-6">
               <div>
                 <img
-                  v-if="profile.avatarUrl"
-                  :src="profile.avatarUrl"
-                  :alt="profile.fullName"
+                  v-if="profile.profileImageUrl"
+                  :src="profile.profileImageUrl"
+                  :alt="profile.title"
                   class="w-48 h-48 rounded-full mx-auto object-cover border-4 border-primary-100"
                 />
                 <div v-else class="w-48 h-48 rounded-full mx-auto bg-gray-200 flex items-center justify-center">
@@ -38,7 +38,7 @@
               </div>
 
               <div>
-                <h2 class="text-2xl font-bold text-gray-900">{{ profile.fullName }}</h2>
+                <h2 class="text-2xl font-bold text-gray-900">{{ profile.title }}</h2>
                 <p v-if="profile.title" class="text-lg text-primary-600 font-medium">
                   {{ profile.title }}
                 </p>
@@ -70,9 +70,9 @@
         <!-- Biography and Details -->
         <div class="lg:col-span-2 space-y-8">
           <!-- Bio Section -->
-          <BaseCard v-if="profile.bio" title="Biography">
+          <BaseCard v-if="profile.description" title="Biography">
             <div class="prose prose-lg max-w-none text-gray-700">
-              <p class="whitespace-pre-line">{{ profile.bio }}</p>
+              <p class="whitespace-pre-line">{{ profile.description }}</p>
             </div>
           </BaseCard>
 
@@ -97,10 +97,7 @@
                 {{ currentPosition.position }}
               </h3>
               <p class="text-primary-600 font-medium">
-                {{ currentPosition.companyName }}
-              </p>
-              <p v-if="currentPosition.location" class="text-gray-600">
-                📍 {{ currentPosition.location }}
+                {{ currentPosition.company }}
               </p>
               <p v-if="currentPosition.description" class="text-gray-700 mt-4">
                 {{ currentPosition.description }}
@@ -113,10 +110,10 @@
             <div class="space-y-2">
               <h3 class="text-lg font-semibold text-gray-900">
                 {{ latestEducation.degree }}
-                <span v-if="latestEducation.major">in {{ latestEducation.major }}</span>
+                <span v-if="latestEducation.fieldOfStudy">in {{ latestEducation.fieldOfStudy }}</span>
               </h3>
               <p class="text-primary-600 font-medium">
-                {{ latestEducation.schoolName }}
+                {{ latestEducation.school }}
               </p>
               <p class="text-gray-600">
                 {{ latestEducation.startYear }}
@@ -190,28 +187,29 @@ const expertSkills = computed(() => skillStore.expertSkills.slice(0, 6))
 
 // Methods
 function getContactIcon(type: ContactType) {
-  const icons = {
-    [0]: EnvelopeIcon, // Email
-    [1]: PhoneIcon,    // Phone
-    [2]: 'LinkedIn',   // LinkedIn - would need custom icon
-    [3]: 'GitHub',     // GitHub - would need custom icon
-    [4]: 'Facebook',   // Facebook - would need custom icon
-    [5]: 'Twitter',    // Twitter - would need custom icon
-    [6]: 'Instagram',  // Instagram - would need custom icon
-    [7]: EnvelopeIcon, // Other
+  const icons: Record<string, any> = {
+    'Email': EnvelopeIcon,
+    'Phone': PhoneIcon,
+    'LinkedIn': EnvelopeIcon,
+    'GitHub': EnvelopeIcon,
+    'Facebook': EnvelopeIcon,
+    'Twitter': EnvelopeIcon,
+    'Instagram': EnvelopeIcon,
+    'Discord': EnvelopeIcon,
+    'Other': EnvelopeIcon,
   }
   return icons[type] || EnvelopeIcon
 }
 
 function getContactLink(contact: ContactMethod) {
   switch (contact.type) {
-    case 0: // Email
+    case 'Email':
       return `mailto:${contact.value}`
-    case 1: // Phone
+    case 'Phone':
       return `tel:${contact.value}`
-    case 2: // LinkedIn
+    case 'LinkedIn':
       return contact.value.startsWith('http') ? contact.value : `https://linkedin.com/in/${contact.value}`
-    case 3: // GitHub
+    case 'GitHub':
       return contact.value.startsWith('http') ? contact.value : `https://github.com/${contact.value}`
     default:
       return contact.value.startsWith('http') ? contact.value : `https://${contact.value}`
@@ -222,7 +220,7 @@ function getContactLink(contact: ContactMethod) {
 onMounted(async () => {
   try {
     await Promise.all([
-      profileStore.fetchPublicProfile(),
+      profileStore.fetchPublicProfile(1),
       experienceStore.fetchWorkExperiences(),
       experienceStore.fetchEducations(),
       skillStore.fetchSkills(),

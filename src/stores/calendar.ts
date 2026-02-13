@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { CalendarEvent, EventType } from '@/types/api'
+import type { CalendarEvent } from '@/types/api'
 
 export const useCalendarStore = defineStore('calendar', () => {
   // State
@@ -19,7 +19,7 @@ export const useCalendarStore = defineStore('calendar', () => {
   const eventsByDate = computed(() => {
     const eventMap: Record<string, CalendarEvent[]> = {}
     events.value.forEach(event => {
-      const date = event.startDate
+      const date = event.startTime.split('T')[0]
       if (!eventMap[date]) {
         eventMap[date] = []
       }
@@ -36,24 +36,14 @@ export const useCalendarStore = defineStore('calendar', () => {
   const upcomingEvents = computed(() => {
     const today = new Date().toISOString().split('T')[0]
     return events.value
-      .filter(event => event.startDate >= today)
-      .sort((a, b) => a.startDate.localeCompare(b.startDate))
+      .filter(event => event.startTime.split('T')[0] >= today)
+      .sort((a, b) => a.startTime.localeCompare(b.startTime))
       .slice(0, 5)
   })
 
-  const eventsByType = computed(() => {
-    const typeMap: Record<EventType, CalendarEvent[]> = {
-      [0]: [], // Personal
-      [1]: [], // Work
-      [2]: [], // Meeting
-      [3]: [], // Reminder
-      [4]: []  // Other
-    }
-    events.value.forEach(event => {
-      typeMap[event.eventType].push(event)
-    })
-    return typeMap
-  })
+  const allDayEvents = computed(() =>
+    events.value.filter(event => event.isAllDay)
+  )
 
   // Actions
   async function fetchEvents() {
@@ -195,7 +185,7 @@ export const useCalendarStore = defineStore('calendar', () => {
     eventsByDate,
     todayEvents,
     upcomingEvents,
-    eventsByType,
+    allDayEvents,
     // Actions
     fetchEvents,
     fetchEventById,

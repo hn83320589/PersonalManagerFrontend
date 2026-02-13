@@ -70,9 +70,9 @@
               >
                 <BaseCard hoverable clickable class="h-full">
                   <div class="space-y-4">
-                    <div v-if="post.featuredImageUrl" class="aspect-w-16 aspect-h-9">
+                    <div v-if="false" class="aspect-w-16 aspect-h-9">
                       <img
-                        :src="post.featuredImageUrl"
+                        src=""
                         :alt="post.title"
                         class="w-full h-48 object-cover rounded-md"
                       />
@@ -151,9 +151,9 @@
                 <div class="p-6">
                   <div class="flex flex-col md:flex-row md:space-x-6">
                     <!-- Image -->
-                    <div v-if="post.featuredImageUrl" class="md:w-48 mb-4 md:mb-0 flex-shrink-0">
+                    <div v-if="false" class="md:w-48 mb-4 md:mb-0 flex-shrink-0">
                       <img
-                        :src="post.featuredImageUrl"
+                        src=""
                         :alt="post.title"
                         class="w-full h-32 md:h-24 object-cover rounded-md"
                       />

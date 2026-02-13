@@ -11,8 +11,8 @@ export const useBlogStore = defineStore('blog', () => {
   const error = ref<string | null>(null)
 
   // Getters
-  const publishedPosts = computed(() => 
-    posts.value.filter(post => post.isPublished).sort((a, b) => 
+  const publishedPosts = computed(() =>
+    posts.value.filter(post => post.status === 'Published').sort((a, b) =>
       new Date(b.publishedAt || b.createdAt).getTime() - new Date(a.publishedAt || a.createdAt).getTime()
     )
   )
@@ -21,8 +21,8 @@ export const useBlogStore = defineStore('blog', () => {
     publishedPosts.value.filter(post => post.isPublic)
   )
 
-  const draftPosts = computed(() => 
-    posts.value.filter(post => !post.isPublished)
+  const draftPosts = computed(() =>
+    posts.value.filter(post => post.status === 'Draft')
   )
 
   const postsByCategory = computed(() => {
@@ -172,16 +172,16 @@ export const useBlogStore = defineStore('blog', () => {
   }
 
   async function publishPost(id: number) {
-    return await updatePost(id, { 
-      isPublished: true, 
-      publishedAt: new Date().toISOString() 
+    return await updatePost(id, {
+      status: 'Published',
+      publishedAt: new Date().toISOString()
     })
   }
 
   async function unpublishPost(id: number) {
-    return await updatePost(id, { 
-      isPublished: false, 
-      publishedAt: undefined 
+    return await updatePost(id, {
+      status: 'Draft',
+      publishedAt: undefined
     })
   }
 

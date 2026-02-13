@@ -111,8 +111,6 @@
               <option value="">所有狀態</option>
               <option value="pending">待審核</option>
               <option value="approved">已審核</option>
-              <option value="rejected">已拒絕</option>
-              <option value="spam">垃圾留言</option>
             </select>
 
             <select
@@ -201,8 +199,7 @@
             :key="comment.id"
             class="px-6 py-4 hover:bg-gray-50"
             :class="{
-              'bg-yellow-50': comment.status === 'pending',
-              'bg-red-50': comment.status === 'spam'
+              'bg-yellow-50': !comment.isApproved,
             }"
           >
             <div class="flex items-center">
@@ -224,9 +221,6 @@
                     <div class="ml-3">
                       <p class="text-sm font-medium text-gray-900">{{ comment.name }}</p>
                       <p class="text-sm text-gray-500">{{ comment.email }}</p>
-                      <p v-if="comment.website" class="text-xs text-blue-600">
-                        <a :href="comment.website" target="_blank">{{ comment.website }}</a>
-                      </p>
                     </div>
                   </div>
                 </div>
@@ -242,19 +236,9 @@
 
                 <!-- Status -->
                 <div class="col-span-2">
-                  <span :class="getStatusBadgeClass(comment.status)">
-                    {{ getStatusLabel(comment.status) }}
+                  <span :class="getStatusBadgeClass(comment.isApproved ? 'approved' : 'pending')">
+                    {{ comment.isApproved ? '已審核' : '待審核' }}
                   </span>
-                  <div v-if="comment.likes || comment.reports" class="mt-1 flex space-x-3 text-xs text-gray-500">
-                    <span v-if="comment.likes" class="flex items-center">
-                      <HeartIcon class="w-3 h-3 mr-1" />
-                      {{ comment.likes }}
-                    </span>
-                    <span v-if="comment.reports" class="flex items-center text-red-600">
-                      <ExclamationTriangleIcon class="w-3 h-3 mr-1" />
-                      {{ comment.reports }}
-                    </span>
-                  </div>
                 </div>
 
                 <!-- Time -->
@@ -267,7 +251,7 @@
                 <div class="col-span-1">
                   <div class="flex items-center space-x-1">
                     <button
-                      v-if="comment.status === 'pending'"
+                      v-if="!comment.isApproved"
                       @click="approveComment(comment.id)"
                       class="p-1 text-green-600 hover:text-green-700 transition-colors"
                       title="審核通過"
@@ -275,7 +259,7 @@
                       <CheckIcon class="w-4 h-4" />
                     </button>
                     <button
-                      v-if="comment.status !== 'rejected'"
+                      v-if="comment.isApproved"
                       @click="rejectComment(comment.id)"
                       class="p-1 text-red-600 hover:text-red-700 transition-colors"
                       title="拒絕留言"
@@ -312,8 +296,7 @@
             :key="comment.id"
             class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
             :class="{
-              'border-yellow-300 bg-yellow-50': comment.status === 'pending',
-              'border-red-300 bg-red-50': comment.status === 'spam'
+              'border-yellow-300 bg-yellow-50': !comment.isApproved,
             }"
           >
             <!-- Card Header -->
@@ -325,8 +308,8 @@
                   @change="toggleCommentSelection(comment.id)"
                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-3"
                 />
-                <span :class="getStatusBadgeClass(comment.status)">
-                  {{ getStatusLabel(comment.status) }}
+                <span :class="getStatusBadgeClass(comment.isApproved ? 'approved' : 'pending')">
+                  {{ comment.isApproved ? '已審核' : '待審核' }}
                 </span>
               </div>
               <span class="text-xs text-gray-500">{{ formatTimeAgo(comment.createdAt) }}</span>
@@ -352,22 +335,10 @@
               <p class="text-sm text-blue-900">{{ comment.adminReply }}</p>
             </div>
 
-            <!-- Interactions -->
-            <div v-if="comment.likes || comment.reports" class="flex space-x-4 mb-4 text-xs text-gray-500">
-              <span v-if="comment.likes" class="flex items-center">
-                <HeartIcon class="w-3 h-3 mr-1" />
-                {{ comment.likes }} 個讚
-              </span>
-              <span v-if="comment.reports" class="flex items-center text-red-600">
-                <ExclamationTriangleIcon class="w-3 h-3 mr-1" />
-                {{ comment.reports }} 次檢舉
-              </span>
-            </div>
-
             <!-- Actions -->
             <div class="flex justify-end space-x-2">
               <BaseButton
-                v-if="comment.status === 'pending'"
+                v-if="!comment.isApproved"
                 variant="outline"
                 size="small"
                 @click="approveComment(comment.id)"
@@ -377,7 +348,7 @@
                 通過
               </BaseButton>
               <BaseButton
-                v-if="comment.status !== 'rejected'"
+                v-if="comment.isApproved"
                 variant="outline"
                 size="small"
                 @click="rejectComment(comment.id)"
@@ -621,7 +592,6 @@ import {
   ArrowDownTrayIcon,
   Cog6ToothIcon,
   UserIcon,
-  HeartIcon,
   CheckIcon,
   XMarkIcon,
   TrashIcon
@@ -665,7 +635,7 @@ const comments = computed(() => commentStore.entries)
 const totalComments = computed(() => comments.value.length)
 
 const approvedComments = computed(() => {
-  return comments.value.filter(comment => comment.status === 'approved').length
+  return comments.value.filter(comment => comment.isApproved).length
 })
 
 const approvedRate = computed(() => {
@@ -673,11 +643,11 @@ const approvedRate = computed(() => {
 })
 
 const pendingComments = computed(() => {
-  return comments.value.filter(comment => comment.status === 'pending').length
+  return comments.value.filter(comment => !comment.isApproved).length
 })
 
 const reportedComments = computed(() => {
-  return comments.value.filter(comment => (comment.reports || 0) > 0).length
+  return 0
 })
 
 const allSelected = computed(() => {
@@ -704,7 +674,11 @@ const filteredAndSortedComments = computed(() => {
 
   // Status filter
   if (selectedStatus.value) {
-    filtered = filtered.filter(comment => comment.status === selectedStatus.value)
+    if (selectedStatus.value === 'approved') {
+      filtered = filtered.filter(comment => comment.isApproved)
+    } else if (selectedStatus.value === 'pending') {
+      filtered = filtered.filter(comment => !comment.isApproved)
+    }
   }
 
   // Time range filter
@@ -738,7 +712,7 @@ const filteredAndSortedComments = computed(() => {
       case 'name':
         return a.name.localeCompare(b.name)
       case 'status':
-        return a.status.localeCompare(b.status)
+        return (a.isApproved ? 1 : 0) - (b.isApproved ? 1 : 0)
       default:
         return 0
     }
@@ -838,7 +812,7 @@ async function deleteComment(id: number) {
 
 function openReplyModal(comment: GuestBookEntry) {
   replyingComment.value = comment
-  replyText.value = comment.reply?.message || ''
+  replyText.value = comment.adminReply || ''
   showReplyModal.value = true
 }
 
@@ -918,12 +892,9 @@ function exportComments() {
   const exportData = filteredAndSortedComments.value.map(comment => ({
     name: comment.name,
     email: comment.email,
-    website: comment.website,
     message: comment.message,
-    status: comment.status,
+    isApproved: comment.isApproved,
     adminReply: comment.adminReply,
-    likes: comment.likes,
-    reports: comment.reports,
     createdAt: comment.createdAt
   }))
 

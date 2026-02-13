@@ -7,16 +7,16 @@ class ExperienceService {
     return httpService.get<Education[]>('/educations')
   }
 
-  async getPublicEducations(): Promise<ApiResponse<Education[]>> {
-    return httpService.get<Education[]>('/educations/public')
-  }
-
   async getEducationById(id: number): Promise<ApiResponse<Education>> {
     return httpService.get<Education>(`/educations/${id}`)
   }
 
   async getEducationsByUserId(userId: number): Promise<ApiResponse<Education[]>> {
     return httpService.get<Education[]>(`/educations/user/${userId}`)
+  }
+
+  async getPublicEducationsByUserId(userId: number): Promise<ApiResponse<Education[]>> {
+    return httpService.get<Education[]>(`/educations/user/${userId}/public`)
   }
 
   async createEducation(education: Partial<Education>): Promise<ApiResponse<Education>> {
@@ -36,10 +36,6 @@ class ExperienceService {
     return httpService.get<WorkExperience[]>('/workexperiences')
   }
 
-  async getPublicWorkExperiences(): Promise<ApiResponse<WorkExperience[]>> {
-    return httpService.get<WorkExperience[]>('/workexperiences/public')
-  }
-
   async getWorkExperienceById(id: number): Promise<ApiResponse<WorkExperience>> {
     return httpService.get<WorkExperience>(`/workexperiences/${id}`)
   }
@@ -48,11 +44,8 @@ class ExperienceService {
     return httpService.get<WorkExperience[]>(`/workexperiences/user/${userId}`)
   }
 
-  async getCurrentPosition(userId?: number): Promise<ApiResponse<WorkExperience[]>> {
-    const endpoint = userId 
-      ? `/workexperiences/current/user/${userId}`
-      : '/workexperiences/current'
-    return httpService.get<WorkExperience[]>(endpoint)
+  async getPublicWorkExperiencesByUserId(userId: number): Promise<ApiResponse<WorkExperience[]>> {
+    return httpService.get<WorkExperience[]>(`/workexperiences/user/${userId}/public`)
   }
 
   async createWorkExperience(experience: Partial<WorkExperience>): Promise<ApiResponse<WorkExperience>> {
@@ -65,15 +58,6 @@ class ExperienceService {
 
   async deleteWorkExperience(id: number): Promise<ApiResponse<void>> {
     return httpService.delete<void>(`/workexperiences/${id}`)
-  }
-
-  // Utility methods
-  async updateEducationOrder(educationId: number, newOrder: number): Promise<ApiResponse<void>> {
-    return httpService.put<void>(`/educations/${educationId}/order`, { sortOrder: newOrder })
-  }
-
-  async updateWorkExperienceOrder(experienceId: number, newOrder: number): Promise<ApiResponse<void>> {
-    return httpService.put<void>(`/workexperiences/${experienceId}/order`, { sortOrder: newOrder })
   }
 }
 

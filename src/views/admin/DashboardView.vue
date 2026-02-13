@@ -137,7 +137,7 @@
             </div>
             <div>
               <h4 class="text-sm font-medium text-gray-500">最後登入</h4>
-              <p class="text-lg font-semibold text-gray-900">{{ formatDate(authStore.user?.lastLoginDate) }}</p>
+              <p class="text-lg font-semibold text-gray-900">{{ formatDate(authStore.user?.createdAt) }}</p>
             </div>
             <div>
               <h4 class="text-sm font-medium text-gray-500">帳號狀態</h4>

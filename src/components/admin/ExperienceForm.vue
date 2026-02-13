@@ -435,20 +435,20 @@ function initializeForm() {
     formData.value.isPublic = item.isPublic ?? true
     
     // Check if it's education or work experience
-    if ('schoolName' in item) {
+    if ('school' in item) {
       // Education
       formData.value.type = 'education'
-      formData.value.institution = (item as Education).schoolName
+      formData.value.institution = (item as Education).school
       formData.value.degree = (item as Education).degree
-      formData.value.fieldOfStudy = (item as Education).major || ''
+      formData.value.fieldOfStudy = (item as Education).fieldOfStudy || ''
       formData.value.gpa = ''
     } else {
       // Work Experience
       formData.value.type = 'work'
-      formData.value.company = (item as WorkExperience).companyName
+      formData.value.company = (item as WorkExperience).company
       formData.value.position = (item as WorkExperience).position
       formData.value.department = ''
-      formData.value.employmentType = String((item as WorkExperience).employmentType)
+      formData.value.employmentType = ''
       formData.value.isCurrent = (item as WorkExperience).isCurrent || false
       formData.value.skills = ''
     }

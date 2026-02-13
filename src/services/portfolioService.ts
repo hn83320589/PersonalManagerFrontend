@@ -10,16 +10,16 @@ class PortfolioService {
     return httpService.get<Portfolio>(`/portfolios/${id}`)
   }
 
-  async getFeaturedPortfolios(): Promise<ApiResponse<Portfolio[]>> {
-    return httpService.get<Portfolio[]>('/portfolios/featured')
+  async getPortfoliosByUserId(userId: number): Promise<ApiResponse<Portfolio[]>> {
+    return httpService.get<Portfolio[]>(`/portfolios/user/${userId}`)
   }
 
-  async getPortfoliosByTechnology(technology: string): Promise<ApiResponse<Portfolio[]>> {
-    return httpService.get<Portfolio[]>(`/portfolios/technology/${technology}`)
+  async getPublicPortfoliosByUserId(userId: number): Promise<ApiResponse<Portfolio[]>> {
+    return httpService.get<Portfolio[]>(`/portfolios/user/${userId}/public`)
   }
 
-  async searchPortfolios(keyword: string): Promise<ApiResponse<Portfolio[]>> {
-    return httpService.get<Portfolio[]>('/portfolios/search', { keyword })
+  async getFeaturedPortfoliosByUserId(userId: number): Promise<ApiResponse<Portfolio[]>> {
+    return httpService.get<Portfolio[]>(`/portfolios/user/${userId}/featured`)
   }
 
   async createPortfolio(portfolio: Partial<Portfolio>): Promise<ApiResponse<Portfolio>> {

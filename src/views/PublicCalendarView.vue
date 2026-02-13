@@ -113,7 +113,7 @@
                     :key="event.id"
                     :class="[
                       'text-xs p-1 rounded truncate cursor-pointer',
-                      getEventColor(event.eventType)
+                      getEventColor(event.color)
                     ]"
                     @click="selectedEvent = event"
                   >
@@ -161,7 +161,7 @@
                       :key="event.id"
                       :class="[
                         'absolute left-0 right-0 text-xs p-1 rounded truncate cursor-pointer',
-                        getEventColor(event.eventType)
+                        getEventColor(event.color)
                       ]"
                       @click="selectedEvent = event"
                     >
@@ -194,15 +194,8 @@
                       <CalendarIcon class="w-4 h-4 mr-1" />
                       {{ formatEventDate(event) }}
                     </span>
-                    <span v-if="event.location" class="flex items-center">
-                      <MapPinIcon class="w-4 h-4 mr-1" />
-                      {{ event.location }}
-                    </span>
                   </div>
                 </div>
-                <span :class="['px-3 py-1 rounded-full text-xs font-medium', getEventTypeBadge(event.eventType)]">
-                  {{ getEventTypeLabel(event.eventType) }}
-                </span>
               </div>
             </div>
           </div>
@@ -249,7 +242,7 @@
                   >
                     <div class="font-medium text-sm text-gray-900">{{ event.title }}</div>
                     <div class="text-xs text-gray-500">
-                      {{ formatShortDate(event.startDate) }}
+                      {{ formatShortDate(event.startTime) }}
                     </div>
                   </div>
                 </div>
@@ -257,19 +250,6 @@
             </div>
           </BaseCard>
 
-          <!-- Event Types Legend -->
-          <BaseCard title="Event Types">
-            <div class="space-y-2">
-              <div
-                v-for="type in eventTypes"
-                :key="type.value"
-                class="flex items-center space-x-3"
-              >
-                <div :class="['w-3 h-3 rounded-full', type.color]"></div>
-                <span class="text-sm text-gray-700">{{ type.label }}</span>
-              </div>
-            </div>
-          </BaseCard>
         </div>
       </div>
     </section>
@@ -279,9 +259,6 @@
       <div v-if="selectedEvent" class="space-y-4">
         <div>
           <h3 class="text-lg font-semibold text-gray-900">{{ selectedEvent.title }}</h3>
-          <span :class="['inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-2', getEventTypeBadge(selectedEvent.eventType)]">
-            {{ getEventTypeLabel(selectedEvent.eventType) }}
-          </span>
         </div>
 
         <div v-if="selectedEvent.description" class="text-gray-700">
@@ -292,11 +269,6 @@
           <div>
             <span class="font-medium text-gray-900">Date:</span>
             <div class="text-gray-600">{{ formatEventDate(selectedEvent) }}</div>
-          </div>
-          
-          <div v-if="selectedEvent.location">
-            <span class="font-medium text-gray-900">Location:</span>
-            <div class="text-gray-600">{{ selectedEvent.location }}</div>
           </div>
         </div>
       </div>
@@ -315,15 +287,14 @@ import { ref, onMounted, computed, watch } from 'vue'
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
-  CalendarIcon,
-  MapPinIcon
+  CalendarIcon
 } from '@heroicons/vue/24/outline'
 import { useCalendarStore } from '@/stores/calendar'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import type { CalendarEvent, EventType } from '@/types/api'
+import type { CalendarEvent } from '@/types/api'
 
 // Stores
 const calendarStore = useCalendarStore()
@@ -358,14 +329,6 @@ const viewOptions = [
 ]
 
 const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-
-const eventTypes = [
-  { value: 0, label: 'Personal', color: 'bg-blue-500' },
-  { value: 1, label: 'Work', color: 'bg-green-500' },
-  { value: 2, label: 'Meeting', color: 'bg-purple-500' },
-  { value: 3, label: 'Reminder', color: 'bg-yellow-500' },
-  { value: 4, label: 'Other', color: 'bg-gray-500' }
-]
 
 const dayHours = Array.from({ length: 24 }, (_, i) => i)
 
@@ -440,66 +403,37 @@ function getWeekStart(date: Date): Date {
 }
 
 function getEventsForDate(dateString: string): CalendarEvent[] {
-  return publicEvents.value.filter(event => event.startDate === dateString)
+  return publicEvents.value.filter(event => event.startTime?.startsWith(dateString))
 }
 
 function getEventsForDayHour(dateString: string, hour: number): CalendarEvent[] {
   return getEventsForDate(dateString).filter(event => {
     if (!event.startTime) return false
-    const eventHour = parseInt(event.startTime.split(':')[0])
-    return eventHour === hour
+    const eventDate = new Date(event.startTime)
+    return eventDate.getHours() === hour
   })
 }
 
-function getEventColor(eventType: EventType): string {
-  const colors = {
-    [0]: 'bg-blue-100 text-blue-800', // Personal
-    [1]: 'bg-green-100 text-green-800', // Work
-    [2]: 'bg-purple-100 text-purple-800', // Meeting
-    [3]: 'bg-yellow-100 text-yellow-800', // Reminder
-    [4]: 'bg-gray-100 text-gray-800' // Other
-  }
-  return colors[eventType] || colors[4]
-}
-
-function getEventTypeBadge(eventType: EventType): string {
-  const badges = {
-    [0]: 'bg-blue-100 text-blue-800',
-    [1]: 'bg-green-100 text-green-800',
-    [2]: 'bg-purple-100 text-purple-800',
-    [3]: 'bg-yellow-100 text-yellow-800',
-    [4]: 'bg-gray-100 text-gray-800'
-  }
-  return badges[eventType] || badges[4]
-}
-
-function getEventTypeLabel(eventType: EventType): string {
-  const labels = {
-    [0]: 'Personal',
-    [1]: 'Work',
-    [2]: 'Meeting',
-    [3]: 'Reminder',
-    [4]: 'Other'
-  }
-  return labels[eventType] || 'Other'
+function getEventColor(color?: string): string {
+  if (!color) return 'bg-blue-100 text-blue-800'
+  return `bg-blue-100 text-blue-800`
 }
 
 function formatEventDate(event: CalendarEvent): string {
-  const date = new Date(event.startDate)
-  let formatted = date.toLocaleDateString('en-US', { 
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+  const date = new Date(event.startTime)
+  let formatted = date.toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
   })
-  
-  if (event.startTime) {
-    formatted += ` at ${event.startTime}`
-    if (event.endTime) {
-      formatted += ` - ${event.endTime}`
-    }
+
+  formatted += ` at ${date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`
+  if (event.endTime) {
+    const endDate = new Date(event.endTime)
+    formatted += ` - ${endDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`
   }
-  
+
   return formatted
 }
 

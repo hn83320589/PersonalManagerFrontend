@@ -6,10 +6,9 @@ import { useAuthStore } from '../auth'
 vi.mock('@/services/authService', () => ({
   default: {
     login: vi.fn(),
-    demoLogin: vi.fn(),
     logout: vi.fn(),
-    refreshToken: vi.fn(),
     getCurrentUser: vi.fn(),
+    getCurrentUserData: vi.fn(),
     getAuthToken: vi.fn(),
     isAuthenticated: vi.fn(),
   }
@@ -43,7 +42,7 @@ describe('AuthStore', () => {
       
       // 設定 token 和 user
       store.token = 'test-token'
-      store.user = { id: 1, username: 'testuser', email: 'test@example.com', role: 'user', isActive: true, createdAt: '2024-01-01', updatedAt: '2024-01-01' }
+      store.user = { id: 1, username: 'testuser', email: 'test@example.com', role: 'user', isActive: true, createdAt: '2024-01-01', fullName: 'Test User' }
       expect(store.isAuthenticated).toBe(true)
       
       // 只有 token
@@ -56,7 +55,7 @@ describe('AuthStore', () => {
       
       expect(store.userRole).toBe('guest')
       
-      store.user = { id: 1, username: 'admin', email: 'admin@example.com', role: 'admin', isActive: true, createdAt: '2024-01-01', updatedAt: '2024-01-01' }
+      store.user = { id: 1, username: 'admin', email: 'admin@example.com', role: 'admin', isActive: true, createdAt: '2024-01-01', fullName: 'Test User' }
       expect(store.userRole).toBe('admin')
     })
 
@@ -65,7 +64,7 @@ describe('AuthStore', () => {
       
       expect(store.userDisplayName).toBe('Guest')
       
-      store.user = { id: 1, username: 'testuser', email: 'test@example.com', role: 'user', isActive: true, createdAt: '2024-01-01', updatedAt: '2024-01-01' }
+      store.user = { id: 1, username: 'testuser', email: 'test@example.com', role: 'user', isActive: true, createdAt: '2024-01-01', fullName: 'Test User' }
       expect(store.userDisplayName).toBe('testuser')
     })
 
@@ -76,11 +75,11 @@ describe('AuthStore', () => {
       expect(store.hasPermission('test')).toBe(false)
       
       // 一般使用者
-      store.user = { id: 1, username: 'user', email: 'user@example.com', role: 'user', isActive: true, createdAt: '2024-01-01', updatedAt: '2024-01-01' }
+      store.user = { id: 1, username: 'user', email: 'user@example.com', role: 'user', isActive: true, createdAt: '2024-01-01', fullName: 'Test User' }
       expect(store.hasPermission('test')).toBe(false)
       
       // 管理員
-      store.user = { id: 1, username: 'admin', email: 'admin@example.com', role: 'admin', isActive: true, createdAt: '2024-01-01', updatedAt: '2024-01-01' }
+      store.user = { id: 1, username: 'admin', email: 'admin@example.com', role: 'admin', isActive: true, createdAt: '2024-01-01', fullName: 'Test User' }
       expect(store.hasPermission('test')).toBe(true)
     })
   })
@@ -99,7 +98,7 @@ describe('AuthStore', () => {
       const store = useAuthStore()
       
       // 設定一些資料
-      store.user = { id: 1, username: 'testuser', email: 'test@example.com', role: 'user', isActive: true, createdAt: '2024-01-01', updatedAt: '2024-01-01' }
+      store.user = { id: 1, username: 'testuser', email: 'test@example.com', role: 'user', isActive: true, createdAt: '2024-01-01', fullName: 'Test User' }
       store.token = 'test-token'
       store.error = 'some error'
       

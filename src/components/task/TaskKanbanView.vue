@@ -48,12 +48,12 @@
                   @click.stop="$emit('toggleComplete', task)"
                   :class="[
                     'flex items-center justify-center w-5 h-5 rounded border-2 transition-colors',
-                    task.status === 'completed'
+                    task.status === 'Completed'
                       ? 'bg-green-500 border-green-500 text-white'
                       : 'border-gray-300 hover:border-green-500'
                   ]"
                 >
-                  <CheckIcon v-if="task.status === 'completed'" class="w-3 h-3" />
+                  <CheckIcon v-if="task.status === 'Completed'" class="w-3 h-3" />
                 </button>
               </div>
             </div>
@@ -70,9 +70,6 @@
                 <span :class="getPriorityStyle(String(task.priority))">
                   {{ getPriorityLabel(String(task.priority)) }}
                 </span>
-                <span v-if="task.category" class="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
-                  {{ task.category }}
-                </span>
               </div>
 
               <!-- Due Date -->
@@ -83,36 +80,20 @@
                 <span v-else-if="isDueSoon(task)" class="ml-1 text-yellow-600 font-medium">(即將到期)</span>
               </div>
 
-              <!-- Progress Bar -->
-              <div v-if="task.estimatedHours && task.estimatedHours > 0" class="space-y-1">
-                <div class="flex justify-between items-center text-xs">
-                  <span class="text-gray-500">進度</span>
-                  <span class="font-medium">{{ getProgressPercentage(task) }}%</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-1.5">
-                  <div 
-                    :class="[
-                      'h-1.5 rounded-full transition-all duration-300',
-                      task.status === 'completed' ? 'bg-green-500' : 'bg-blue-500'
-                    ]"
-                    :style="{ width: `${getProgressPercentage(task)}%` }"
-                  ></div>
-                </div>
-              </div>
 
               <!-- Actions -->
               <div class="flex items-center justify-between pt-2 border-t border-gray-100">
                 <div class="flex items-center space-x-1">
                   <button
-                    v-if="status.value !== 'pending'"
-                    @click.stop="moveTaskTo(task, 'pending')"
+                    v-if="status.value !== 'Pending'"
+                    @click.stop="moveTaskTo(task, 'Pending')"
                     class="p-1 text-gray-400 hover:text-blue-600 transition-colors"
                     title="移至待處理"
                   >
                     <ArrowLeftIcon class="w-3 h-3" />
                   </button>
                   <button
-                    v-if="status.value !== 'completed'"
+                    v-if="status.value !== 'Completed'"
                     @click.stop="moveTaskTo(task, getNextStatus(status.value))"
                     class="p-1 text-gray-400 hover:text-green-600 transition-colors"
                     title="下一階段"
@@ -194,24 +175,19 @@ const emit = defineEmits<{
 // Constants
 const kanbanColumns = [
   {
-    value: 'pending',
+    value: 'Pending',
     label: '待處理',
     colorClass: 'bg-gray-400'
   },
   {
-    value: 'in_progress',
+    value: 'InProgress',
     label: '進行中',
     colorClass: 'bg-blue-500'
   },
   {
-    value: 'completed',
+    value: 'Completed',
     label: '已完成',
     colorClass: 'bg-green-500'
-  },
-  {
-    value: 'cancelled',
-    label: '已取消',
-    colorClass: 'bg-red-500'
   }
 ]
 
@@ -225,34 +201,31 @@ function moveTaskTo(task: TodoItem, newStatus: string) {
 }
 
 function getNextStatus(currentStatus: string): string {
-  const statusFlow = {
-    pending: 'in_progress',
-    in_progress: 'completed',
-    completed: 'completed',
-    cancelled: 'pending'
+  const statusFlow: Record<string, string> = {
+    'Pending': 'InProgress',
+    'InProgress': 'Completed',
+    'Completed': 'Completed',
   }
-  return statusFlow[currentStatus as keyof typeof statusFlow] || 'pending'
+  return statusFlow[currentStatus] || 'Pending'
 }
 
 // Reuse utility methods from other views
 function getPriorityLabel(priority: string): string {
-  const priorityMap = {
-    low: '低',
-    medium: '中',
-    high: '高',
-    urgent: '緊急'
+  const priorityMap: Record<string, string> = {
+    Low: '低',
+    Medium: '中',
+    High: '高',
   }
-  return priorityMap[priority as keyof typeof priorityMap] || '中'
+  return priorityMap[priority] || '中'
 }
 
 function getPriorityStyle(priority: string): string {
-  const styleMap = {
-    low: 'px-1.5 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded',
-    medium: 'px-1.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded',
-    high: 'px-1.5 py-0.5 text-xs font-medium bg-orange-100 text-orange-800 rounded',
-    urgent: 'px-1.5 py-0.5 text-xs font-medium bg-red-100 text-red-800 rounded'
+  const styleMap: Record<string, string> = {
+    Low: 'px-1.5 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded',
+    Medium: 'px-1.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded',
+    High: 'px-1.5 py-0.5 text-xs font-medium bg-orange-100 text-orange-800 rounded',
   }
-  return styleMap[priority as keyof typeof styleMap] || styleMap.medium
+  return styleMap[priority] || styleMap.Medium
 }
 
 function formatDate(dateString: string | undefined): string {
@@ -273,7 +246,7 @@ function formatDate(dateString: string | undefined): string {
 }
 
 function isOverdue(task: TodoItem): boolean {
-  if (!task.dueDate || task.status === 'completed') return false
+  if (!task.dueDate || task.status === 'Completed') return false
   
   const dueDate = new Date(task.dueDate)
   const today = new Date()
@@ -283,7 +256,7 @@ function isOverdue(task: TodoItem): boolean {
 }
 
 function isDueSoon(task: TodoItem): boolean {
-  if (!task.dueDate || task.status === 'completed') return false
+  if (!task.dueDate || task.status === 'Completed') return false
   
   const dueDate = new Date(task.dueDate)
   const today = new Date()
@@ -294,16 +267,6 @@ function isDueSoon(task: TodoItem): boolean {
   return diffDays >= 0 && diffDays <= 2
 }
 
-function getProgressPercentage(task: TodoItem): number {
-  if (task.status === 'completed') return 100
-  
-  const estimated = task.estimatedHours || 0
-  const actual = task.actualHours || 0
-  
-  if (estimated === 0) return 0
-  
-  return Math.min(Math.round((actual / estimated) * 100), 100)
-}
 </script>
 
 <style scoped>

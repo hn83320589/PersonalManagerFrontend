@@ -23,7 +23,7 @@
         :class="{
           'bg-red-50 border-l-4 border-l-red-500': isOverdue(task),
           'bg-yellow-50 border-l-4 border-l-yellow-500': isDueSoon(task) && !isOverdue(task),
-          'opacity-60': task.status === 'completed'
+          'opacity-60': task.status === 'Completed'
         }"
       >
         <div class="flex items-center justify-between">
@@ -41,12 +41,12 @@
               @click="$emit('toggleComplete', task)"
               :class="[
                 'flex items-center justify-center w-5 h-5 rounded border-2 transition-colors',
-                task.status === 'completed'
+                task.status === 'Completed'
                   ? 'bg-green-500 border-green-500 text-white'
                   : 'border-gray-300 hover:border-green-500'
               ]"
             >
-              <CheckIcon v-if="task.status === 'completed'" class="w-3 h-3" />
+              <CheckIcon v-if="task.status === 'Completed'" class="w-3 h-3" />
             </button>
 
             <!-- Task Content -->
@@ -54,7 +54,7 @@
               <div class="flex items-center space-x-3 mb-2">
                 <h3 :class="[
                   'text-lg font-medium',
-                  task.status === 'completed' ? 'line-through text-gray-500' : 'text-gray-900'
+                  task.status === 'Completed' ? 'line-through text-gray-500' : 'text-gray-900'
                 ]">
                   {{ task.title }}
                 </h3>
@@ -69,10 +69,6 @@
                   {{ getStatusLabel(task.status) }}
                 </span>
 
-                <!-- Category Tag -->
-                <span v-if="task.category" class="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
-                  {{ task.category }}
-                </span>
               </div>
 
               <!-- Description -->
@@ -89,15 +85,6 @@
                   <span v-else-if="isDueSoon(task)" class="ml-1 text-yellow-600 font-medium">(即將到期)</span>
                 </span>
 
-                <span v-if="task.estimatedHours" class="flex items-center">
-                  <ClockIcon class="w-4 h-4 mr-1" />
-                  預估 {{ task.estimatedHours }}h
-                </span>
-
-                <span v-if="task.actualHours" class="flex items-center">
-                  <ChartBarIcon class="w-4 h-4 mr-1" />
-                  實際 {{ task.actualHours }}h
-                </span>
 
                 <span class="flex items-center">
                   <CalendarIcon class="w-4 h-4 mr-1" />
@@ -110,22 +97,6 @@
                 </span>
               </div>
 
-              <!-- Progress Bar (if has estimated hours) -->
-              <div v-if="task.estimatedHours && task.estimatedHours > 0" class="mt-3">
-                <div class="flex justify-between items-center mb-1">
-                  <span class="text-xs text-gray-500">進度</span>
-                  <span class="text-xs text-gray-900 font-medium">{{ getProgressPercentage(task) }}%</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    :class="[
-                      'h-2 rounded-full transition-all duration-300',
-                      task.status === 'completed' ? 'bg-green-500' : 'bg-blue-500'
-                    ]"
-                    :style="{ width: `${getProgressPercentage(task)}%` }"
-                  ></div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -177,8 +148,6 @@ import { computed } from 'vue'
 import {
   CheckIcon,
   CalendarDaysIcon,
-  ClockIcon,
-  ChartBarIcon,
   CalendarIcon,
   CheckCircleIcon,
   PencilIcon,
@@ -212,76 +181,42 @@ const emit = defineEmits<{
 // Methods
 function getPriorityLabel(priority: string | number): string {
   const priorityStr = String(priority)
-  const priorityMap = {
-    low: '低',
-    '0': '低',
-    medium: '中',
-    '1': '中',
-    high: '高',
-    '2': '高',
-    urgent: '緊急',
-    '3': '緊急'
+  const priorityMap: Record<string, string> = {
+    Low: '低',
+    Medium: '中',
+    High: '高',
   }
-  return priorityMap[priorityStr as keyof typeof priorityMap] || '中'
+  return priorityMap[priorityStr] || '中'
 }
 
 function getPriorityStyle(priority: string | number): string {
   const priorityStr = String(priority)
-  const styleMap = {
-    low: 'px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full',
-    '0': 'px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full',
-    medium: 'px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full',
-    '1': 'px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full',
-    high: 'px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full',
-    '2': 'px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full',
-    urgent: 'px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full',
-    '3': 'px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full'
+  const styleMap: Record<string, string> = {
+    Low: 'px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full',
+    Medium: 'px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full',
+    High: 'px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full',
   }
-  return styleMap[priorityStr as keyof typeof styleMap] || styleMap.medium || styleMap['1']
+  return styleMap[priorityStr] || styleMap.Medium
 }
 
 function getStatusLabel(status: string | number): string {
   const statusStr = String(status)
-  const statusMap = {
-    pending: '待處理',
-    '0': '待處理',
-    planning: '規劃中',
-    '1': '規劃中',
-    in_progress: '進行中',
-    inProgress: '進行中',
-    '2': '進行中',
-    testing: '測試中',
-    '3': '測試中',
-    completed: '已完成',
-    '4': '已完成',
-    onHold: '暫停',
-    '5': '暫停',
-    cancelled: '已取消',
-    '6': '已取消'
+  const statusMap: Record<string, string> = {
+    Pending: '待處理',
+    InProgress: '進行中',
+    Completed: '已完成',
   }
-  return statusMap[statusStr as keyof typeof statusMap] || '待處理'
+  return statusMap[statusStr] || '待處理'
 }
 
 function getStatusStyle(status: string | number): string {
   const statusStr = String(status)
-  const styleMap = {
-    pending: 'px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full',
-    '0': 'px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full',
-    planning: 'px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full',
-    '1': 'px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full',
-    in_progress: 'px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full',
-    inProgress: 'px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full',
-    '2': 'px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full',
-    testing: 'px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full',
-    '3': 'px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full',
-    completed: 'px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full',
-    '4': 'px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full',
-    onHold: 'px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full',
-    '5': 'px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full',
-    cancelled: 'px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full',
-    '6': 'px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full'
+  const styleMap: Record<string, string> = {
+    Pending: 'px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full',
+    InProgress: 'px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full',
+    Completed: 'px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full',
   }
-  return styleMap[statusStr as keyof typeof styleMap] || styleMap.pending || styleMap['0']
+  return styleMap[statusStr] || styleMap.Pending
 }
 
 function formatDate(dateString: string | undefined): string {
@@ -302,7 +237,7 @@ function formatDate(dateString: string | undefined): string {
 }
 
 function isOverdue(task: TodoItem): boolean {
-  if (!task.dueDate || task.status === 'completed') return false
+  if (!task.dueDate || task.status === 'Completed') return false
   
   const dueDate = new Date(task.dueDate)
   const today = new Date()
@@ -312,7 +247,7 @@ function isOverdue(task: TodoItem): boolean {
 }
 
 function isDueSoon(task: TodoItem): boolean {
-  if (!task.dueDate || task.status === 'completed') return false
+  if (!task.dueDate || task.status === 'Completed') return false
   
   const dueDate = new Date(task.dueDate)
   const today = new Date()
@@ -323,16 +258,6 @@ function isDueSoon(task: TodoItem): boolean {
   return diffDays >= 0 && diffDays <= 2 // Due within 2 days
 }
 
-function getProgressPercentage(task: TodoItem): number {
-  if (task.status === 'completed') return 100
-  
-  const estimated = task.estimatedHours || 0
-  const actual = task.actualHours || 0
-  
-  if (estimated === 0) return 0
-  
-  return Math.min(Math.round((actual / estimated) * 100), 100)
-}
 </script>
 
 <style scoped>
