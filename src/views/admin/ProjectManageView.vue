@@ -424,10 +424,6 @@ const filteredProjects = computed(() => {
         aValue = a.sortOrder
         bValue = b.sortOrder
         break
-      case 'createdAt':
-        aValue = new Date(a.createdAt).getTime()
-        bValue = new Date(b.createdAt).getTime()
-        break
       default:
         aValue = a.title
         bValue = b.title
