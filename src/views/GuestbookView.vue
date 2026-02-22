@@ -5,10 +5,10 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div class="text-center">
           <h1 class="text-4xl font-bold text-gray-900 sm:text-5xl lg:text-6xl">
-            Guestbook
+            留言板
           </h1>
           <p class="mt-6 text-xl text-gray-600 max-w-3xl mx-auto">
-            Leave a message, share your thoughts, or just say hello! Your words are always welcome here.
+            留下訊息、分享您的想法，或是打聲招呼！歡迎您的每一則留言。
           </p>
         </div>
       </div>
@@ -19,19 +19,19 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Comment Form -->
         <div class="lg:col-span-2">
-          <BaseCard title="Leave a Message" class="mb-8">
+          <BaseCard title="留言" class="mb-8">
             <BaseForm @submit="handleSubmit">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <BaseInput
                   v-model="form.name"
-                  label="Name *"
-                  placeholder="Your name"
+                  label="姓名 *"
+                  placeholder="請輸入姓名"
                   required
                 />
                 <BaseInput
                   v-model="form.email"
                   type="email"
-                  label="Email *"
+                  label="電子信箱 *"
                   placeholder="your.email@example.com"
                   required
                 />
@@ -39,8 +39,8 @@
 
               <BaseTextarea
                 v-model="form.message"
-                label="Message *"
-                placeholder="Share your thoughts, feedback, or just say hello..."
+                label="留言內容 *"
+                placeholder="分享您的想法、建議，或是打聲招呼..."
                 :rows="6"
                 required
               />
@@ -54,7 +54,7 @@
                     class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                   />
                   <label for="subscribe" class="text-sm text-gray-700">
-                    Subscribe to new post notifications
+                    訂閱新文章通知
                   </label>
                 </div>
 
@@ -63,7 +63,7 @@
                   :loading="isSubmitting"
                   :disabled="!isFormValid"
                 >
-                  Post Message
+                  送出留言
                 </BaseButton>
               </div>
             </BaseForm>
@@ -73,7 +73,7 @@
           <div class="space-y-6">
             <div class="flex items-center justify-between">
               <h2 class="text-2xl font-bold text-gray-900">
-                Messages ({{ approvedComments.length }})
+                留言 ({{ approvedComments.length }})
               </h2>
               <BaseSelect
                 v-model="sortBy"
@@ -88,10 +88,15 @@
             </div>
 
             <!-- No Comments -->
-            <div v-else-if="approvedComments.length === 0" class="text-center py-16">
-              <ChatBubbleLeftEllipsisIcon class="mx-auto h-16 w-16 text-gray-400" />
-              <h3 class="mt-4 text-lg font-medium text-gray-900">No messages yet</h3>
-              <p class="mt-2 text-gray-500">Be the first to leave a message!</p>
+            <div
+              v-else-if="approvedComments.length === 0"
+              class="text-center py-16"
+            >
+              <ChatBubbleLeftEllipsisIcon
+                class="mx-auto h-16 w-16 text-gray-400"
+              />
+              <h3 class="mt-4 text-lg font-medium text-gray-900">尚無留言</h3>
+              <p class="mt-2 text-gray-500">成為第一個留言的人吧！</p>
             </div>
 
             <!-- Comments -->
@@ -104,7 +109,9 @@
                 <div class="flex items-start space-x-4">
                   <!-- Avatar -->
                   <div class="flex-shrink-0">
-                    <div class="w-12 h-12 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                    <div
+                      class="w-12 h-12 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white font-semibold text-lg"
+                    >
                       {{ getInitials(comment.name) }}
                     </div>
                   </div>
@@ -117,25 +124,39 @@
                           {{ comment.name }}
                         </h3>
                       </div>
-                      <time :datetime="comment.createdAt" class="text-sm text-gray-500">
+                      <time
+                        :datetime="comment.createdAt"
+                        class="text-sm text-gray-500"
+                      >
                         {{ formatDate(comment.createdAt) }}
                       </time>
                     </div>
 
                     <div class="prose prose-sm max-w-none">
-                      <p class="text-gray-700 whitespace-pre-wrap">{{ comment.message }}</p>
+                      <p class="text-gray-700 whitespace-pre-wrap">
+                        {{ comment.message }}
+                      </p>
                     </div>
 
                     <!-- Admin Reply Section -->
-                    <div v-if="comment.adminReply" class="mt-4 pl-4 border-l-2 border-primary-200">
+                    <div
+                      v-if="comment.adminReply"
+                      class="mt-4 pl-4 border-l-2 border-primary-200"
+                    >
                       <div class="bg-primary-50 rounded-lg p-4">
                         <div class="flex items-center space-x-2 mb-2">
-                          <div class="w-6 h-6 bg-primary-600 rounded-full flex items-center justify-center text-white text-xs font-semibold">
+                          <div
+                            class="w-6 h-6 bg-primary-600 rounded-full flex items-center justify-center text-white text-xs font-semibold"
+                          >
                             A
                           </div>
-                          <span class="font-medium text-primary-900">Admin Reply</span>
+                          <span class="font-medium text-primary-900"
+                            >管理員回覆</span
+                          >
                         </div>
-                        <p class="text-primary-800 whitespace-pre-wrap">{{ comment.adminReply }}</p>
+                        <p class="text-primary-800 whitespace-pre-wrap">
+                          {{ comment.adminReply }}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -152,9 +173,9 @@
                   :disabled="currentPage === 1"
                   @click="currentPage = currentPage - 1"
                 >
-                  Previous
+                  上一頁
                 </BaseButton>
-                
+
                 <span
                   v-for="page in visiblePages"
                   :key="page"
@@ -170,14 +191,14 @@
                   </BaseButton>
                   <span v-else class="text-gray-500">...</span>
                 </span>
-                
+
                 <BaseButton
                   variant="outline"
                   size="small"
                   :disabled="currentPage === totalPages"
                   @click="currentPage = currentPage + 1"
                 >
-                  Next
+                  下一頁
                 </BaseButton>
               </nav>
             </div>
@@ -187,47 +208,61 @@
         <!-- Sidebar -->
         <div class="lg:col-span-1 space-y-6">
           <!-- Guidelines -->
-          <BaseCard title="Community Guidelines">
+          <BaseCard title="社群守則">
             <div class="space-y-3 text-sm text-gray-600">
               <div class="flex items-start space-x-2">
-                <CheckCircleIcon class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                <span>Be respectful and kind to others</span>
+                <CheckCircleIcon
+                  class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5"
+                />
+                <span>尊重他人，保持友善</span>
               </div>
               <div class="flex items-start space-x-2">
-                <CheckCircleIcon class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                <span>Share constructive feedback and thoughts</span>
+                <CheckCircleIcon
+                  class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5"
+                />
+                <span>分享建設性的想法與回饋</span>
               </div>
               <div class="flex items-start space-x-2">
-                <CheckCircleIcon class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                <span>No spam, advertising, or inappropriate content</span>
+                <CheckCircleIcon
+                  class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5"
+                />
+                <span>禁止垃圾訊息、廣告或不當內容</span>
               </div>
               <div class="flex items-start space-x-2">
-                <CheckCircleIcon class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                <span>Messages are moderated before appearing</span>
+                <CheckCircleIcon
+                  class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5"
+                />
+                <span>留言將經審核後顯示</span>
               </div>
             </div>
           </BaseCard>
 
           <!-- Statistics -->
-          <BaseCard title="Guestbook Stats">
+          <BaseCard title="留言板統計">
             <div class="space-y-4">
               <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-600">Total Messages</span>
-                <span class="font-semibold text-gray-900">{{ stats.totalComments }}</span>
+                <span class="text-sm text-gray-600">總留言數</span>
+                <span class="font-semibold text-gray-900">{{
+                  stats.totalComments
+                }}</span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-600">This Month</span>
-                <span class="font-semibold text-gray-900">{{ stats.thisMonth }}</span>
+                <span class="text-sm text-gray-600">本月</span>
+                <span class="font-semibold text-gray-900">{{
+                  stats.thisMonth
+                }}</span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-600">Recent Visitors</span>
-                <span class="font-semibold text-gray-900">{{ stats.recentVisitors }}</span>
+                <span class="text-sm text-gray-600">近期訪客</span>
+                <span class="font-semibold text-gray-900">{{
+                  stats.recentVisitors
+                }}</span>
               </div>
             </div>
           </BaseCard>
 
           <!-- Recent Activity -->
-          <BaseCard v-if="recentComments.length > 0" title="Recent Messages">
+          <BaseCard v-if="recentComments.length > 0" title="近期留言">
             <div class="space-y-3">
               <div
                 v-for="comment in recentComments.slice(0, 3)"
@@ -235,18 +270,26 @@
                 class="text-sm"
               >
                 <div class="font-medium text-gray-900">{{ comment.name }}</div>
-                <div class="text-gray-600 line-clamp-2">{{ comment.message }}</div>
-                <div class="text-xs text-gray-500 mt-1">{{ formatDate(comment.createdAt) }}</div>
+                <div class="text-gray-600 line-clamp-2">
+                  {{ comment.message }}
+                </div>
+                <div class="text-xs text-gray-500 mt-1">
+                  {{ formatDate(comment.createdAt) }}
+                </div>
               </div>
             </div>
           </BaseCard>
 
           <!-- Contact -->
-          <BaseCard title="Get in Touch">
+          <BaseCard title="與我聯繫">
             <div class="text-sm text-gray-600 space-y-3">
-              <p>Want to have a longer conversation or discuss opportunities?</p>
-              <BaseButton variant="outline" class="w-full" @click="router.push('/contact')">
-                Contact Me Directly
+              <p>想要更深入的交流或探討合作機會嗎？</p>
+              <BaseButton
+                variant="outline"
+                class="w-full"
+                @click="router.push('/contact')"
+              >
+                直接聯繫我
               </BaseButton>
             </div>
           </BaseCard>
@@ -255,19 +298,19 @@
     </section>
 
     <!-- Success Modal -->
-    <BaseModal v-model:show="showSuccessModal" title="Message Submitted!" size="medium">
+    <BaseModal
+      v-model:show="showSuccessModal"
+      title="留言已送出！"
+      size="medium"
+    >
       <div class="text-center py-4">
         <CheckCircleIcon class="mx-auto h-16 w-16 text-green-500 mb-4" />
-        <p class="text-gray-700 mb-4">
-          Thank you for your message! It will be reviewed and published shortly.
-        </p>
-        <p class="text-sm text-gray-500">
-          Messages are typically approved within 24 hours.
-        </p>
+        <p class="text-gray-700 mb-4">感謝您的留言！審核通過後將會儘快發布。</p>
+        <p class="text-sm text-gray-500">留言通常會在 24 小時內審核完畢。</p>
       </div>
       <template #footer>
         <BaseButton variant="primary" @click="showSuccessModal = false">
-          Continue
+          繼續
         </BaseButton>
       </template>
     </BaseModal>
@@ -275,182 +318,186 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, reactive } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, computed, reactive } from "vue";
+import { useRouter } from "vue-router";
 import {
   ChatBubbleLeftEllipsisIcon,
-  CheckCircleIcon
-} from '@heroicons/vue/24/outline'
-import { useCommentStore } from '@/stores/comment'
-import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
-import BaseCard from '@/components/ui/BaseCard.vue'
-import BaseButton from '@/components/ui/BaseButton.vue'
-import BaseInput from '@/components/ui/BaseInput.vue'
-import BaseTextarea from '@/components/ui/BaseTextarea.vue'
-import BaseSelect from '@/components/ui/BaseSelect.vue'
-import BaseForm from '@/components/ui/BaseForm.vue'
-import BaseModal from '@/components/ui/BaseModal.vue'
+  CheckCircleIcon,
+} from "@heroicons/vue/24/outline";
+import { useCommentStore } from "@/stores/comment";
+import LoadingSpinner from "@/components/common/LoadingSpinner.vue";
+import BaseCard from "@/components/ui/BaseCard.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
+import BaseInput from "@/components/ui/BaseInput.vue";
+import BaseTextarea from "@/components/ui/BaseTextarea.vue";
+import BaseSelect from "@/components/ui/BaseSelect.vue";
+import BaseForm from "@/components/ui/BaseForm.vue";
+import BaseModal from "@/components/ui/BaseModal.vue";
 
 // Router
-const router = useRouter()
+const router = useRouter();
 
 // Stores
-const commentStore = useCommentStore()
+const commentStore = useCommentStore();
 
 // State
-const isLoading = ref(true)
-const isSubmitting = ref(false)
-const showSuccessModal = ref(false)
-const sortBy = ref('newest')
-const currentPage = ref(1)
-const commentsPerPage = 10
+const isLoading = ref(true);
+const isSubmitting = ref(false);
+const showSuccessModal = ref(false);
+const sortBy = ref("newest");
+const currentPage = ref(1);
+const commentsPerPage = 10;
 
 const form = reactive({
-  name: '',
-  email: '',
-  message: '',
-  subscribe: false
-})
+  name: "",
+  email: "",
+  message: "",
+  subscribe: false,
+});
 
 // Computed
-const approvedComments = computed(() => commentStore.publicEntries)
-const recentComments = computed(() => commentStore.recentEntries)
-const stats = ref({ totalComments: 0, thisMonth: 0, recentVisitors: 0 })
+const approvedComments = computed(() => commentStore.publicEntries);
+const recentComments = computed(() => commentStore.recentEntries);
+const stats = ref({ totalComments: 0, thisMonth: 0, recentVisitors: 0 });
 
 const isFormValid = computed(() => {
-  return form.name.trim() && form.email.trim() && form.message.trim()
-})
+  return form.name.trim() && form.email.trim() && form.message.trim();
+});
 
 const sortOptions = [
-  { label: 'Newest First', value: 'newest' },
-  { label: 'Oldest First', value: 'oldest' }
-]
+  { label: "最新優先", value: "newest" },
+  { label: "最舊優先", value: "oldest" },
+];
 
 const sortedComments = computed(() => {
-  const comments = [...approvedComments.value]
+  const comments = [...approvedComments.value];
 
   switch (sortBy.value) {
-    case 'newest':
-      return comments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    case 'oldest':
-      return comments.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+    case "newest":
+      return comments.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+    case "oldest":
+      return comments.sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
     default:
-      return comments
+      return comments;
   }
-})
+});
 
-const totalPages = computed(() => Math.ceil(sortedComments.value.length / commentsPerPage))
+const totalPages = computed(() =>
+  Math.ceil(sortedComments.value.length / commentsPerPage),
+);
 
 const paginatedComments = computed(() => {
-  const start = (currentPage.value - 1) * commentsPerPage
-  const end = start + commentsPerPage
-  return sortedComments.value.slice(start, end)
-})
+  const start = (currentPage.value - 1) * commentsPerPage;
+  const end = start + commentsPerPage;
+  return sortedComments.value.slice(start, end);
+});
 
 const visiblePages = computed(() => {
-  const pages: (number | string)[] = []
-  const total = totalPages.value
-  const current = currentPage.value
+  const pages: (number | string)[] = [];
+  const total = totalPages.value;
+  const current = currentPage.value;
 
   if (total <= 7) {
     for (let i = 1; i <= total; i++) {
-      pages.push(i)
+      pages.push(i);
     }
   } else {
     if (current <= 4) {
-      for (let i = 1; i <= 5; i++) pages.push(i)
-      pages.push('...')
-      pages.push(total)
+      for (let i = 1; i <= 5; i++) pages.push(i);
+      pages.push("...");
+      pages.push(total);
     } else if (current >= total - 3) {
-      pages.push(1)
-      pages.push('...')
-      for (let i = total - 4; i <= total; i++) pages.push(i)
+      pages.push(1);
+      pages.push("...");
+      for (let i = total - 4; i <= total; i++) pages.push(i);
     } else {
-      pages.push(1)
-      pages.push('...')
-      for (let i = current - 1; i <= current + 1; i++) pages.push(i)
-      pages.push('...')
-      pages.push(total)
+      pages.push(1);
+      pages.push("...");
+      for (let i = current - 1; i <= current + 1; i++) pages.push(i);
+      pages.push("...");
+      pages.push(total);
     }
   }
 
-  return pages
-})
+  return pages;
+});
 
 // Methods
 function formatDate(dateString: string): string {
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffTime = Math.abs(now.getTime() - date.getTime())
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffTime = Math.abs(now.getTime() - date.getTime());
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
   if (diffDays === 1) {
-    return 'Yesterday'
+    return "昨天";
   } else if (diffDays < 7) {
-    return `${diffDays} days ago`
+    return `${diffDays} 天前`;
   } else if (diffDays < 30) {
-    const weeks = Math.floor(diffDays / 7)
-    return `${weeks} week${weeks > 1 ? 's' : ''} ago`
+    const weeks = Math.floor(diffDays / 7);
+    return `${weeks} 週前`;
   } else {
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
+    return date.toLocaleDateString("zh-TW", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
   }
 }
 
 function getInitials(name: string): string {
   return name
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase())
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase())
     .slice(0, 2)
-    .join('')
+    .join("");
 }
 
 async function handleSubmit() {
-  if (!isFormValid.value || isSubmitting.value) return
+  if (!isFormValid.value || isSubmitting.value) return;
 
   try {
-    isSubmitting.value = true
-    
+    isSubmitting.value = true;
+
     await commentStore.createEntry({
       name: form.name.trim(),
       email: form.email.trim(),
       message: form.message.trim(),
-    })
+    });
 
     // Reset form
     Object.assign(form, {
-      name: '',
-      email: '',
-      message: '',
-      subscribe: false
-    })
+      name: "",
+      email: "",
+      message: "",
+      subscribe: false,
+    });
 
-    showSuccessModal.value = true
-
+    showSuccessModal.value = true;
   } catch (error) {
-    console.error('Failed to submit comment:', error)
+    console.error("Failed to submit comment:", error);
     // In a real app, you'd show an error toast
   } finally {
-    isSubmitting.value = false
+    isSubmitting.value = false;
   }
 }
-
 
 // Lifecycle
 onMounted(async () => {
   try {
-    await Promise.all([
-      commentStore.fetchPublicEntries()
-    ])
+    await Promise.all([commentStore.fetchPublicEntries()]);
   } catch (error) {
-    console.error('Failed to load guestbook data:', error)
+    console.error("Failed to load guestbook data:", error);
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-})
+});
 </script>
 
 <style scoped>

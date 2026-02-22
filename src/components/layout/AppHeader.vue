@@ -6,7 +6,7 @@
         <div class="flex items-center">
           <RouterLink to="/" class="flex items-center">
             <div class="flex-shrink-0">
-              <h1 class="text-xl font-bold text-primary-600">Personal Manager</h1>
+              <h1 class="text-xl font-bold text-primary-600">個人管理網站</h1>
             </div>
           </RouterLink>
         </div>
@@ -191,7 +191,7 @@ const navigation = [
 ]
 
 const userNavigation = [
-  { name: '管理儀表板', href: '/dashboard' },
+  { name: '個人管理', href: '/dashboard' },
   { name: '個人設定', href: '/profile' },
   { name: '登出', href: null },
 ]

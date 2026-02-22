@@ -4,7 +4,10 @@
       <LoadingSpinner />
     </div>
 
-    <div v-else-if="project" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div
+      v-else-if="project"
+      class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+    >
       <!-- Back Navigation -->
       <div class="mb-8">
         <router-link
@@ -12,7 +15,7 @@
           class="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
         >
           <ArrowLeftIcon class="w-5 h-5 mr-2" />
-          Back to Portfolio
+          返回作品集
         </router-link>
       </div>
 
@@ -37,23 +40,35 @@
                   <h1 class="text-3xl font-bold text-gray-900 mb-2">
                     {{ project.title }}
                   </h1>
-                  <div class="flex items-center space-x-4 text-sm text-gray-600">
+                  <div
+                    class="flex items-center space-x-4 text-sm text-gray-600"
+                  >
                     <span v-if="project.createdAt">
                       📅 {{ formatDate(project.createdAt) }}
                     </span>
-                    <span v-if="project.isFeatured" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                      ⭐ Featured
+                    <span
+                      v-if="project.isFeatured"
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"
+                    >
+                      ⭐ 精選
                     </span>
                   </div>
                 </div>
 
-                <div v-if="project.description" class="prose prose-lg max-w-none">
-                  <p class="text-gray-700 whitespace-pre-line">{{ project.description }}</p>
+                <div
+                  v-if="project.description"
+                  class="prose prose-lg max-w-none"
+                >
+                  <p class="text-gray-700 whitespace-pre-line">
+                    {{ project.description }}
+                  </p>
                 </div>
 
                 <!-- Technologies Used -->
                 <div v-if="projectTechnologies.length > 0">
-                  <h3 class="text-lg font-semibold text-gray-900 mb-3">Technologies Used</h3>
+                  <h3 class="text-lg font-semibold text-gray-900 mb-3">
+                    使用技術
+                  </h3>
                   <div class="flex flex-wrap gap-2">
                     <span
                       v-for="tech in projectTechnologies"
@@ -75,7 +90,7 @@
                     class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 transition-colors"
                   >
                     <GlobeAltIcon class="w-4 h-4 mr-2" />
-                    Live Demo
+                    線上展示
                   </a>
 
                   <a
@@ -86,7 +101,7 @@
                     class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
                   >
                     <CodeBracketIcon class="w-4 h-4 mr-2" />
-                    View Code
+                    查看程式碼
                   </a>
                 </div>
               </div>
@@ -94,11 +109,11 @@
 
             <!-- Sidebar Info -->
             <div class="lg:col-span-1">
-              <BaseCard title="Project Details">
+              <BaseCard title="專案詳情">
                 <div class="space-y-4">
                   <!-- Created Date -->
                   <div v-if="project.createdAt">
-                    <h4 class="text-sm font-medium text-gray-900">Created</h4>
+                    <h4 class="text-sm font-medium text-gray-900">建立日期</h4>
                     <p class="text-sm text-gray-600">
                       {{ formatDate(project.createdAt) }}
                     </p>
@@ -106,20 +121,22 @@
 
                   <!-- Visibility -->
                   <div>
-                    <h4 class="text-sm font-medium text-gray-900">Visibility</h4>
+                    <h4 class="text-sm font-medium text-gray-900">可見性</h4>
                     <span
                       :class="[
                         'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                        project.isPublic ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                        project.isPublic
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-800',
                       ]"
                     >
-                      {{ project.isPublic ? 'Public' : 'Private' }}
+                      {{ project.isPublic ? "公開" : "私人" }}
                     </span>
                   </div>
 
                   <!-- Project Links in Sidebar -->
                   <div v-if="project.projectUrl || project.repositoryUrl">
-                    <h4 class="text-sm font-medium text-gray-900 mb-2">Links</h4>
+                    <h4 class="text-sm font-medium text-gray-900 mb-2">連結</h4>
                     <div class="space-y-2">
                       <a
                         v-if="project.projectUrl"
@@ -129,7 +146,7 @@
                         class="flex items-center text-sm text-primary-600 hover:text-primary-800 transition-colors"
                       >
                         <GlobeAltIcon class="w-4 h-4 mr-2" />
-                        Live Project
+                        線上專案
                       </a>
                       <a
                         v-if="project.repositoryUrl"
@@ -139,7 +156,7 @@
                         class="flex items-center text-sm text-gray-600 hover:text-gray-800 transition-colors"
                       >
                         <CodeBracketIcon class="w-4 h-4 mr-2" />
-                        Source Code
+                        原始碼
                       </a>
                     </div>
                   </div>
@@ -153,7 +170,7 @@
       <!-- Related Projects -->
       <section v-if="relatedProjects.length > 0">
         <div class="mb-8">
-          <h2 class="text-2xl font-bold text-gray-900 mb-4">Related Projects</h2>
+          <h2 class="text-2xl font-bold text-gray-900 mb-4">相關專案</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <router-link
               v-for="relatedProject in relatedProjects"
@@ -163,7 +180,10 @@
             >
               <BaseCard hoverable clickable>
                 <div class="space-y-3">
-                  <div v-if="relatedProject.imageUrl" class="aspect-w-16 aspect-h-9">
+                  <div
+                    v-if="relatedProject.imageUrl"
+                    class="aspect-w-16 aspect-h-9"
+                  >
                     <img
                       :src="relatedProject.imageUrl"
                       :alt="relatedProject.title"
@@ -171,7 +191,9 @@
                     />
                   </div>
                   <div>
-                    <h3 class="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
+                    <h3
+                      class="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors"
+                    >
                       {{ relatedProject.title }}
                     </h3>
                     <p class="text-sm text-gray-600 line-clamp-2">
@@ -190,21 +212,15 @@
         <BaseCard class="bg-primary-50 border-primary-200">
           <div class="text-center space-y-4">
             <h3 class="text-xl font-semibold text-gray-900">
-              Interested in Working Together?
+              有興趣一起合作嗎？
             </h3>
-            <p class="text-gray-600">
-              I'm always open to discussing new projects and opportunities.
-            </p>
+            <p class="text-gray-600">我隨時歡迎討論新專案與合作機會。</p>
             <div class="flex justify-center space-x-4">
               <router-link to="/contact">
-                <BaseButton variant="primary">
-                  Get In Touch
-                </BaseButton>
+                <BaseButton variant="primary"> 與我聯繫 </BaseButton>
               </router-link>
               <router-link to="/portfolio">
-                <BaseButton variant="outline">
-                  View All Projects
-                </BaseButton>
+                <BaseButton variant="outline"> 查看所有專案 </BaseButton>
               </router-link>
             </div>
           </div>
@@ -216,13 +232,11 @@
     <div v-else class="flex items-center justify-center min-h-screen">
       <div class="text-center">
         <ExclamationTriangleIcon class="mx-auto h-16 w-16 text-gray-400" />
-        <h3 class="mt-4 text-lg font-medium text-gray-900">Project Not Found</h3>
-        <p class="mt-2 text-gray-500">The project you're looking for doesn't exist or has been removed.</p>
+        <h3 class="mt-4 text-lg font-medium text-gray-900">找不到專案</h3>
+        <p class="mt-2 text-gray-500">您尋找的專案不存在或已被移除。</p>
         <div class="mt-6">
           <router-link to="/portfolio">
-            <BaseButton variant="primary">
-              Back to Portfolio
-            </BaseButton>
+            <BaseButton variant="primary"> 返回作品集 </BaseButton>
           </router-link>
         </div>
       </div>
@@ -231,75 +245,78 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, onMounted, computed } from "vue";
+import { useRoute } from "vue-router";
 import {
   ArrowLeftIcon,
   GlobeAltIcon,
   CodeBracketIcon,
-  ExclamationTriangleIcon
-} from '@heroicons/vue/24/outline'
-import { usePortfolioStore } from '@/stores/portfolio'
-import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
-import BaseCard from '@/components/ui/BaseCard.vue'
-import BaseButton from '@/components/ui/BaseButton.vue'
+  ExclamationTriangleIcon,
+} from "@heroicons/vue/24/outline";
+import { usePortfolioStore } from "@/stores/portfolio";
+import LoadingSpinner from "@/components/common/LoadingSpinner.vue";
+import BaseCard from "@/components/ui/BaseCard.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 
 // Router
-const route = useRoute()
+const route = useRoute();
 
 // Stores
-const portfolioStore = usePortfolioStore()
+const portfolioStore = usePortfolioStore();
 
 // State
-const isLoading = ref(true)
+const isLoading = ref(true);
 
 // Computed
-const project = computed(() => portfolioStore.currentPortfolio)
-const allProjects = computed(() => portfolioStore.portfolios)
+const project = computed(() => portfolioStore.currentPortfolio);
+const allProjects = computed(() => portfolioStore.portfolios);
 
 const projectTechnologies = computed(() => {
-  if (!project.value?.technologies) return []
-  return project.value.technologies.split(',').map(t => t.trim()).filter(Boolean)
-})
+  if (!project.value?.technologies) return [];
+  return project.value.technologies
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+});
 
 const relatedProjects = computed(() => {
-  if (!project.value) return []
-  
+  if (!project.value) return [];
+
   // Find projects with similar technologies or category
   return allProjects.value
-    .filter(p => p.id !== project.value!.id && p.isPublic)
-    .slice(0, 3) // Show max 3 related projects
-})
+    .filter((p) => p.id !== project.value!.id && p.isPublic)
+    .slice(0, 3); // Show max 3 related projects
+});
 
 // Methods
 function formatDate(dateString: string): string {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long'
-  })
+  const date = new Date(dateString);
+  return date.toLocaleDateString("zh-TW", {
+    year: "numeric",
+    month: "long",
+  });
 }
 
 // Lifecycle
 onMounted(async () => {
-  const projectId = parseInt(route.params.id as string)
-  
+  const projectId = parseInt(route.params.id as string);
+
   if (isNaN(projectId)) {
-    isLoading.value = false
-    return
+    isLoading.value = false;
+    return;
   }
 
   try {
     await Promise.all([
       portfolioStore.fetchPortfolioById(projectId),
-      portfolioStore.fetchPortfolios() // For related projects
-    ])
+      portfolioStore.fetchPortfolios(), // For related projects
+    ]);
   } catch (error) {
-    console.error('Failed to load project:', error)
+    console.error("Failed to load project:", error);
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-})
+});
 </script>
 
 <style scoped>
