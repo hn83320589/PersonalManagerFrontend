@@ -71,7 +71,7 @@ HttpService（Axios 封裝）
 | taskService | `taskService.ts` | `/api/todoitems/*` |
 | workTrackingService | `workTrackingService.ts` | `/api/worktasks/*` |
 | blogService | `blogService.ts` | `/api/blogposts/*` |
-| commentService | `commentService.ts` | `/api/guestbookentries/*` |
+| commentService | `commentService.ts` | `/api/guestbookentries/*`, `/api/contactmethods/*` |
 
 ### Store 層 (`src/stores/`)
 
@@ -82,7 +82,7 @@ HttpService（Axios 封裝）
 ### View / Component 層
 
 - 使用 Vue 3 Composition API + `<script setup>` 語法
-- 9 個公開頁面 + 11 個管理頁面 + 登入頁面
+- 11 個公開頁面 + 登入 + 404 + 11 個管理頁面
 - 路由使用 `() => import()` 懶載入
 
 ### Type 層 (`src/types/`)
@@ -145,9 +145,8 @@ PersonalManagerFrontend/
 │   │   ├── calendar/             # 行事曆子元件
 │   │   ├── task/                 # 任務子元件
 │   │   └── work/                 # 工作追蹤子元件
-│   ├── assets/                   # 靜態資源
-│   └── styles/                   # 樣式
-└── tests/                        # 測試檔案
+│   ├── test-utils/               # 測試輔助工具（setup、helpers）
+│   └── assets/                   # 靜態資源
 ```
 
 ## 如何執行
