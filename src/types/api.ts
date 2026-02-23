@@ -20,6 +20,7 @@ export interface RegisterRequest {
 }
 
 export interface AuthResponse {
+  userId: number
   token: string
   username: string
   email: string
@@ -39,6 +40,23 @@ export interface User {
   createdAt: string
 }
 
+export interface PublicUser {
+  id: number
+  username: string
+  fullName: string
+}
+
+export interface ProfileDirectory {
+  userId: number
+  username: string
+  fullName: string
+  title: string
+  summary: string
+  profileImageUrl: string
+  location: string
+  themeColor: string
+}
+
 // ===== PersonalProfile =====
 export interface PersonalProfile {
   id: number
@@ -49,6 +67,7 @@ export interface PersonalProfile {
   profileImageUrl: string
   website: string
   location: string
+  themeColor: string
   createdAt: string
   updatedAt: string
 }
@@ -186,6 +205,7 @@ export interface BlogPost {
 // ===== GuestBookEntry =====
 export interface GuestBookEntry {
   id: number
+  targetUserId: number
   name: string
   email: string
   message: string

@@ -269,6 +269,7 @@
           :loading="loading"
           @edit-entry="editTimeEntry"
           @delete-entry="deleteTimeEntry"
+          @add-entry="showTimeEntryModal = true"
         />
       </div>
 
@@ -319,6 +320,7 @@
     >
       <TimeEntryForm
         :entry="editingTimeEntry"
+        :available-tasks="tasks"
         @save="handleTimeEntrySave"
         @cancel="showTimeEntryModal = false"
       />

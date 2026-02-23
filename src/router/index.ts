@@ -7,83 +7,85 @@ import HomeView from '../views/HomeView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    // Public routes
+    // 首頁：使用者目錄
     {
       path: '/',
       name: 'home',
       component: HomeView,
       meta: { title: '首頁' }
     },
-    {
-      path: '/about',
-      name: 'about',
-      component: () => import('../views/AboutView.vue'),
-      meta: { title: '關於我' }
-    },
-    {
-      path: '/experience',
-      name: 'experience',
-      component: () => import('../views/ExperienceView.vue'),
-      meta: { title: '學經歷' }
-    },
-    {
-      path: '/skills',
-      name: 'skills',
-      component: () => import('../views/SkillView.vue'),
-      meta: { title: '技能專長' }
-    },
-    {
-      path: '/portfolio',
-      name: 'portfolio',
-      component: () => import('../views/PortfolioView.vue'),
-      meta: { title: '作品集' }
-    },
-    {
-      path: '/portfolio/:id',
-      name: 'portfolio-detail',
-      component: () => import('../views/ProjectDetailView.vue'),
-      meta: { title: '作品詳情' }
-    },
-    {
-      path: '/calendar',
-      name: 'calendar',
-      component: () => import('../views/PublicCalendarView.vue'),
-      meta: { title: '公開行事曆' }
-    },
-    {
-      path: '/blog',
-      name: 'blog',
-      component: () => import('../views/BlogListView.vue'),
-      meta: { title: '部落格' }
-    },
-    {
-      path: '/blog/:slug',
-      name: 'blog-detail',
-      component: () => import('../views/BlogDetailView.vue'),
-      meta: { title: '文章內容' }
-    },
-    {
-      path: '/guestbook',
-      name: 'guestbook',
-      component: () => import('../views/GuestbookView.vue'),
-      meta: { title: '留言板' }
-    },
-    {
-      path: '/contact',
-      name: 'contact',
-      component: () => import('../views/ContactView.vue'),
-      meta: { title: '聯絡我' }
-    },
-    
-    // Auth routes
+
+    // 登入
     {
       path: '/login',
       name: 'login',
       component: () => import('../views/LoginView.vue'),
       meta: { title: '登入', requiresGuest: true }
     },
-    
-    // Protected routes (Admin)
+
+    // /@:username — 個人公開頁面（UserLayout 包覆）
+    {
+      path: '/@:username',
+      component: () => import('../components/layout/UserLayout.vue'),
+      children: [
+        {
+          path: '',
+          name: 'user-about',
+          component: () => import('../views/user/UserAboutView.vue'),
+          meta: { title: '關於我' }
+        },
+        {
+          path: 'experience',
+          name: 'user-experience',
+          component: () => import('../views/user/UserExperienceView.vue'),
+          meta: { title: '學經歷' }
+        },
+        {
+          path: 'skills',
+          name: 'user-skills',
+          component: () => import('../views/user/UserSkillView.vue'),
+          meta: { title: '技能專長' }
+        },
+        {
+          path: 'portfolio',
+          name: 'user-portfolio',
+          component: () => import('../views/user/UserPortfolioView.vue'),
+          meta: { title: '作品集' }
+        },
+        {
+          path: 'portfolio/:id',
+          name: 'user-project-detail',
+          component: () => import('../views/user/UserProjectDetailView.vue'),
+          meta: { title: '作品詳情' }
+        },
+        {
+          path: 'blog',
+          name: 'user-blog',
+          component: () => import('../views/user/UserBlogListView.vue'),
+          meta: { title: '部落格' }
+        },
+        {
+          path: 'blog/:slug',
+          name: 'user-blog-detail',
+          component: () => import('../views/user/UserBlogDetailView.vue'),
+          meta: { title: '文章內容' }
+        },
+        {
+          path: 'calendar',
+          name: 'user-calendar',
+          component: () => import('../views/user/UserCalendarView.vue'),
+          meta: { title: '公開行事曆' }
+        },
+        {
+          path: 'guestbook',
+          name: 'user-guestbook',
+          component: () => import('../views/user/UserGuestbookView.vue'),
+          meta: { title: '留言板' }
+        },
+      ]
+    },
+
+    // 管理後台
     {
       path: '/admin',
       redirect: '/admin/dashboard'
@@ -173,28 +175,26 @@ const router = createRouter({
 // Navigation guards
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
-  
+
   // Initialize auth state
   authStore.initializeAuth()
-  
+
   // Set page title
   if (to.meta.title) {
     document.title = `${to.meta.title} - ${import.meta.env.VITE_APP_TITLE || 'Personal Manager'}`
   }
-  
+
   // Check auth requirements
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    // Redirect to login if not authenticated
     next({ name: 'login', query: { redirect: to.fullPath } })
     return
   }
-  
+
   if (to.meta.requiresGuest && authStore.isAuthenticated) {
-    // Redirect to dashboard if already authenticated
     next({ name: 'dashboard' })
     return
   }
-  
+
   next()
 })
 

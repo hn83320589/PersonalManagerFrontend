@@ -181,18 +181,11 @@ const userDisplayName = computed(() => authStore.userDisplayName)
 
 const navigation = [
   { name: '首頁', href: '/' },
-  { name: '關於我', href: '/about' },
-  { name: '學經歷', href: '/experience' },
-  { name: '技能', href: '/skills' },
-  { name: '作品集', href: '/portfolio' },
-  { name: '部落格', href: '/blog' },
-  { name: '留言板', href: '/guestbook' },
-  { name: '聯絡我', href: '/contact' },
 ]
 
 const userNavigation = [
-  { name: '個人管理', href: '/dashboard' },
-  { name: '個人設定', href: '/profile' },
+  { name: '管理後台', href: '/admin/dashboard' },
+  { name: '個人資料', href: '/admin/profile' },
   { name: '登出', href: null },
 ]
 

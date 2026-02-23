@@ -14,12 +14,11 @@ npm install
 npm run dev
 # → http://localhost:5173
 
-# 建置生產版本
+# 建置生產版本（含型別檢查）
 npm run build
 
-# 預覽生產版本
-npm run preview
-# → http://localhost:4173
+# 型別檢查
+npm run type-check
 ```
 
 ### 環境變數
@@ -30,12 +29,9 @@ VITE_API_BASE_URL=http://localhost:5037/api
 VITE_APP_TITLE=Personal Manager
 ```
 
-生產環境：`.env.production`（部署時設定）
-```
-VITE_API_BASE_URL=https://your-api-domain.com/api
-```
+生產環境：Zeabur 環境變數設定 `VITE_API_BASE_URL`。
 
-> 後端 API port 為 `5037`（非舊文件中的 5253）
+> 後端 API port 為 `5037`
 
 ---
 
@@ -43,17 +39,17 @@ VITE_API_BASE_URL=https://your-api-domain.com/api
 
 ### 技術棧
 
-| 項目 | 工具 |
-|------|------|
-| 框架 | Vue 3.5 Composition API |
+| 項目 | 工具/版本 |
+|------|-----------|
+| 框架 | Vue 3.5 Composition API + `<script setup>` |
 | 語言 | TypeScript（嚴格模式） |
 | 路由 | Vue Router 4 |
-| 狀態管理 | Pinia + pinia-plugin-persistedstate |
+| 狀態管理 | Pinia + pinia-plugin-persistedstate v4 |
 | HTTP | Axios（含攔截器） |
-| 樣式 | Tailwind CSS |
-| 建置 | Vite |
-| 單元測試 | Vitest + @vue/test-utils |
-| E2E 測試 | Playwright |
+| 樣式 | Tailwind CSS 3 |
+| 圖示 | Heroicons v2 |
+| 建置 | Vite 7 |
+| 測試 | Vitest（單元）+ Playwright（E2E） |
 
 ### 資料流
 
@@ -83,6 +79,16 @@ interface ApiResponse<T> {
 }
 ```
 
+### Store 持久化
+
+`pinia-plugin-persistedstate` v4 語法（composition API store 需要三參數形式）：
+```typescript
+export const useTaskStore = defineStore('task', () => {
+  // ...
+  return { timeEntries }
+}, { persist: { pick: ['timeEntries'] } })  // 只持久化指定欄位
+```
+
 ---
 
 ## 專案結構
@@ -90,83 +96,94 @@ interface ApiResponse<T> {
 ```
 PersonalManagerFrontend/
 ├── src/
-│   ├── main.ts                   # 進入點
-│   ├── App.vue                   # 根元件
+│   ├── main.ts                       # 進入點（Pinia + persistedstate + Router 掛載）
+│   ├── App.vue                       # 根元件
 │   │
 │   ├── types/
-│   │   ├── api.ts                # 所有 API 介面定義（ApiResponse、實體介面）
-│   │   └── experience.ts         # 學經歷相關型別
+│   │   ├── api.ts                    # 所有 API 介面定義（ApiResponse、實體介面）
+│   │   └── experience.ts             # 學經歷相關型別
 │   │
 │   ├── services/
-│   │   ├── http.ts               # Axios 封裝，單例 HttpService
-│   │   ├── authService.ts        # /api/auth（login、register、logout）
-│   │   ├── profileService.ts     # /api/profiles
-│   │   ├── experienceService.ts  # /api/educations、/api/workexperiences
-│   │   ├── skillService.ts       # /api/skills
-│   │   ├── portfolioService.ts   # /api/portfolios
-│   │   ├── calendarService.ts    # /api/calendarevents
-│   │   ├── taskService.ts        # /api/todoitems
-│   │   ├── workTrackingService.ts # /api/worktasks
-│   │   ├── blogService.ts        # /api/blogposts
-│   │   └── commentService.ts     # /api/guestbookentries、/api/contactmethods
+│   │   ├── http.ts                   # Axios 封裝，HttpService 單例
+│   │   ├── authService.ts            # /api/auth（login、register、logout）
+│   │   ├── profileService.ts         # /api/profiles
+│   │   ├── experienceService.ts      # /api/educations、/api/workexperiences
+│   │   ├── skillService.ts           # /api/skills
+│   │   ├── portfolioService.ts       # /api/portfolios
+│   │   ├── calendarService.ts        # /api/calendarevents
+│   │   ├── taskService.ts            # /api/todoitems
+│   │   ├── workTrackingService.ts    # /api/worktasks
+│   │   ├── blogService.ts            # /api/blogposts
+│   │   ├── commentService.ts         # /api/guestbookentries、/api/contactmethods
+│   │   └── userDirectoryService.ts   # /api/profiles/directory、/api/users/public
 │   │
 │   ├── stores/
-│   │   ├── auth.ts               # 認證狀態（token、user info、isLoggedIn）
-│   │   ├── user.ts               # 使用者資料
-│   │   ├── profile.ts            # 個人資料
-│   │   ├── experience.ts         # 學歷 + 工作經歷
-│   │   ├── skill.ts              # 技能
-│   │   ├── portfolio.ts          # 作品集
-│   │   ├── calendar.ts           # 行事曆
-│   │   ├── task.ts               # 待辦事項 + 工作追蹤
-│   │   ├── blog.ts               # 部落格文章
-│   │   └── comment.ts            # 留言
+│   │   ├── auth.ts                   # 認證狀態（token、user info、isLoggedIn）
+│   │   ├── user.ts                   # 使用者資料
+│   │   ├── profile.ts                # 個人資料
+│   │   ├── experience.ts             # 學歷 + 工作經歷
+│   │   ├── skill.ts                  # 技能
+│   │   ├── portfolio.ts              # 作品集
+│   │   ├── calendar.ts               # 行事曆
+│   │   ├── task.ts                   # 待辦事項 + 工作任務 + 時間記錄（timeEntries 持久化）
+│   │   ├── blog.ts                   # 部落格文章
+│   │   ├── comment.ts                # 留言
+│   │   └── userDirectory.ts          # 用戶目錄與 username → userId 解析
+│   │
+│   ├── composables/
+│   │   └── useTheme.ts               # 5 套主題 CSS 變數（blue/green/purple/rose/slate）
 │   │
 │   ├── router/
-│   │   └── index.ts              # 路由定義（公開 + 需要認證的路由）
+│   │   └── index.ts                  # 路由定義（/@:username 架構 + admin 路由守衛）
 │   │
 │   ├── views/
-│   │   ├── HomeView.vue          # 首頁
-│   │   ├── AboutView.vue         # 關於我
-│   │   ├── ExperienceView.vue    # 學經歷展示
-│   │   ├── SkillView.vue         # 技能展示
-│   │   ├── PortfolioView.vue     # 作品集列表
-│   │   ├── ProjectDetailView.vue # 作品詳細
-│   │   ├── PublicCalendarView.vue # 公開行事曆
-│   │   ├── BlogListView.vue      # 部落格列表
-│   │   ├── BlogDetailView.vue    # 文章內容
-│   │   ├── GuestbookView.vue     # 留言板
-│   │   ├── ContactView.vue       # 聯絡我
-│   │   ├── LoginView.vue         # 登入
-│   │   ├── NotFoundView.vue      # 404
-│   │   └── admin/
-│   │       ├── DashboardView.vue     # 管理儀表板
-│   │       ├── ProfileManageView.vue # 個人資料管理
-│   │       ├── ExperienceManageView.vue # 學經歷管理
-│   │       ├── SkillManageView.vue   # 技能管理
-│   │       ├── ProjectManageView.vue # 作品管理
-│   │       ├── CalendarManageView.vue # 行事曆管理
-│   │       ├── WorkTrackingView.vue  # 工作追蹤
-│   │       ├── TaskManageView.vue    # 待辦事項管理
-│   │       ├── BlogManageView.vue    # 文章管理
-│   │       ├── BlogEditorView.vue    # 文章編輯器
-│   │       └── CommentManageView.vue # 留言管理
+│   │   ├── HomeView.vue              # 首頁（用戶目錄，格狀卡片 + 搜尋）
+│   │   ├── LoginView.vue             # 登入
+│   │   ├── NotFoundView.vue          # 404
+│   │   ├── user/                     # 個人頁面（/@:username 路由，由 UserLayout 包覆）
+│   │   │   ├── UserAboutView.vue     # 關於我
+│   │   │   ├── UserExperienceView.vue # 學經歷
+│   │   │   ├── UserSkillView.vue     # 技能
+│   │   │   ├── UserPortfolioView.vue # 作品集
+│   │   │   ├── UserProjectDetailView.vue # 作品詳情
+│   │   │   ├── UserBlogListView.vue  # 部落格列表
+│   │   │   ├── UserBlogDetailView.vue # 文章詳情
+│   │   │   ├── UserCalendarView.vue  # 公開行事曆
+│   │   │   ├── UserGuestbookView.vue # 留言板
+│   │   │   └── UserContactView.vue  # 聯絡我
+│   │   └── admin/                    # 管理後台
+│   │       ├── DashboardView.vue
+│   │       ├── ProfileManageView.vue
+│   │       ├── ExperienceManageView.vue
+│   │       ├── SkillManageView.vue
+│   │       ├── ProjectManageView.vue
+│   │       ├── CalendarManageView.vue
+│   │       ├── WorkTrackingView.vue  # 工作追蹤（任務 + 時間記錄 + 報告）
+│   │       ├── TaskManageView.vue
+│   │       ├── BlogManageView.vue
+│   │       ├── BlogEditorView.vue
+│   │       └── CommentManageView.vue
 │   │
 │   ├── components/
-│   │   ├── layout/               # AppHeader、AppFooter、AppSidebar、AdminLayout
-│   │   ├── ui/                   # BaseButton、BaseCard、BaseInput、BaseModal 等
-│   │   ├── common/               # LoadingSpinner 等
-│   │   ├── admin/                # 管理後台專用表單元件
-│   │   ├── blog/                 # BlogGridView、BlogTableView
-│   │   ├── calendar/             # CalendarGrid、WeekView
-│   │   ├── task/                 # TaskListView、TaskKanbanView、TaskGridView
-│   │   └── work/                 # ProjectsView、TasksView、TimesheetView、ReportsView
+│   │   ├── layout/
+│   │   │   ├── AppHeader.vue         # 公開頁首（首頁 + 登入頁使用）
+│   │   │   ├── AppFooter.vue
+│   │   │   ├── AdminLayout.vue       # 管理後台版面（側欄 + 頂列）
+│   │   │   └── UserLayout.vue        # 個人頁面版面（主題、用戶 Header、水平導覽）
+│   │   ├── ui/                       # BaseButton、BaseCard、BaseInput、BaseModal 等
+│   │   ├── common/                   # LoadingSpinner 等共用元件
+│   │   ├── admin/                    # 管理後台專用表單元件
+│   │   ├── blog/                     # BlogGridView、BlogTableView
+│   │   ├── calendar/                 # CalendarGrid、WeekView
+│   │   ├── task/                     # TaskListView、TaskKanbanView、TaskGridView
+│   │   └── work/                     # ProjectsView、TasksView、TimesheetView、ReportsView
 │   │
-│   ├── assets/                   # 圖片、CSS
-│   └── test-utils/               # 測試輔助工具
+│   ├── assets/
+│   │   └── main.css                  # Tailwind 全局樣式（含 .form-input、.form-select）
+│   └── test-utils/                   # 測試輔助工具
 │
-├── .env.development              # 開發環境變數（不提交）
-├── .env.production               # 生產環境變數（不提交）
+├── .env.development                  # 開發環境變數（不提交）
+├── .env.production                   # 生產環境變數（不提交）
 ├── package.json
 ├── vite.config.ts
 ├── tsconfig.json
@@ -179,26 +196,26 @@ PersonalManagerFrontend/
 
 ### 公開路由（不需登入）
 
-| 路徑 | View |
-|------|------|
-| `/` | HomeView |
-| `/about` | AboutView |
-| `/experience` | ExperienceView |
-| `/skills` | SkillView |
-| `/portfolio` | PortfolioView |
-| `/portfolio/:id` | ProjectDetailView |
-| `/calendar` | PublicCalendarView |
-| `/blog` | BlogListView |
-| `/blog/:slug` | BlogDetailView |
-| `/guestbook` | GuestbookView |
-| `/contact` | ContactView |
-| `/login` | LoginView |
+| 路徑 | View | 說明 |
+|------|------|------|
+| `/` | HomeView | 用戶目錄（格狀卡片） |
+| `/login` | LoginView | 登入 |
+| `/@:username` | UserAboutView | 個人頁面（UserLayout 包覆） |
+| `/@:username/experience` | UserExperienceView | 學經歷 |
+| `/@:username/skills` | UserSkillView | 技能 |
+| `/@:username/portfolio` | UserPortfolioView | 作品集 |
+| `/@:username/portfolio/:id` | UserProjectDetailView | 作品詳情 |
+| `/@:username/blog` | UserBlogListView | 部落格列表 |
+| `/@:username/blog/:slug` | UserBlogDetailView | 文章詳情 |
+| `/@:username/calendar` | UserCalendarView | 公開行事曆 |
+| `/@:username/guestbook` | UserGuestbookView | 留言板 |
+| `/@:username/contact` | UserContactView | 聯絡我 |
 
 ### 管理後台路由（需要登入，路由守衛保護）
 
 | 路徑 | View |
 |------|------|
-| `/admin` | DashboardView |
+| `/admin/dashboard` | DashboardView |
 | `/admin/profile` | ProfileManageView |
 | `/admin/experience` | ExperienceManageView |
 | `/admin/skills` | SkillManageView |
@@ -217,23 +234,22 @@ PersonalManagerFrontend/
 
 ### 新增一個 API 呼叫
 
-1. 在 `src/types/api.ts` 中定義介面（camelCase 欄位）
-2. 在對應的 `src/services/xxxService.ts` 中新增方法
-3. 在對應的 `src/stores/xxx.ts` 中新增 action
+1. 在 `src/types/api.ts` 定義介面（camelCase 欄位）
+2. 在對應的 `src/services/xxxService.ts` 新增方法
+3. 在對應的 `src/stores/xxx.ts` 新增 action
 4. 在 View/Component 中呼叫 store action
 
 ### 新增一個頁面
 
 1. 在 `src/views/` 建立 `.vue` 檔案
-2. 在 `src/router/index.ts` 新增路由
-3. 若需要認證，在路由 `meta` 加上 `{ requiresAuth: true }`
+2. 在 `src/router/index.ts` 新增路由（使用懶載入 `() => import(...)`）
+3. 若需要認證，路由 `meta` 加 `{ requiresAuth: true }`
 
 ### 新增一個 Service
 
-參考現有 service 檔案結構（如 `skillService.ts`）：
 ```typescript
-import { httpService } from './http'
-import type { ApiResponse, Skill, CreateSkillDto } from '@/types/api'
+import httpService from './http'
+import type { ApiResponse, Skill } from '@/types/api'
 
 export const skillService = {
   getAll: () => httpService.get<Skill[]>('/skills'),
@@ -244,14 +260,26 @@ export const skillService = {
 }
 ```
 
+### UserLayout 與 provide/inject
+
+`UserLayout.vue` 透過 `provide('userId', userId)` 傳遞 userId 給子頁面，子頁面用 `inject<Ref<number>>('userId')` 取得：
+```typescript
+// UserLayout.vue
+provide('userId', userId)  // userId = ref<number>(resolved from username)
+
+// UserAboutView.vue
+const userId = inject<Ref<number>>('userId')!
+```
+
 ---
 
 ## 設計規範
 
-- **色調**：淺灰、淺藍、白色為主，冷色調，低色溫
-- **風格**：現代線條設計，圓角矩形，無複雜色彩
+- **色調**：淺灰、淺藍、白色為主，冷色調
 - **元件**：基礎 UI 元件在 `src/components/ui/`，直接使用，不重複建立
+- **表單樣式**：使用 `src/assets/main.css` 定義的 `.form-input`、`.form-select`、`.form-label`，確保文字顏色可見
 - **TypeScript**：嚴格模式，不使用 `any`，所有 prop 需要型別定義
+- **主題**：個人頁面透過 `useTheme(themeColor)` 取得 CSS 變數，套用至 UserLayout 的 `:style`
 
 ---
 
@@ -259,12 +287,33 @@ export const skillService = {
 
 - **不要修改 `http.ts` 的攔截器邏輯**，除非有明確需求
 - **所有 API 欄位用 camelCase**，與後端 JSON 序列化一致
-- **Store 中的資料是 reactive**，直接修改 store state 可能造成意外副作用，透過 action 修改
 - **build 前確認 TypeScript 無錯誤**：`npm run type-check`
+- **pinia-plugin-persistedstate v4**：compose store 需用三參數 `defineStore(id, setup, { persist })`，舊版 v3 語法不相容
+- **Admin 頁面取得 userId**：從 `authStore.user?.id` 取得，不可 hardcode `1`
 
 ---
 
 ## 最新異動記錄
+
+### 2026/02/23
+- **多使用者架構大改寫**：
+  - `src/types/api.ts` 新增 `PublicUser`、`ProfileDirectory`；`PersonalProfile` 加 `themeColor`；`GuestBookEntry` 加 `targetUserId`；`AuthResponse` 新增 `userId`
+  - `src/services/userDirectoryService.ts` — 新增，呼叫 `/profiles/directory`、`/users/public/{username}` 等端點
+  - `src/services/commentService.ts` — 新增 `getApprovedByUser(targetUserId)` 和支援 `targetUserId` 的 `createGuestBookEntry`
+  - `src/stores/userDirectory.ts` — 新增，管理 profiles 目錄和 username 解析
+  - `src/composables/useTheme.ts` — 新增，提供 5 套主題 CSS 變數（blue/green/purple/rose/slate）
+  - `src/router/index.ts` — 路由重構：移除舊扁平路由（`/about`、`/skills` 等），新增 `/@:username` 巢狀路由架構
+  - `src/components/layout/UserLayout.vue` — 新增核心 Layout，負責解析 username、套用主題、顯示個人 Header + 水平導覽
+  - `src/views/HomeView.vue` — 改寫為用戶目錄頁（搜尋 + 格狀卡片）
+  - `src/views/user/` — 新增 10 個頁面（UserAboutView、UserExperienceView 等）
+  - `src/components/layout/AppHeader.vue` — 簡化導覽，修正 user menu 連結為 `/admin/dashboard`、`/admin/profile`
+  - `src/views/admin/ProfileManageView.vue` — 移除 hardcoded `userId=1`，改用 `authStore.user?.id`；改呼叫真實 API；新增 5 色主題選擇器
+  - `src/assets/main.css` — 新增 `.form-input`、`.form-select`、`.form-label` 全局 class
+- **Bug 修復**：
+  - `src/services/authService.ts` — 登入/註冊時將 `id: response.data.userId` 存入 `user_data`，修復頁面重整後 userId 為 undefined 的問題
+  - `src/views/admin/CommentManageView.vue` — `submitReply()` 中 `adminReply` 欄位未傳送已修正
+  - `src/stores/task.ts` — 時間記錄（TimeEntry）改為本地實作 + `pinia-plugin-persistedstate` 持久化；`TimesheetView.vue` 新增 `add-entry` emit
+  - `src/components/layout/AdminLayout.vue` — 移除 `/admin/files`（檔案管理）和 `/admin/settings`（系統設定）尚未實作的導覽項目及 `FolderIcon`、`Cog6ToothIcon` 匯入
 
 ### 2026/02/22
 - **API base URL 確認**：後端 port 為 `5037`（`.env.development` 已更新）

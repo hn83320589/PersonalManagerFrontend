@@ -8,6 +8,7 @@ class AuthService {
     if (response.success && response.data) {
       localStorage.setItem('auth_token', response.data.token)
       localStorage.setItem('user_data', JSON.stringify({
+        id: response.data.userId,
         username: response.data.username,
         email: response.data.email,
         fullName: response.data.fullName,
@@ -28,6 +29,7 @@ class AuthService {
     if (response.success && response.data) {
       localStorage.setItem('auth_token', response.data.token)
       localStorage.setItem('user_data', JSON.stringify({
+        id: response.data.userId,
         username: response.data.username,
         email: response.data.email,
         fullName: response.data.fullName,

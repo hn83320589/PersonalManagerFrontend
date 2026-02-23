@@ -33,9 +33,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
   },
   server: {
-    hmr: {
-      overlay: true,
-    },
+    hmr: false,
   },
   optimizeDeps: {
     include: [

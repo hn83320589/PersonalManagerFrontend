@@ -7,6 +7,11 @@ class CommentService {
     return httpService.get<GuestBookEntry[]>('/guestbookentries')
   }
 
+  // Public: get approved entries for a specific user
+  async getApprovedByUser(targetUserId: number): Promise<ApiResponse<GuestBookEntry[]>> {
+    return httpService.get<GuestBookEntry[]>(`/guestbookentries/user/${targetUserId}`)
+  }
+
   // Admin: get all entries
   async getAllGuestBookEntries(): Promise<ApiResponse<GuestBookEntry[]>> {
     return httpService.get<GuestBookEntry[]>('/guestbookentries/all')
@@ -16,7 +21,7 @@ class CommentService {
     return httpService.get<GuestBookEntry>(`/guestbookentries/${id}`)
   }
 
-  async createGuestBookEntry(entry: { name: string; email?: string; message: string }): Promise<ApiResponse<GuestBookEntry>> {
+  async createGuestBookEntry(entry: { targetUserId?: number; name: string; email?: string; message: string }): Promise<ApiResponse<GuestBookEntry>> {
     return httpService.post<GuestBookEntry>('/guestbookentries', entry)
   }
 

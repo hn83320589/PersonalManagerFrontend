@@ -24,7 +24,9 @@ interface TimeEntry {
   updatedAt?: string;
 }
 
-export const useTaskStore = defineStore("task", () => {
+export const useTaskStore = defineStore(
+  "task",
+  () => {
   // State
   const todoItems = ref<TodoItem[]>([]);
   const workTasks = ref<WorkTask[]>([]);
@@ -309,68 +311,51 @@ export const useTaskStore = defineStore("task", () => {
     currentWorkTask.value = null;
   }
 
-  // Time Entries Actions
+  // Time Entries Actions (local-only, persisted to localStorage)
   async function fetchTimeEntries() {
-    isLoading.value = true;
-    error.value = null;
-
-    try {
-      // API service will be implemented later
-      timeEntries.value = [];
-    } catch (err) {
-      error.value = "Failed to fetch time entries";
-      console.error(err);
-    } finally {
-      isLoading.value = false;
-    }
+    // Data is loaded from localStorage via persistedstate; no API call needed
   }
 
   async function createTimeEntry(entryData: Partial<TimeEntry>) {
-    isLoading.value = true;
-    error.value = null;
-
-    try {
-      // API service will be implemented later
-      return null;
-    } catch (err) {
-      error.value = "Failed to create time entry";
-      console.error(err);
-      return null;
-    } finally {
-      isLoading.value = false;
-    }
+    const newId =
+      timeEntries.value.length > 0
+        ? Math.max(...timeEntries.value.map((e) => e.id)) + 1
+        : 1;
+    const entry: TimeEntry = {
+      id: newId,
+      taskId: entryData.taskId,
+      task: entryData.task || "",
+      project: entryData.project,
+      date: entryData.date || new Date().toISOString().split("T")[0],
+      startTime: entryData.startTime,
+      endTime: entryData.endTime,
+      duration: entryData.duration || 0,
+      description: entryData.description,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    timeEntries.value.push(entry);
+    return entry;
   }
 
   async function updateTimeEntry(id: number, entryData: Partial<TimeEntry>) {
-    isLoading.value = true;
-    error.value = null;
-
-    try {
-      // API service will be implemented later
-      return null;
-    } catch (err) {
-      error.value = "Failed to update time entry";
-      console.error(err);
-      return null;
-    } finally {
-      isLoading.value = false;
+    const index = timeEntries.value.findIndex((e) => e.id === id);
+    if (index !== -1) {
+      timeEntries.value[index] = {
+        ...timeEntries.value[index],
+        ...entryData,
+        id,
+        updatedAt: new Date().toISOString(),
+      };
+      return timeEntries.value[index];
     }
+    return null;
   }
 
   async function deleteTimeEntry(id: number) {
-    isLoading.value = true;
-    error.value = null;
-
-    try {
-      // API service will be implemented later
-      return false;
-    } catch (err) {
-      error.value = "Failed to delete time entry";
-      console.error(err);
-      return false;
-    } finally {
-      isLoading.value = false;
-    }
+    const before = timeEntries.value.length;
+    timeEntries.value = timeEntries.value.filter((e) => e.id !== id);
+    return timeEntries.value.length < before;
   }
 
   return {
@@ -416,4 +401,10 @@ export const useTaskStore = defineStore("task", () => {
     clearCurrentTodo,
     clearCurrentWorkTask,
   };
-});
+  },
+  {
+    persist: {
+      pick: ["timeEntries"],
+    },
+  },
+);

@@ -821,8 +821,7 @@ async function submitReply() {
 
   try {
     await commentStore.updateEntry(replyingComment.value.id, {
-      // This will need backend support for admin replies
-      // adminReply: replyText.value.trim()
+      adminReply: replyText.value.trim()
     })
     showReplyModal.value = false
     replyingComment.value = null

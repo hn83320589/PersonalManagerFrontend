@@ -252,9 +252,10 @@ interface Props {
 const props = defineProps<Props>()
 
 // Emits
-defineEmits<{
+const emit = defineEmits<{
   'edit-entry': [entry: TimeEntry]
   'delete-entry': [id: number]
+  'add-entry': []
 }>()
 
 // State
@@ -353,8 +354,7 @@ function getDailyTotal(entries: TimeEntry[]): number {
 }
 
 function addTimeEntry() {
-  // This would emit an event to add a new time entry
-  console.log('Add time entry')
+  emit('add-entry')
 }
 
 function exportTimesheet() {

@@ -130,31 +130,6 @@
             </div>
           </div>
 
-          <!-- System Management -->
-          <div class="mt-6">
-            <h3 class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              系統管理
-            </h3>
-            <div class="mt-2 space-y-1">
-              <router-link
-                to="/admin/files"
-                class="nav-link"
-                active-class="nav-link-active"
-              >
-                <FolderIcon class="nav-icon" />
-                檔案管理
-              </router-link>
-
-              <router-link
-                to="/admin/settings"
-                class="nav-link"
-                active-class="nav-link-active"
-              >
-                <Cog6ToothIcon class="nav-icon" />
-                系統設定
-              </router-link>
-            </div>
-          </div>
         </nav>
 
         <!-- User Info & Logout -->
@@ -268,8 +243,6 @@ import {
   CalendarDaysIcon,
   CheckCircleIcon,
   ClockIcon,
-  FolderIcon,
-  Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
   Bars3Icon,
   XMarkIcon,

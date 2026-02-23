@@ -82,9 +82,12 @@ class HttpService {
     // Clear auth token
     localStorage.removeItem('auth_token')
     localStorage.removeItem('user_data')
-    
+
+    // Don't redirect on public user profile pages (/@username/*)
+    const isPublicUserPage = window.location.pathname.startsWith('/@')
+
     // Redirect to login page
-    if (window.location.pathname !== '/login') {
+    if (!isPublicUserPage && window.location.pathname !== '/login') {
       window.location.href = '/login'
     }
   }
