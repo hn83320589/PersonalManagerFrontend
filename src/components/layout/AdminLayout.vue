@@ -2,14 +2,20 @@
   <div class="min-h-screen bg-gray-50 flex">
     <!-- Sidebar -->
     <div class="hidden md:flex md:w-64 md:flex-col">
-      <div class="flex flex-col flex-grow pt-5 pb-4 overflow-y-auto bg-white border-r border-gray-200">
+      <div
+        class="flex flex-col flex-grow pt-5 pb-4 overflow-y-auto bg-white border-r border-gray-200"
+      >
         <!-- Logo/Brand -->
         <div class="flex items-center flex-shrink-0 px-4">
           <router-link to="/" class="flex items-center">
-            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <div
+              class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center"
+            >
               <span class="text-white font-bold text-sm">PM</span>
             </div>
-            <span class="ml-2 text-lg font-semibold text-gray-900">Personal Manager</span>
+            <span class="ml-2 text-lg font-semibold text-gray-900"
+              >Personal Manager</span
+            >
           </router-link>
         </div>
 
@@ -27,7 +33,9 @@
 
           <!-- Content Management -->
           <div class="mt-6">
-            <h3 class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <h3
+              class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider"
+            >
               內容管理
             </h3>
             <div class="mt-2 space-y-1">
@@ -71,7 +79,9 @@
 
           <!-- Interactive Features -->
           <div class="mt-6">
-            <h3 class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <h3
+              class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider"
+            >
               互動功能
             </h3>
             <div class="mt-2 space-y-1">
@@ -106,7 +116,9 @@
 
           <!-- Task Management -->
           <div class="mt-6">
-            <h3 class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <h3
+              class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider"
+            >
               任務管理
             </h3>
             <div class="mt-2 space-y-1">
@@ -129,14 +141,15 @@
               </router-link>
             </div>
           </div>
-
         </nav>
 
         <!-- User Info & Logout -->
         <div class="flex-shrink-0 flex border-t border-gray-200 p-4">
           <div class="flex items-center w-full">
             <div class="flex-shrink-0">
-              <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+              <div
+                class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center"
+              >
                 <UserIcon class="w-5 h-5 text-gray-600" />
               </div>
             </div>
@@ -202,14 +215,10 @@
               {{ pageTitle }}
             </h1>
           </div>
-          
+
           <!-- Quick actions -->
           <div class="flex items-center space-x-2">
-            <BaseButton
-              variant="outline"
-              size="small"
-              @click="$router.push('/')"
-            >
+            <BaseButton variant="outline" size="small" @click="openPreview">
               <EyeIcon class="w-4 h-4 mr-2" />
               預覽網站
             </BaseButton>
@@ -218,7 +227,9 @@
       </div>
 
       <!-- Page content -->
-      <main class="flex-1 relative overflow-y-auto focus:outline-none bg-gray-50">
+      <main
+        class="flex-1 relative overflow-y-auto focus:outline-none bg-gray-50"
+      >
         <div class="py-6">
           <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
             <slot />
@@ -230,8 +241,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { ref, computed } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import {
   HomeIcon,
   UserIcon,
@@ -246,33 +257,37 @@ import {
   ArrowRightOnRectangleIcon,
   Bars3Icon,
   XMarkIcon,
-  EyeIcon
-} from '@heroicons/vue/24/outline'
-import { useAuthStore } from '@/stores/auth'
-import BaseButton from '@/components/ui/BaseButton.vue'
+  EyeIcon,
+} from "@heroicons/vue/24/outline";
+import { useAuthStore } from "@/stores/auth";
+import BaseButton from "@/components/ui/BaseButton.vue";
 
 // Router & Route
-const router = useRouter()
-const route = useRoute()
+const router = useRouter();
+const route = useRoute();
 
 // Stores
-const authStore = useAuthStore()
+const authStore = useAuthStore();
 
 // State
-const mobileMenuOpen = ref(false)
+const mobileMenuOpen = ref(false);
 
 // Computed
 const pageTitle = computed(() => {
-  return route.meta.title as string || '管理後台'
-})
+  return (route.meta.title as string) || "管理後台";
+});
 
 // Methods
+function openPreview() {
+  window.open("/", "_blank");
+}
+
 async function handleLogout() {
   try {
-    await authStore.logout()
-    router.push('/')
+    await authStore.logout();
+    router.push("/");
   } catch (error) {
-    console.error('Logout error:', error)
+    console.error("Logout error:", error);
   }
 }
 </script>

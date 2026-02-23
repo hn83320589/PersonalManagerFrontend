@@ -12,7 +12,10 @@
             value="education"
             class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
           />
-          <label for="education" class="ml-3 block text-sm font-medium text-gray-700">
+          <label
+            for="education"
+            class="ml-3 block text-sm font-medium text-gray-700"
+          >
             <AcademicCapIcon class="w-5 h-5 inline mr-2" />
             教育背景
           </label>
@@ -25,7 +28,10 @@
             value="work"
             class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
           />
-          <label for="work" class="ml-3 block text-sm font-medium text-gray-700">
+          <label
+            for="work"
+            class="ml-3 block text-sm font-medium text-gray-700"
+          >
             <BriefcaseIcon class="w-5 h-5 inline mr-2" />
             工作經歷
           </label>
@@ -37,7 +43,10 @@
     <div v-if="isEducation" class="space-y-4">
       <!-- Institution -->
       <div>
-        <label for="institution" class="block text-sm font-medium text-gray-700">
+        <label
+          for="institution"
+          class="block text-sm font-medium text-gray-700"
+        >
           學校/機構 <span class="text-red-500">*</span>
         </label>
         <BaseInput
@@ -67,7 +76,10 @@
 
       <!-- Field of Study -->
       <div>
-        <label for="fieldOfStudy" class="block text-sm font-medium text-gray-700">
+        <label
+          for="fieldOfStudy"
+          class="block text-sm font-medium text-gray-700"
+        >
           科系/專業
         </label>
         <BaseInput
@@ -142,7 +154,10 @@
 
       <!-- Employment Type -->
       <div>
-        <label for="employmentType" class="block text-sm font-medium text-gray-700">
+        <label
+          for="employmentType"
+          class="block text-sm font-medium text-gray-700"
+        >
           工作類型
         </label>
         <select
@@ -192,7 +207,10 @@
       <!-- Date Range -->
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label for="startDate" class="block text-sm font-medium text-gray-700">
+          <label
+            for="startDate"
+            class="block text-sm font-medium text-gray-700"
+          >
             開始日期 <span class="text-red-500">*</span>
           </label>
           <input
@@ -222,7 +240,10 @@
 
       <!-- Description -->
       <div>
-        <label for="description" class="block text-sm font-medium text-gray-700">
+        <label
+          for="description"
+          class="block text-sm font-medium text-gray-700"
+        >
           描述
         </label>
         <BaseTextarea
@@ -230,20 +251,6 @@
           v-model="formData.description"
           :rows="4"
           placeholder="請描述主要內容、成就或學習經驗..."
-          class="mt-1"
-        />
-      </div>
-
-      <!-- Achievements -->
-      <div>
-        <label for="achievements" class="block text-sm font-medium text-gray-700">
-          主要成就
-        </label>
-        <BaseTextarea
-          id="achievements"
-          v-model="formData.achievements"
-          :rows="3"
-          placeholder="列出主要成就或重要項目..."
           class="mt-1"
         />
       </div>
@@ -260,9 +267,7 @@
           placeholder="請用逗號分隔，如：JavaScript, Vue.js, Node.js"
           class="mt-1"
         />
-        <p class="mt-1 text-xs text-gray-500">
-          請用逗號分隔多個技能
-        </p>
+        <p class="mt-1 text-xs text-gray-500">請用逗號分隔多個技能</p>
       </div>
 
       <!-- Website URL -->
@@ -305,165 +310,167 @@
         <label for="isPublic" class="ml-2 block text-sm text-gray-900">
           公開顯示
         </label>
-        <p class="ml-2 text-xs text-gray-500">
-          勾選後將在前台頁面顯示
-        </p>
+        <p class="ml-2 text-xs text-gray-500">勾選後將在前台頁面顯示</p>
       </div>
     </div>
 
     <!-- Form Actions -->
     <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-      <BaseButton
-        type="button"
-        variant="outline"
-        @click="$emit('cancel')"
-      >
+      <BaseButton type="button" variant="outline" @click="$emit('cancel')">
         取消
       </BaseButton>
-      <BaseButton
-        type="submit"
-        variant="primary"
-        :loading="loading"
-      >
-        {{ item ? '更新' : '建立' }}
+      <BaseButton type="submit" variant="primary" :loading="loading">
+        {{ item ? "更新" : "建立" }}
       </BaseButton>
     </div>
   </form>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
-import { AcademicCapIcon, BriefcaseIcon } from '@heroicons/vue/24/outline'
-import type { Education, WorkExperience } from '@/types/experience'
-import BaseInput from '@/components/ui/BaseInput.vue'
-import BaseTextarea from '@/components/ui/BaseTextarea.vue'
-import BaseButton from '@/components/ui/BaseButton.vue'
+import { ref, computed, watch, onMounted } from "vue";
+import { AcademicCapIcon, BriefcaseIcon } from "@heroicons/vue/24/outline";
+import type { Education, WorkExperience } from "@/types/experience";
+import BaseInput from "@/components/ui/BaseInput.vue";
+import BaseTextarea from "@/components/ui/BaseTextarea.vue";
+import BaseButton from "@/components/ui/BaseButton.vue";
 
 // Props
 interface Props {
-  item?: Education | WorkExperience | null
-  type?: 'education' | 'work'
+  item?: Education | WorkExperience | null;
+  type?: "education" | "work";
 }
 
 const props = withDefaults(defineProps<Props>(), {
   item: null,
-  type: 'education'
-})
+  type: "education",
+});
 
 // Emits
 const emit = defineEmits<{
-  save: [data: any]
-  cancel: []
-}>()
+  save: [data: any];
+  cancel: [];
+}>();
 
 // State
-const loading = ref(false)
+const loading = ref(false);
 const formData = ref({
   type: props.type,
   // Common fields
-  startDate: '',
-  endDate: '',
-  location: '',
-  description: '',
-  achievements: '',
-  websiteUrl: '',
+  startDate: "",
+  endDate: "",
+  location: "",
+  description: "",
+  websiteUrl: "",
   sortOrder: 0,
   isPublic: true,
-  
+
   // Education fields
-  institution: '',
-  degree: '',
-  fieldOfStudy: '',
-  gpa: '',
-  
+  institution: "",
+  degree: "",
+  fieldOfStudy: "",
+  gpa: "",
+
   // Work fields
-  company: '',
-  position: '',
-  department: '',
-  employmentType: '',
+  company: "",
+  position: "",
+  department: "",
+  employmentType: "",
   isCurrent: false,
-  skills: ''
-})
+  skills: "",
+});
 
 // Computed
-const isEducation = computed(() => formData.value.type === 'education')
-const isWork = computed(() => formData.value.type === 'work')
+const isEducation = computed(() => formData.value.type === "education");
+const isWork = computed(() => formData.value.type === "work");
 
 // Watchers
-watch(() => formData.value.isCurrent, (newValue) => {
-  if (newValue) {
-    formData.value.endDate = ''
-  }
-})
+watch(
+  () => formData.value.isCurrent,
+  (newValue) => {
+    if (newValue) {
+      formData.value.endDate = "";
+    }
+  },
+);
 
 // Methods
 async function handleSubmit() {
-  loading.value = true
-  
+  loading.value = true;
+
   try {
-    const submitData = { ...formData.value }
-    
+    const submitData = { ...formData.value };
+
     // Process skills for work experience
-    if (isWork.value && submitData.skills && typeof submitData.skills === 'string') {
-      const skillsArray = submitData.skills.split(',').map(s => s.trim()).filter(s => s)
-      submitData.skills = skillsArray.join(',')
+    if (
+      isWork.value &&
+      submitData.skills &&
+      typeof submitData.skills === "string"
+    ) {
+      const skillsArray = submitData.skills
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s);
+      submitData.skills = skillsArray.join(",");
     }
-    
+
     // Remove type field from submit data
-    const { type, ...submitDataWithoutType } = submitData
-    
-    emit('save', submitDataWithoutType)
+    const { type, ...submitDataWithoutType } = submitData;
+
+    emit("save", submitDataWithoutType);
   } catch (error) {
-    console.error('Submit error:', error)
+    console.error("Submit error:", error);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 function initializeForm() {
   if (props.item) {
-    const item = props.item
-    
+    const item = props.item;
+
     // Common fields - check if properties exist
-    formData.value.startDate = (item as any).startDate || ''
-    formData.value.endDate = (item as any).endDate || ''
-    formData.value.location = (item as any).location || ''
-    formData.value.description = (item as any).description || ''
-    formData.value.achievements = (item as any).achievements || ''
-    formData.value.websiteUrl = (item as any).websiteUrl || ''
-    formData.value.sortOrder = item.sortOrder || 0
-    formData.value.isPublic = item.isPublic ?? true
-    
+    formData.value.startDate = (item as any).startDate || "";
+    formData.value.endDate = (item as any).endDate || "";
+    formData.value.location = (item as any).location || "";
+    formData.value.description = (item as any).description || "";
+    formData.value.websiteUrl = (item as any).websiteUrl || "";
+    formData.value.sortOrder = item.sortOrder || 0;
+    formData.value.isPublic = item.isPublic ?? true;
+
     // Check if it's education or work experience
-    if ('school' in item) {
+    if ("school" in item) {
       // Education
-      formData.value.type = 'education'
-      formData.value.institution = (item as Education).school
-      formData.value.degree = (item as Education).degree
-      formData.value.fieldOfStudy = (item as Education).fieldOfStudy || ''
-      formData.value.gpa = ''
+      formData.value.type = "education";
+      formData.value.institution = (item as Education).school;
+      formData.value.degree = (item as Education).degree;
+      formData.value.fieldOfStudy = (item as Education).fieldOfStudy || "";
+      formData.value.gpa = "";
     } else {
       // Work Experience
-      formData.value.type = 'work'
-      formData.value.company = (item as WorkExperience).company
-      formData.value.position = (item as WorkExperience).position
-      formData.value.department = ''
-      formData.value.employmentType = ''
-      formData.value.isCurrent = (item as WorkExperience).isCurrent || false
-      formData.value.skills = ''
+      formData.value.type = "work";
+      formData.value.company = (item as WorkExperience).company;
+      formData.value.position = (item as WorkExperience).position;
+      formData.value.department = "";
+      formData.value.employmentType = "";
+      formData.value.isCurrent = (item as WorkExperience).isCurrent || false;
+      formData.value.skills = "";
     }
   } else {
-    formData.value.type = props.type
+    formData.value.type = props.type;
   }
 }
 
 // Lifecycle
 onMounted(() => {
-  initializeForm()
-})
+  initializeForm();
+});
 
 // Watch for item changes
-watch(() => props.item, () => {
-  initializeForm()
-}, { immediate: true })
+watch(
+  () => props.item,
+  () => {
+    initializeForm();
+  },
+  { immediate: true },
+);
 </script>
