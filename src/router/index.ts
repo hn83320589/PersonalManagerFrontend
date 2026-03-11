@@ -82,6 +82,12 @@ const router = createRouter({
           component: () => import('../views/user/UserGuestbookView.vue'),
           meta: { title: '留言板' }
         },
+        {
+          path: 'contact',
+          name: 'user-contact',
+          component: () => import('../views/user/UserContactView.vue'),
+          meta: { title: '聯絡我' }
+        },
       ]
     },
 
@@ -161,6 +167,12 @@ const router = createRouter({
       name: 'comment-manage',
       component: () => import('../views/admin/CommentManageView.vue'),
       meta: { title: '留言管理', requiresAuth: true }
+    },
+    {
+      path: '/admin/contacts',
+      name: 'contact-manage',
+      component: () => import('../views/admin/ContactManageView.vue'),
+      meta: { title: '聯絡方式管理', requiresAuth: true }
     },
     // Catch all 404
     {

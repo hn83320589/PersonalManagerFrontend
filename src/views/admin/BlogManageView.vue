@@ -280,6 +280,32 @@
       </div>
     </BaseModal>
 
+    <!-- Batch Update Category Modal -->
+    <BaseModal
+      :show="showBatchCategoryModal"
+      @close="showBatchCategoryModal = false"
+      title="批量更改分類"
+      max-width="sm"
+    >
+      <div class="space-y-3">
+        <p class="text-sm text-gray-600">將 {{ selectedPosts.length }} 篇文章的分類改為：</p>
+        <input
+          v-model="batchCategoryValue"
+          type="text"
+          list="batch-categories"
+          class="form-input w-full"
+          placeholder="輸入或選擇分類名稱"
+        />
+        <datalist id="batch-categories">
+          <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
+        </datalist>
+      </div>
+      <div class="mt-6 flex justify-end space-x-3">
+        <BaseButton variant="outline" @click="showBatchCategoryModal = false">取消</BaseButton>
+        <BaseButton variant="primary" :disabled="!batchCategoryValue.trim()" @click="confirmBatchUpdateCategory">確認</BaseButton>
+      </div>
+    </BaseModal>
+
     <!-- Delete Confirmation Modal -->
     <BaseModal
       :show="showDeleteModal"
@@ -326,6 +352,7 @@ import {
   ArrowDownTrayIcon
 } from '@heroicons/vue/24/outline'
 import { useBlogStore } from '@/stores/blog'
+import { useAuthStore } from '@/stores/auth'
 import type { BlogPost } from '@/types/api'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
@@ -340,6 +367,7 @@ const router = useRouter()
 
 // Stores
 const blogStore = useBlogStore()
+const authStore = useAuthStore()
 
 // State
 const searchQuery = ref('')
@@ -351,6 +379,8 @@ const loading = ref(false)
 const showCategoryModal = ref(false)
 const showBatchModal = ref(false)
 const showDeleteModal = ref(false)
+const showBatchCategoryModal = ref(false)
+const batchCategoryValue = ref('')
 const selectedPosts = ref<number[]>([])
 const deletingId = ref<number | null>(null)
 const deleteType = ref<'single' | 'batch'>('single')
@@ -469,9 +499,8 @@ function duplicatePost(post: BlogPost) {
     updatedAt: undefined
   }
   
-  // This would typically create a new post and then redirect to editor
   blogStore.createPost(duplicated).then((newPost) => {
-    router.push(`/admin/blog/editor/${newPost.id}`)
+    if (newPost) router.push(`/admin/blog/editor/${newPost.id}`)
   })
 }
 
@@ -484,9 +513,9 @@ async function togglePublish(post: BlogPost) {
 }
 
 function previewPost(post: BlogPost) {
-  // Open preview in new tab
-  const previewUrl = `/blog/${post.slug || post.id}`
-  window.open(previewUrl, '_blank')
+  const username = authStore.user?.username
+  if (!username || !post.slug) return
+  window.open(`/@${username}/blog/${post.slug}`, '_blank')
 }
 
 async function batchUpdateStatus(status: 'Draft' | 'Published' | 'Archived') {
@@ -507,15 +536,26 @@ async function batchUpdateStatus(status: 'Draft' | 'Published' | 'Archived') {
 }
 
 function batchUpdateCategory() {
-  // This could open another modal for category selection
-  console.log('Batch update category for posts:', selectedPosts.value)
+  batchCategoryValue.value = ''
+  showBatchModal.value = false
+  showBatchCategoryModal.value = true
+}
+
+async function confirmBatchUpdateCategory() {
+  const category = batchCategoryValue.value.trim()
+  if (!category) return
+  try {
+    await Promise.all(
+      selectedPosts.value.map(postId => blogStore.updatePost(postId, { category }))
+    )
+    selectedPosts.value = []
+  } catch (error) {
+    console.error('Batch category update error:', error)
+  }
+  showBatchCategoryModal.value = false
 }
 
 function batchExport() {
-  // This would implement export functionality
-  console.log('Export posts:', selectedPosts.value)
-  
-  // Generate CSV or JSON export
   const selectedPostData = posts.value.filter(post => selectedPosts.value.includes(post.id))
   const exportData = selectedPostData.map(post => ({
     title: post.title,
@@ -566,14 +606,26 @@ async function confirmDelete() {
   }
 }
 
-function handleCategorySave(categoryData: any) {
-  // Handle category save logic
-  console.log('Save category:', categoryData)
+async function handleCategorySave(categoryData: { name: string; oldName?: string }) {
+  if (!categoryData.oldName) return  // creating new standalone category: no-op (categories derive from posts)
+  const oldName = categoryData.oldName
+  const newName = categoryData.name
+  if (oldName === newName) return
+  try {
+    const postsToRename = posts.value.filter(p => p.category === oldName)
+    await Promise.all(postsToRename.map(p => blogStore.updatePost(p.id, { category: newName })))
+  } catch (error) {
+    console.error('Category rename error:', error)
+  }
 }
 
-function handleCategoryDelete(categoryName: string) {
-  // Handle category delete logic
-  console.log('Delete category:', categoryName)
+async function handleCategoryDelete(categoryName: string) {
+  try {
+    const postsToUpdate = posts.value.filter(p => p.category === categoryName)
+    await Promise.all(postsToUpdate.map(p => blogStore.updatePost(p.id, { category: '' })))
+  } catch (error) {
+    console.error('Category delete error:', error)
+  }
 }
 
 // Lifecycle

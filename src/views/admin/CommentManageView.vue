@@ -909,13 +909,18 @@ function exportComments() {
 }
 
 function saveSettings() {
-  // In a real app, save settings to backend
-  console.log('Saving settings:', settings.value)
+  localStorage.setItem('comment_settings', JSON.stringify(settings.value))
   showSettingsModal.value = false
 }
 
 // Lifecycle
 onMounted(async () => {
+  const saved = localStorage.getItem('comment_settings')
+  if (saved) {
+    try {
+      Object.assign(settings.value, JSON.parse(saved))
+    } catch { /* ignore parse errors */ }
+  }
   await commentStore.fetchEntries()
 })
 </script>

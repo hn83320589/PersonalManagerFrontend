@@ -326,6 +326,36 @@
       />
     </BaseModal>
 
+    <!-- Edit Project Modal -->
+    <BaseModal
+      :show="showEditProjectModal"
+      @close="showEditProjectModal = false"
+      title="重新命名專案"
+      max-width="sm"
+    >
+      <div class="space-y-4">
+        <div>
+          <p class="text-sm text-gray-600 mb-3">
+            將「{{ editingProjectName }}」底下的所有任務移至新專案名稱。
+          </p>
+          <label class="block text-sm font-medium text-gray-700 mb-1">新專案名稱</label>
+          <input
+            v-model="newProjectName"
+            type="text"
+            class="form-input w-full"
+            placeholder="輸入新的專案名稱"
+            @keyup.enter="confirmEditProject"
+          />
+        </div>
+      </div>
+      <div class="mt-6 flex justify-end space-x-3">
+        <BaseButton variant="outline" @click="showEditProjectModal = false">取消</BaseButton>
+        <BaseButton variant="primary" :disabled="!newProjectName.trim() || newProjectName === editingProjectName" @click="confirmEditProject">
+          儲存
+        </BaseButton>
+      </div>
+    </BaseModal>
+
     <!-- Delete Confirmation Modal -->
     <BaseModal
       :show="showDeleteModal"
@@ -398,6 +428,9 @@ const showCreateModal = ref(false);
 const showTimeTrackerModal = ref(false);
 const showTimeEntryModal = ref(false);
 const showDeleteModal = ref(false);
+const showEditProjectModal = ref(false);
+const editingProjectName = ref('');
+const newProjectName = ref('');
 const editingTask = ref<WorkTask | null>(null);
 const editingTimeEntry = ref<any>(null);
 const deletingId = ref<number | null>(null);
@@ -774,37 +807,22 @@ function viewProject(project: any) {
 }
 
 function editProject(project: any) {
-  /**
-   * 專案編輯功能實作規劃
-   *
-   * 功能說明：編輯專案的基本資訊（名稱、描述、預算等）
-   *
-   * 實作建議：
-   * 1. 建立 ProjectForm 元件或重用現有的表單元件
-   *    - 欄位：專案名稱、描述、狀態、預算、開始/結束日期
-   *    - 驗證：必填欄位檢查、日期邏輯驗證
-   *
-   * 2. 使用 Modal 顯示編輯表單
-   *    - 預填專案現有資料
-   *    - 提供儲存/取消按鈕
-   *
-   * 3. 整合到 taskStore
-   *    - 需要 updateProject(projectId, data) action
-   *    - 或擴展現有的 WorkTask API 支援專案管理
-   *
-   * 4. 後端 API 支援
-   *    - 確認後端是否有 Project 獨立實體
-   *    - 或使用 WorkTask 的 projectId 欄位進行分組管理
-   *
-   * 5. UI 更新
-   *    - 編輯成功後重新載入專案列表
-   *    - 顯示成功/錯誤通知
-   *
-   * 臨時解決方案：
-   * 目前可先使用 console.log 記錄，或顯示「功能開發中」訊息
-   */
-  console.log("編輯專案:", project);
-  // notificationService.info('專案編輯功能開發中，敬請期待')
+  editingProjectName.value = project.name;
+  newProjectName.value = project.name;
+  showEditProjectModal.value = true;
+}
+
+async function confirmEditProject() {
+  const oldName = editingProjectName.value;
+  const newName = newProjectName.value.trim();
+  if (!newName || newName === oldName) return;
+
+  const tasksToUpdate = tasks.value.filter((t) => t.project === oldName);
+  await Promise.all(
+    tasksToUpdate.map((t) => taskStore.updateWorkTask(t.id, { project: newName }))
+  );
+
+  showEditProjectModal.value = false;
 }
 
 // Lifecycle

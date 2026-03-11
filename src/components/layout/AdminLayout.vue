@@ -74,6 +74,15 @@
                 <BriefcaseIcon class="nav-icon" />
                 作品專案
               </router-link>
+
+              <router-link
+                to="/admin/contacts"
+                class="nav-link"
+                active-class="nav-link-active"
+              >
+                <PhoneIcon class="nav-icon" />
+                聯絡方式
+              </router-link>
             </div>
           </div>
 
@@ -249,6 +258,7 @@ import {
   AcademicCapIcon,
   CpuChipIcon,
   BriefcaseIcon,
+  PhoneIcon,
   DocumentTextIcon,
   ChatBubbleLeftEllipsisIcon,
   CalendarDaysIcon,

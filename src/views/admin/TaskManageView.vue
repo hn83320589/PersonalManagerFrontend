@@ -265,15 +265,6 @@
           
           <BaseButton
             variant="outline"
-            @click="batchUpdateCategory"
-            class="w-full justify-start"
-          >
-            <TagIcon class="w-4 h-4 mr-2" />
-            更改分類
-          </BaseButton>
-          
-          <BaseButton
-            variant="outline"
             @click="batchDelete"
             class="w-full justify-start text-red-600 hover:text-red-700"
           >
@@ -532,11 +523,6 @@ async function batchUpdatePriority(priority: string) {
   } catch (error) {
     console.error('Batch priority update error:', error)
   }
-}
-
-function batchUpdateCategory() {
-  // This could open another modal for category selection
-  console.log('Batch update category for tasks:', selectedTasks.value)
 }
 
 function batchDelete() {

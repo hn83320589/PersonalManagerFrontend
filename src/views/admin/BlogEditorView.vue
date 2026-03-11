@@ -131,39 +131,10 @@
             <div class="p-6">
               <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-medium text-gray-900">文章內容</h3>
-                <div class="flex space-x-2">
-                  <!-- Editor Mode Toggle -->
-                  <div class="flex bg-gray-100 rounded-lg p-1">
-                    <button
-                      @click="editorMode = 'markdown'"
-                      :class="[
-                        'px-3 py-1 text-sm font-medium rounded transition-colors',
-                        editorMode === 'markdown'
-                          ? 'bg-white text-gray-900 shadow'
-                          : 'text-gray-600 hover:text-gray-900'
-                      ]"
-                    >
-                      <DocumentTextIcon class="w-4 h-4 mr-1 inline" />
-                      Markdown
-                    </button>
-                    <button
-                      @click="editorMode = 'wysiwyg'"
-                      :class="[
-                        'px-3 py-1 text-sm font-medium rounded transition-colors',
-                        editorMode === 'wysiwyg'
-                          ? 'bg-white text-gray-900 shadow'
-                          : 'text-gray-600 hover:text-gray-900'
-                      ]"
-                    >
-                      <PencilIcon class="w-4 h-4 mr-1 inline" />
-                      富文本
-                    </button>
-                  </div>
-                </div>
               </div>
 
               <!-- Markdown Editor -->
-              <div v-if="editorMode === 'markdown'" class="space-y-4">
+              <div class="space-y-4">
                 <!-- Markdown Toolbar -->
                 <div class="flex flex-wrap items-center space-x-2 p-3 bg-gray-50 rounded-lg">
                   <button
@@ -234,18 +205,6 @@
                 </div>
               </div>
 
-              <!-- WYSIWYG Editor (Placeholder) -->
-              <div v-else class="space-y-4">
-                <div class="border border-gray-300 rounded-lg min-h-96 p-4 bg-gray-50">
-                  <div class="text-center py-12">
-                    <PencilIcon class="mx-auto h-12 w-12 text-gray-400" />
-                    <h3 class="mt-2 text-sm font-medium text-gray-900">富文本編輯器</h3>
-                    <p class="mt-1 text-sm text-gray-500">
-                      正在開發中，請使用 Markdown 模式
-                    </p>
-                  </div>
-                </div>
-              </div>
             </div>
           </BaseCard>
 
@@ -605,7 +564,6 @@ const post = ref<BlogPost | null>(null)
 const showPreview = ref(false)
 const showPublishModal = ref(false)
 const showCategoryModal = ref(false)
-const editorMode = ref<'markdown' | 'wysiwyg'>('markdown')
 const autoSaveStatus = ref<'idle' | 'saving' | 'saved' | 'error'>('idle')
 const contentEditor = ref()
 
@@ -682,25 +640,36 @@ const previewContent = computed(() => {
 })
 
 // Methods
-function loadPost() {
+function applyPost(existingPost: BlogPost) {
+  post.value = existingPost
+  formData.value = {
+    title: existingPost.title,
+    slug: existingPost.slug || '',
+    content: existingPost.content || '',
+    summary: existingPost.summary || '',
+    featuredImage: '',
+    category: existingPost.category || '',
+    tags: existingPost.tags || '',
+    status: existingPost.status,
+    isPublic: existingPost.isPublic ?? true,
+    publishedAt: existingPost.publishedAt ? new Date(existingPost.publishedAt).toISOString().slice(0, 16) : '',
+    metaDescription: '',
+    metaKeywords: '',
+  }
+}
+
+async function loadPost() {
   const postId = route.params.id
   if (postId && postId !== 'new') {
-    const existingPost = blogStore.posts.find(p => p.id === Number(postId))
+    const id = Number(postId)
+    const existingPost = blogStore.posts.find(p => p.id === id)
     if (existingPost) {
-      post.value = existingPost
-      formData.value = {
-        title: existingPost.title,
-        slug: existingPost.slug || '',
-        content: existingPost.content || '',
-        summary: existingPost.summary || '',
-        featuredImage: '',
-        category: existingPost.category || '',
-        tags: existingPost.tags || '',
-        status: existingPost.status,
-        isPublic: existingPost.isPublic ?? true,
-        publishedAt: existingPost.publishedAt ? new Date(existingPost.publishedAt).toISOString().slice(0, 16) : '',
-        metaDescription: '',
-        metaKeywords: '',
+      applyPost(existingPost)
+    } else {
+      // Fallback: fetch from API if not in store
+      await blogStore.fetchPostById(id)
+      if (blogStore.currentPost) {
+        applyPost(blogStore.currentPost)
       }
     }
   }

@@ -114,7 +114,8 @@ PersonalManagerFrontend/
 │   │   ├── taskService.ts            # /api/todoitems
 │   │   ├── workTrackingService.ts    # /api/worktasks
 │   │   ├── blogService.ts            # /api/blogposts
-│   │   ├── commentService.ts         # /api/guestbookentries、/api/contactmethods
+│   │   ├── commentService.ts         # /api/guestbookentries
+│   │   ├── contactMethodService.ts   # /api/contactmethods
 │   │   └── userDirectoryService.ts   # /api/profiles/directory、/api/users/public
 │   │
 │   ├── stores/
@@ -162,7 +163,8 @@ PersonalManagerFrontend/
 │   │       ├── TaskManageView.vue
 │   │       ├── BlogManageView.vue
 │   │       ├── BlogEditorView.vue
-│   │       └── CommentManageView.vue
+│   │       ├── CommentManageView.vue
+│   │       └── ContactManageView.vue # 聯絡方式 CRUD
 │   │
 │   ├── components/
 │   │   ├── layout/
@@ -227,6 +229,7 @@ PersonalManagerFrontend/
 | `/admin/blog/new` | BlogEditorView |
 | `/admin/blog/:id/edit` | BlogEditorView |
 | `/admin/comments` | CommentManageView |
+| `/admin/contacts` | ContactManageView |
 
 ---
 
@@ -314,6 +317,33 @@ const userId = inject<Ref<number>>('userId')!
   - `src/views/admin/CommentManageView.vue` — `submitReply()` 中 `adminReply` 欄位未傳送已修正
   - `src/stores/task.ts` — 時間記錄（TimeEntry）改為本地實作 + `pinia-plugin-persistedstate` 持久化；`TimesheetView.vue` 新增 `add-entry` emit
   - `src/components/layout/AdminLayout.vue` — 移除 `/admin/files`（檔案管理）和 `/admin/settings`（系統設定）尚未實作的導覽項目及 `FolderIcon`、`Cog6ToothIcon` 匯入
+- **功能 Stub 補完**：
+  - `WorkTrackingView.vue` — `editProject()` 改為真實實作：打開重新命名 Modal，更新該專案下所有 WorkTask 的 `project` 欄位
+  - `BlogManageView.vue` — `batchUpdateCategory()` 補實作：開啟分類輸入 Modal，批量更新選中文章的 `category`；`batchExport()` 移除 console.log（原本已有 JSON 下載邏輯）；`handleCategorySave()` 改為重新命名文章分類；`handleCategoryDelete()` 改為清空該分類文章的 `category` 欄位
+  - `TaskManageView.vue` — 移除「更改分類」批次按鈕（`TodoItem` 無 `category` 欄位，功能不可行）及對應 stub function
+  - `CommentManageView.vue` — `saveSettings()` 改用 `localStorage` 持久化；`onMounted` 時從 localStorage 讀取還原設定
+- **聯絡方式管理補全**：
+  - `src/services/contactMethodService.ts` — 新增，完整封裝 `/api/contactmethods` CRUD + 公開/私人端點
+  - `src/views/admin/ContactManageView.vue` — 新增管理頁面（建立、編輯、刪除、排序）
+  - `src/router/index.ts` — 新增 `/admin/contacts` 路由
+  - `src/components/layout/AdminLayout.vue` — 新增「聯絡方式」側欄連結
+- **Blog publishedAt 修復**：
+  - 後端 `UpdateBlogPostDto` 缺少 `PublishedAt` 欄位，導致文章發布時間永遠為 null
+  - 對應的前端修復：`src/views/admin/BlogEditorView.vue` `publishPost()` 已正確傳送 `publishedAt`（後端現在接受）
+- **BlogEditorView 直接進入編輯路由修復**：
+  - `loadPost()` 新增 API fallback：若 store 無資料則呼叫 `blogStore.fetchPostById(id)` 補載
+
+### 2026/03/11
+- **聯絡我公開頁面補全**：
+  - `src/views/user/UserContactView.vue` — 新增，直接聯絡（Email/Phone）+ 社群媒體兩區塊，使用 `inject('userId')` 模式
+  - `src/router/index.ts` — 新增 `/@:username/contact` 路由（`user-contact`）
+  - `src/components/layout/UserLayout.vue` — 導覽列新增「聯絡我」項目
+- **BlogManageView 修復**：
+  - `previewPost()` — 修正預覽 URL 為 `/@{username}/blog/{slug}`（原本使用舊的 `/blog/{id}` 路徑）；新增 `useAuthStore` import
+  - `duplicatePost()` — 新增 null check，避免 `createPost` 失敗時 crash
+- **BlogEditorView 清理**：
+  - 移除「富文本」toggle 按鈕及 WYSIWYG placeholder 區塊（功能未實作，改為僅保留 Markdown 模式）
+  - 移除 `editorMode` ref
 
 ### 2026/02/22
 - **API base URL 確認**：後端 port 為 `5037`（`.env.development` 已更新）

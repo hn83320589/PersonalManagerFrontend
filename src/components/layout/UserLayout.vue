@@ -130,6 +130,7 @@ const navItems = [
   { name: '部落格', path: '/blog' },
   { name: '行事曆', path: '/calendar' },
   { name: '留言板', path: '/guestbook' },
+  { name: '聯絡我', path: '/contact' },
 ]
 
 function isActiveNav(path: string) {
