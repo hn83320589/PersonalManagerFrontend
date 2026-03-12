@@ -128,6 +128,16 @@
           </div>
         </div>
 
+        <!-- Tag filter chips -->
+        <div v-if="allTags.length > 0" class="flex flex-wrap gap-2 pt-1">
+          <button
+            v-for="tag in allTags"
+            :key="tag"
+            @click="selectedTag = selectedTag === tag ? '' : tag"
+            :class="['text-xs px-3 py-1 rounded-full font-medium transition-colors', selectedTag === tag ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200']"
+          >#{{ tag }}</button>
+        </div>
+
         <!-- View and Sort Options -->
         <div class="flex items-center space-x-4">
           <div class="flex items-center space-x-2">
@@ -373,6 +383,7 @@ const authStore = useAuthStore()
 const searchQuery = ref('')
 const selectedStatus = ref<'Draft' | 'Published' | 'Archived' | ''>('')
 const selectedCategory = ref('')
+const selectedTag = ref('')
 const sortBy = ref<'createdAt' | 'updatedAt' | 'publishedAt' | 'title' | 'viewCount'>('updatedAt')
 const viewMode = ref<'table' | 'grid'>('table')
 const loading = ref(false)
@@ -411,6 +422,14 @@ const categories = computed(() => {
   return Array.from(categorySet).sort()
 })
 
+const allTags = computed(() => {
+  const tags = new Set<string>()
+  posts.value.forEach(p => {
+    if (p.tags) p.tags.split(',').forEach(t => { const s = t.trim(); if (s) tags.add(s) })
+  })
+  return Array.from(tags).sort()
+})
+
 const categoriesWithStats = computed(() => {
   return categories.value.map((category: string) => ({
     name: category,
@@ -441,6 +460,13 @@ const filteredAndSortedPosts = computed(() => {
   // Category filter
   if (selectedCategory.value) {
     filtered = filtered.filter(post => post.category === selectedCategory.value)
+  }
+
+  // Tag filter
+  if (selectedTag.value) {
+    filtered = filtered.filter(post =>
+      post.tags?.split(',').map(t => t.trim()).includes(selectedTag.value)
+    )
   }
 
   // Sort

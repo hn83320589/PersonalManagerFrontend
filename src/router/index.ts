@@ -174,6 +174,12 @@ const router = createRouter({
       component: () => import('../views/admin/ContactManageView.vue'),
       meta: { title: '聯絡方式管理', requiresAuth: true }
     },
+    {
+      path: '/admin/files',
+      name: 'file-manager',
+      component: () => import('../views/admin/FileManagerView.vue'),
+      meta: { title: '檔案管理', requiresAuth: true }
+    },
     // Catch all 404
     {
       path: '/:pathMatch(.*)*',

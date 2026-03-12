@@ -37,7 +37,7 @@
 
       <!-- Article Content -->
       <main class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 sm:p-8">
-        <div class="prose-content">{{ post.content }}</div>
+        <div class="prose prose-gray max-w-none" v-html="post.content"></div>
       </main>
 
       <!-- Footer: share + update time -->

@@ -124,7 +124,7 @@
     </div>
 
     <!-- Projects Grid -->
-    <div class="bg-white shadow rounded-lg overflow-hidden">
+    <div class="bg-white shadow rounded-lg overflow-x-auto">
       <div v-if="filteredProjects.length === 0" class="p-8 text-center">
         <FolderIcon class="mx-auto h-12 w-12 text-gray-400" />
         <h3 class="mt-2 text-sm font-medium text-gray-900">沒有作品資料</h3>
@@ -167,7 +167,7 @@
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
             <tr v-for="project in filteredProjects" :key="project.id" class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap">
+              <td class="px-6 py-4 max-w-xs">
                 <div class="flex items-center">
                   <div class="flex-shrink-0 h-12 w-12">
                     <div
@@ -243,8 +243,17 @@
                   </span>
                 </div>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium w-px">
                 <div class="flex justify-end space-x-2">
+                  <BaseButton
+                    variant="outline"
+                    size="small"
+                    @click="openAttachments(project)"
+                    title="管理附件"
+                  >
+                    <PaperClipIcon class="w-4 h-4" />
+                    <span v-if="attachmentCounts[project.id]" class="ml-1 text-xs text-blue-600">{{ attachmentCounts[project.id] }}</span>
+                  </BaseButton>
                   <BaseButton
                     variant="outline"
                     size="small"
@@ -280,6 +289,57 @@
         @save="handleSave"
         @cancel="handleCancel"
       />
+    </BaseModal>
+
+    <!-- Attachments Modal -->
+    <BaseModal
+      :show="showAttachmentsModal"
+      @close="showAttachmentsModal = false"
+      title="附件管理"
+      max-width="2xl"
+    >
+      <div class="space-y-4">
+        <!-- Current Attachments -->
+        <div v-if="currentAttachments.length > 0">
+          <h4 class="text-sm font-medium text-gray-700 mb-2">目前附件</h4>
+          <div class="space-y-2">
+            <div
+              v-for="att in currentAttachments"
+              :key="att.id"
+              class="flex items-center gap-3 p-2 border border-gray-200 rounded-lg"
+            >
+              <span class="text-lg">{{ getFileIcon(att.fileType) }}</span>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm text-gray-900 truncate">{{ att.fileName }}</p>
+                <p class="text-xs text-gray-400">{{ formatFileSize(att.fileSize) }}</p>
+              </div>
+              <button
+                type="button"
+                @click="removeAttachment(att.id)"
+                class="text-red-500 hover:text-red-700 text-sm"
+              >刪除</button>
+            </div>
+          </div>
+        </div>
+        <div v-else class="text-sm text-gray-400">尚無附件</div>
+
+        <!-- Add via FilePicker -->
+        <div>
+          <h4 class="text-sm font-medium text-gray-700 mb-2">新增附件</h4>
+          <FilePicker
+            v-model="showFilePicker"
+            fileType="all"
+            @select="onAttachmentSelected"
+          />
+        </div>
+
+        <!-- Direct Upload -->
+        <div>
+          <input type="file" ref="attFileInputRef" class="sr-only" @change="handleAttachmentUpload" />
+          <BaseButton variant="outline" @click="attFileInputRef?.click()">直接上傳新檔案</BaseButton>
+          <span v-if="isAttachmentUploading" class="ml-3 text-sm text-blue-600">上傳中...</span>
+        </div>
+      </div>
     </BaseModal>
 
     <!-- Delete Confirmation Modal -->
@@ -322,18 +382,25 @@ import {
   MagnifyingGlassIcon,
   PencilIcon,
   TrashIcon,
-  GlobeAltIcon
+  GlobeAltIcon,
+  PaperClipIcon
 } from '@heroicons/vue/24/outline'
 import { usePortfolioStore } from '@/stores/portfolio'
-import type { Portfolio } from '@/types/api'
+import { useAuthStore } from '@/stores/auth'
+import type { Portfolio, PortfolioAttachment } from '@/types/api'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import ProjectForm from '@/components/admin/ProjectForm.vue'
+import FilePicker from '@/components/admin/FilePicker.vue'
+import portfolioAttachmentService from '@/services/portfolioAttachmentService'
+import fileUploadService from '@/services/fileUploadService'
+import type { FileUpload } from '@/types/api'
 
 // Stores
 const portfolioStore = usePortfolioStore()
+const authStore = useAuthStore()
 
 // State
 const searchQuery = ref('')
@@ -345,6 +412,15 @@ const showCreateModal = ref(false)
 const showDeleteModal = ref(false)
 const editingProject = ref<Portfolio | null>(null)
 const deletingProjectId = ref<number | null>(null)
+
+// Attachment state
+const showAttachmentsModal = ref(false)
+const showFilePicker = ref(false)
+const attachingProject = ref<Portfolio | null>(null)
+const currentAttachments = ref<PortfolioAttachment[]>([])
+const attachmentCounts = ref<Record<number, number>>({})
+const isAttachmentUploading = ref(false)
+const attFileInputRef = ref<HTMLInputElement>()
 
 // Computed
 const projects = computed(() => portfolioStore.portfolios)
@@ -496,9 +572,99 @@ function handleCancel() {
   editingProject.value = null
 }
 
+// Attachment methods
+function getFileIcon(fileType: string): string {
+  switch (fileType) {
+    case 'image': return '🖼'
+    case 'pdf': return '📄'
+    case 'document': return '📝'
+    case 'presentation': return '📊'
+    default: return '📁'
+  }
+}
+
+function formatFileSize(bytes: number): string {
+  if (!bytes) return ''
+  if (bytes < 1024) return `${bytes}B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)}KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)}MB`
+}
+
+async function openAttachments(project: Portfolio) {
+  attachingProject.value = project
+  showAttachmentsModal.value = true
+  try {
+    const res = await portfolioAttachmentService.getByPortfolio(project.id)
+    if (res.success) currentAttachments.value = res.data || []
+  } catch { currentAttachments.value = [] }
+}
+
+async function onAttachmentSelected(file: FileUpload) {
+  if (!attachingProject.value) return
+  const backendBase = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5037'
+  const fullUrl = file.fileUrl.startsWith('http') ? file.fileUrl : `${backendBase}${file.fileUrl}`
+  try {
+    const res = await portfolioAttachmentService.create({
+      portfolioId: attachingProject.value.id,
+      fileUploadId: file.id,
+      fileName: file.fileName,
+      fileUrl: fullUrl,
+      fileType: file.fileType,
+      fileSize: file.fileSize,
+      sortOrder: currentAttachments.value.length
+    })
+    if (res.success && res.data) {
+      currentAttachments.value.push(res.data)
+      attachmentCounts.value = { ...attachmentCounts.value, [attachingProject.value.id]: currentAttachments.value.length }
+    }
+  } catch { /* ignore */ }
+}
+
+async function handleAttachmentUpload(event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (!file || !attachingProject.value) return
+  isAttachmentUploading.value = true
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+    const uploadRes = await fileUploadService.upload(formData)
+    if (uploadRes.success && uploadRes.data) {
+      await onAttachmentSelected(uploadRes.data)
+    }
+  } catch { /* ignore */ } finally {
+    isAttachmentUploading.value = false
+  }
+}
+
+async function removeAttachment(id: number) {
+  if (!confirm('確定刪除此附件？')) return
+  try {
+    await portfolioAttachmentService.delete(id)
+    currentAttachments.value = currentAttachments.value.filter(a => a.id !== id)
+    if (attachingProject.value) {
+      const count = currentAttachments.value.length
+      if (count > 0) attachmentCounts.value = { ...attachmentCounts.value, [attachingProject.value.id]: count }
+      else {
+        const counts = { ...attachmentCounts.value }
+        delete counts[attachingProject.value.id]
+        attachmentCounts.value = counts
+      }
+    }
+  } catch { /* ignore */ }
+}
+
 // Lifecycle
 onMounted(async () => {
   await portfolioStore.fetchPortfolios()
+  // Load attachment counts
+  for (const p of portfolioStore.portfolios) {
+    try {
+      const res = await portfolioAttachmentService.getByPortfolio(p.id)
+      if (res.success && res.data?.length) {
+        attachmentCounts.value = { ...attachmentCounts.value, [p.id]: res.data.length }
+      }
+    } catch { /* ignore */ }
+  }
 })
 </script>
 

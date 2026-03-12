@@ -4,6 +4,46 @@ This file provides guidance to Claude Code when working with the frontend codeba
 
 ---
 
+## 給 AI 的指示
+
+每次任務完成後，你必須：
+1. 更新下方「進度」區塊的 checkbox
+2. 若有新的技術債，加入「已知問題」
+3. 若做了未預期的架構決策，加入「架構決策」並說明原因
+4. 回報你更新了哪些區塊
+
+以上未完成，任務視為未完成。
+
+---
+
+## Constraints（不可以動的東西）
+
+通用限制（所有專案適用）：
+- 未告知不得引入新的 library
+- 不得修改未被要求的現有功能
+- 不得動資料庫 schema，除非任務明確要求
+
+---
+
+## 學習現有程式碼的方式
+
+在開始任何新功能前：
+- 找 3 個類似的現有功能或元件作為參考
+- 確認常用的 pattern 和 utility
+- 使用專案已有的 library，不自行發明
+
+---
+
+## 測試原則
+
+- 測試行為，不測實作細節
+- 一個 test case 一個 assertion（可能時）
+- test 名稱要能描述情境，看名字就知道在測什麼
+- 使用專案現有的 test utilities / helpers
+- 測試必須是 deterministic，禁止依賴時間或隨機值
+
+---
+
 ## 快速啟動
 
 ```bash
@@ -298,7 +338,28 @@ const userId = inject<ComputedRef<number | null>>('userId')
 
 ## 最新異動記錄
 
-### 2026/02/23
+### 2026/03/12
+- **檔案管理系統**：
+  - 新增 `src/services/fileUploadService.ts`、`src/services/portfolioAttachmentService.ts`
+  - `src/types/api.ts` 新增 `FileUploadType`、`FileUpload`、`PortfolioAttachment`、`CreatePortfolioAttachmentDto`
+  - 新增 `src/components/admin/TiptapEditor.vue`（TipTap WYSIWYG，含圖片插入 + FilePicker 整合）
+  - 新增 `src/components/admin/FilePicker.vue`（兩 Tab：庫選取 / 直接上傳）
+  - 新增 `src/views/admin/FileManagerView.vue`（`/admin/files`，檔案管理後台）
+  - `src/router/index.ts` 新增 `/admin/files` 路由
+  - `src/components/layout/AdminLayout.vue` 新增「檔案管理」側欄項目
+- **部落格富文本編輯器**：
+  - `package.json` 新增 `@tiptap/*` 套件 + `@tailwindcss/typography`
+  - `tailwind.config.js` 加入 `@tailwindcss/typography` plugin
+  - `src/views/admin/BlogEditorView.vue` 替換為 TipTap 編輯器 + tag chip input
+  - `src/views/user/UserBlogDetailView.vue` 改為 `v-html` + `prose` 渲染
+  - `src/views/admin/BlogManageView.vue` 新增標籤篩選 chip UI
+  - `src/views/user/UserBlogListView.vue` 新增標籤篩選 chip UI（已在前一輪完成）
+- **作品集附件**：
+  - `src/views/admin/ProjectManageView.vue` 新增附件管理 modal（從 FilePicker 選取或直接上傳）
+  - `src/views/user/UserProjectDetailView.vue` 新增附件下載列表
+  - `src/views/user/UserPortfolioView.vue` 新增附件數量徽章
+
+### 2026/03/11
 - **多使用者架構大改寫**：
   - `src/types/api.ts` 新增 `PublicUser`、`ProfileDirectory`；`PersonalProfile` 加 `themeColor`；`GuestBookEntry` 加 `targetUserId`；`AuthResponse` 新增 `userId`
   - `src/services/userDirectoryService.ts` — 新增，呼叫 `/profiles/directory`、`/users/public/{username}` 等端點

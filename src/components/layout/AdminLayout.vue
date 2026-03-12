@@ -83,6 +83,15 @@
                 <PhoneIcon class="nav-icon" />
                 聯絡方式
               </router-link>
+
+              <router-link
+                to="/admin/files"
+                class="nav-link"
+                active-class="nav-link-active"
+              >
+                <FolderIcon class="nav-icon" />
+                檔案管理
+              </router-link>
             </div>
           </div>
 
@@ -259,6 +268,7 @@ import {
   CpuChipIcon,
   BriefcaseIcon,
   PhoneIcon,
+  FolderIcon,
   DocumentTextIcon,
   ChatBubbleLeftEllipsisIcon,
   CalendarDaysIcon,

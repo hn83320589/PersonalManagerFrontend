@@ -131,80 +131,14 @@
             <div class="p-6">
               <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-medium text-gray-900">文章內容</h3>
+                <div class="text-xs text-gray-500">字數: {{ wordCount }} 字</div>
               </div>
 
-              <!-- Markdown Editor -->
-              <div class="space-y-4">
-                <!-- Markdown Toolbar -->
-                <div class="flex flex-wrap items-center space-x-2 p-3 bg-gray-50 rounded-lg">
-                  <button
-                    @click="insertMarkdown('**', true)"
-                    class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded transition-colors"
-                    title="粗體"
-                  >
-                    <strong class="text-sm">B</strong>
-                  </button>
-                  <button
-                    @click="insertMarkdown('*', true)"
-                    class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded transition-colors"
-                    title="斜體"
-                  >
-                    <em class="text-sm">I</em>
-                  </button>
-                  <button
-                    @click="insertMarkdown('[文字](網址)', false)"
-                    class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded transition-colors"
-                    title="連結"
-                  >
-                    🔗
-                  </button>
-                  <button
-                    @click="insertMarkdown('- ', false)"
-                    class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded transition-colors"
-                    title="列表"
-                  >
-                    •
-                  </button>
-                  <button
-                    @click="insertMarkdown('```\n', true)"
-                    class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded transition-colors"
-                    title="程式碼"
-                  >
-                    &lt;/&gt;
-                  </button>
-                </div>
-
-                <!-- Markdown Textarea -->
-                <BaseTextarea
-                  v-model="formData.content"
-                  :rows="20"
-                  placeholder="# 文章標題
-
-在這裡使用 Markdown 語法撰寫您的文章內容...
-
-## 小標題
-
-- 項目一
-- 項目二
-
-**粗體文字** 和 *斜體文字*
-
-[連結](https://example.com)
-
-```code
-程式碼區塊
-```"
-                  class="font-mono text-sm"
-                  @keydown="handleKeyDown"
-                  ref="contentEditor"
-                />
-                
-                <div class="flex justify-between items-center text-xs text-gray-500">
-                  <span>字數: {{ wordCount }} 字</span>
-                  <span>預計閱讀時間: {{ readingTime }} 分鐘</span>
-                </div>
-              </div>
-
+              <!-- TipTap Rich Text Editor -->
+              <TiptapEditor
+                v-model="formData.content"
+                placeholder="開始撰寫您的文章..."
+              />
             </div>
           </BaseCard>
 
@@ -271,7 +205,7 @@
                   <p class="text-gray-600 italic" v-if="formData.summary">
                     {{ formData.summary }}
                   </p>
-                  <div v-html="previewContent"></div>
+                  <div v-html="formData.content"></div>
                 </article>
               </div>
             </div>
@@ -369,25 +303,29 @@
 
                 <!-- Tags -->
                 <div>
-                  <label for="tags" class="block text-sm font-medium text-gray-700">
+                  <label class="block text-sm font-medium text-gray-700">
                     標籤
                   </label>
-                  <BaseInput
-                    id="tags"
-                    v-model="formData.tags"
-                    type="text"
-                    placeholder="用逗號分隔多個標籤"
-                    class="mt-1"
-                  />
-                  <div v-if="tagsList.length > 0" class="mt-2 flex flex-wrap gap-2">
+                  <!-- Tag chips -->
+                  <div class="mt-1 flex flex-wrap gap-2 p-2 border border-gray-300 rounded-md min-h-[42px]">
                     <span
                       v-for="tag in tagsList"
                       :key="tag"
-                      class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                      class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
                     >
                       {{ tag }}
+                      <button type="button" @click="removeTag(tag)" class="hover:text-blue-600 ml-0.5">×</button>
                     </span>
+                    <input
+                      v-model="tagInput"
+                      type="text"
+                      placeholder="輸入標籤後按 Enter"
+                      class="flex-1 min-w-24 text-sm outline-none text-gray-900 placeholder:text-gray-400"
+                      @keydown.enter.prevent="addTag"
+                      @keydown.comma.prevent="addTag"
+                    />
                   </div>
+                  <p class="mt-1 text-xs text-gray-400">按 Enter 或逗號新增標籤</p>
                 </div>
               </div>
             </div>
@@ -536,8 +474,6 @@ import {
   CloudArrowUpIcon,
   CheckIcon,
   ExclamationTriangleIcon,
-  DocumentTextIcon,
-  PencilIcon,
   PhotoIcon,
   XMarkIcon,
   TagIcon
@@ -551,6 +487,7 @@ import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseTextarea from '@/components/ui/BaseTextarea.vue'
 import BaseSelect from '@/components/ui/BaseSelect.vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
+import TiptapEditor from '@/components/admin/TiptapEditor.vue'
 
 // Router
 const route = useRoute()
@@ -565,7 +502,7 @@ const showPreview = ref(false)
 const showPublishModal = ref(false)
 const showCategoryModal = ref(false)
 const autoSaveStatus = ref<'idle' | 'saving' | 'saved' | 'error'>('idle')
-const contentEditor = ref()
+const tagInput = ref('')
 
 const formData = ref({
   title: '',
@@ -598,18 +535,14 @@ let autoSaveTimer: NodeJS.Timeout | null = null
 
 // Computed
 const isFormValid = computed(() => {
-  return formData.value.title.trim().length > 0 && 
+  return formData.value.title.trim().length > 0 &&
          formData.value.content.trim().length > 0
 })
 
 const wordCount = computed(() => {
-  return formData.value.content.replace(/\s+/g, '').length
-})
-
-const readingTime = computed(() => {
-  const wordsPerMinute = 200
-  const words = wordCount.value
-  return Math.ceil(words / wordsPerMinute) || 1
+  // Strip HTML tags for word count
+  const text = formData.value.content.replace(/<[^>]*>/g, '')
+  return text.replace(/\s+/g, '').length
 })
 
 const tagsList = computed(() => {
@@ -617,27 +550,20 @@ const tagsList = computed(() => {
   return formData.value.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
 })
 
-const previewContent = computed(() => {
-  // Simple markdown to HTML conversion (in a real app, use a proper markdown parser)
-  let html = formData.value.content
-  
-  // Headers
-  html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>')
-  html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>')
-  html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>')
-  
-  // Bold and italic
-  html = html.replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
-  html = html.replace(/\*(.*)\*/gim, '<em>$1</em>')
-  
-  // Links
-  html = html.replace(/\[([^\]]*)\]\(([^\)]*)\)/gim, '<a href="$2" target="_blank">$1</a>')
-  
-  // Line breaks
-  html = html.replace(/\n/gim, '<br>')
-  
-  return html
-})
+// Tag management
+function addTag() {
+  const tag = tagInput.value.trim().replace(/,/g, '')
+  if (tag && !tagsList.value.includes(tag)) {
+    const newTags = [...tagsList.value, tag]
+    formData.value.tags = newTags.join(',')
+  }
+  tagInput.value = ''
+}
+
+function removeTag(tag: string) {
+  const newTags = tagsList.value.filter(t => t !== tag)
+  formData.value.tags = newTags.join(',')
+}
 
 // Methods
 function applyPost(existingPost: BlogPost) {
@@ -682,55 +608,6 @@ function generateSlug(title: string): string {
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-+|-+$/g, '')
-}
-
-function insertMarkdown(syntax: string, wrap: boolean) {
-  const textarea = contentEditor.value?.$el?.querySelector('textarea') || contentEditor.value
-  if (!textarea) return
-
-  const start = textarea.selectionStart
-  const end = textarea.selectionEnd
-  const selectedText = formData.value.content.substring(start, end)
-
-  let newText = ''
-  if (wrap && selectedText) {
-    newText = syntax + selectedText + syntax
-  } else if (syntax.includes('\n')) {
-    newText = syntax + (selectedText || '內容') + '\n```'
-  } else {
-    newText = syntax + (selectedText || '')
-  }
-
-  formData.value.content = 
-    formData.value.content.substring(0, start) +
-    newText +
-    formData.value.content.substring(end)
-
-  // Focus and set cursor position
-  setTimeout(() => {
-    textarea.focus()
-    const newPosition = start + newText.length
-    textarea.setSelectionRange(newPosition, newPosition)
-  }, 0)
-}
-
-function handleKeyDown(event: KeyboardEvent) {
-  // Handle tab key for indentation
-  if (event.key === 'Tab') {
-    event.preventDefault()
-    const textarea = event.target as HTMLTextAreaElement
-    const start = textarea.selectionStart
-    const end = textarea.selectionEnd
-    
-    formData.value.content = 
-      formData.value.content.substring(0, start) +
-      '  ' +
-      formData.value.content.substring(end)
-    
-    setTimeout(() => {
-      textarea.setSelectionRange(start + 2, start + 2)
-    }, 0)
-  }
 }
 
 function handleImageUpload(event: Event) {

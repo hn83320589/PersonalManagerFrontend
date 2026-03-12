@@ -2,7 +2,7 @@
   <div>
     <!-- Search & Filter -->
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-6">
-      <div class="flex flex-col sm:flex-row gap-3">
+      <div class="flex flex-col sm:flex-row gap-3 mb-3">
         <div class="flex-1">
           <input
             v-model="searchTerm"
@@ -18,6 +18,15 @@
           <option value="">所有分類</option>
           <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
         </select>
+      </div>
+      <!-- Tag filter chips -->
+      <div v-if="allTags.length > 0" class="flex flex-wrap gap-2">
+        <button
+          v-for="tag in allTags"
+          :key="tag"
+          @click="selectedTag = selectedTag === tag ? '' : tag"
+          :class="['text-xs px-3 py-1 rounded-full font-medium transition-colors', selectedTag === tag ? 'bg-[var(--color-primary,#0ea5e9)] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200']"
+        >#{{ tag }}</button>
       </div>
     </div>
 
@@ -107,6 +116,7 @@ const isLoading = ref(true)
 const allPosts = ref<BlogPost[]>([])
 const searchTerm = ref('')
 const selectedCategory = ref('')
+const selectedTag = ref('')
 const currentPage = ref(1)
 const perPage = 8
 
@@ -114,6 +124,14 @@ const categories = computed(() => {
   const cats = new Set<string>()
   allPosts.value.forEach(p => { if (p.category) cats.add(p.category) })
   return Array.from(cats).sort()
+})
+
+const allTags = computed(() => {
+  const tags = new Set<string>()
+  allPosts.value.forEach(p => {
+    if (p.tags) p.tags.split(',').forEach(t => { const s = t.trim(); if (s) tags.add(s) })
+  })
+  return Array.from(tags).sort()
 })
 
 const filteredPosts = computed(() => {
@@ -128,6 +146,9 @@ const filteredPosts = computed(() => {
   }
   if (selectedCategory.value) {
     list = list.filter(p => p.category === selectedCategory.value)
+  }
+  if (selectedTag.value) {
+    list = list.filter(p => p.tags?.split(',').map(t => t.trim()).includes(selectedTag.value))
   }
   return list
 })
@@ -154,10 +175,11 @@ function estimateReadTime(content: string): number {
 function clearFilters() {
   searchTerm.value = ''
   selectedCategory.value = ''
+  selectedTag.value = ''
   currentPage.value = 1
 }
 
-watch([searchTerm, selectedCategory], () => { currentPage.value = 1 })
+watch([searchTerm, selectedCategory, selectedTag], () => { currentPage.value = 1 })
 
 async function load(uid: number) {
   isLoading.value = true

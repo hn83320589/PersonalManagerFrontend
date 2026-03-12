@@ -112,6 +112,25 @@
                     </a>
                   </div>
                 </div>
+
+                <!-- Attachments -->
+                <div v-if="attachments.length > 0" class="text-sm space-y-2">
+                  <span class="text-gray-500">附件下載</span>
+                  <div class="space-y-1">
+                    <a
+                      v-for="att in attachments"
+                      :key="att.id"
+                      :href="att.fileUrl"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="flex items-center gap-1.5 text-sky-600 hover:text-sky-800 transition-colors"
+                    >
+                      <ArrowDownTrayIcon class="h-4 w-4 flex-shrink-0" />
+                      <span class="truncate">{{ att.fileName }}</span>
+                      <span class="text-gray-400 text-xs flex-shrink-0">{{ formatFileSize(att.fileSize) }}</span>
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -144,10 +163,11 @@
 import { ref, computed, inject, onMounted } from 'vue'
 import type { ComputedRef } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
-import { ArrowLeftIcon, GlobeAltIcon, CodeBracketIcon } from '@heroicons/vue/24/outline'
+import { ArrowLeftIcon, GlobeAltIcon, CodeBracketIcon, ArrowDownTrayIcon } from '@heroicons/vue/24/outline'
 import httpService from '@/services/http'
+import portfolioAttachmentService from '@/services/portfolioAttachmentService'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
-import type { Portfolio } from '@/types/api'
+import type { Portfolio, PortfolioAttachment } from '@/types/api'
 
 const route = useRoute()
 const username = inject<ComputedRef<string>>('username')
@@ -156,6 +176,14 @@ const userId = inject<ComputedRef<number | null>>('userId')
 const isLoading = ref(true)
 const project = ref<Portfolio | null>(null)
 const allPortfolios = ref<Portfolio[]>([])
+const attachments = ref<PortfolioAttachment[]>([])
+
+function formatFileSize(bytes: number): string {
+  if (!bytes) return ''
+  if (bytes < 1024) return `${bytes}B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)}KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)}MB`
+}
 
 const technologies = computed(() =>
   project.value?.technologies?.split(',').map(t => t.trim()).filter(Boolean) ?? []
@@ -172,12 +200,14 @@ function formatDate(dateStr: string): string {
 onMounted(async () => {
   const id = route.params.id as string
   try {
-    const [projectRes, portfoliosRes] = await Promise.all([
+    const [projectRes, portfoliosRes, attachmentsRes] = await Promise.all([
       httpService.get<Portfolio>(`/portfolios/${id}`),
       userId?.value ? httpService.get<Portfolio[]>(`/portfolios/user/${userId.value}/public`) : Promise.resolve({ success: false, data: [], message: '', errors: [] }),
+      portfolioAttachmentService.getByPortfolio(Number(id)),
     ])
     if (projectRes.success) project.value = projectRes.data
     if (portfoliosRes.success) allPortfolios.value = portfoliosRes.data || []
+    if (attachmentsRes.success) attachments.value = attachmentsRes.data || []
   } catch {
     // ignore
   } finally {

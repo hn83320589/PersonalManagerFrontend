@@ -59,8 +59,8 @@
               :style="{ backgroundColor: 'var(--color-primary-light,#e0f2fe)', color: 'var(--color-primary-dark,#0c4a6e)' }"
             >{{ tech.trim() }}</span>
           </div>
-          <!-- Links -->
-          <div class="flex gap-3">
+          <!-- Links + attachment badge -->
+          <div class="flex items-center gap-3 flex-wrap">
             <a
               v-if="project.projectUrl"
               :href="project.projectUrl"
@@ -81,6 +81,10 @@
             >
               <CodeBracketIcon class="h-3.5 w-3.5" />程式碼
             </a>
+            <span
+              v-if="attachmentCounts[project.id]"
+              class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full"
+            >📎 {{ attachmentCounts[project.id] }}</span>
           </div>
         </div>
       </RouterLink>
@@ -101,6 +105,7 @@ import type { ComputedRef } from 'vue'
 import { RouterLink } from 'vue-router'
 import { BriefcaseIcon, ArrowTopRightOnSquareIcon, CodeBracketIcon } from '@heroicons/vue/24/outline'
 import httpService from '@/services/http'
+import portfolioAttachmentService from '@/services/portfolioAttachmentService'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import type { Portfolio } from '@/types/api'
 
@@ -109,6 +114,7 @@ const username = inject<ComputedRef<string>>('username')
 
 const isLoading = ref(true)
 const portfolios = ref<Portfolio[]>([])
+const attachmentCounts = ref<Record<number, number>>({})
 const searchTerm = ref('')
 const selectedTech = ref('')
 
@@ -149,7 +155,18 @@ async function load(uid: number) {
   isLoading.value = true
   try {
     const res = await httpService.get<Portfolio[]>(`/portfolios/user/${uid}/public`)
-    if (res.success) portfolios.value = res.data || []
+    if (res.success) {
+      portfolios.value = res.data || []
+      // Load attachment counts in background
+      portfolios.value.forEach(async (p) => {
+        try {
+          const attRes = await portfolioAttachmentService.getByPortfolio(p.id)
+          if (attRes.success && attRes.data?.length) {
+            attachmentCounts.value = { ...attachmentCounts.value, [p.id]: attRes.data.length }
+          }
+        } catch { /* ignore */ }
+      })
+    }
   } catch {
     // ignore
   } finally {

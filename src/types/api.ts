@@ -214,6 +214,44 @@ export interface GuestBookEntry {
   createdAt: string
 }
 
+// ===== FileUpload =====
+export type FileUploadType = 'image' | 'pdf' | 'document' | 'presentation' | 'other'
+
+export interface FileUpload {
+  id: number
+  userId: number
+  fileName: string
+  storedName: string
+  fileUrl: string
+  fileType: FileUploadType
+  fileSize: number
+  mimeType: string
+  createdAt: string
+}
+
+// ===== PortfolioAttachment =====
+export interface PortfolioAttachment {
+  id: number
+  portfolioId: number
+  fileUploadId: number | null
+  fileName: string
+  fileUrl: string
+  fileType: string
+  fileSize: number
+  sortOrder: number
+  createdAt: string
+}
+
+export interface CreatePortfolioAttachmentDto {
+  portfolioId: number
+  fileUploadId?: number | null
+  fileName: string
+  fileUrl: string
+  fileType: string
+  fileSize: number
+  sortOrder: number
+}
+
 // ===== ContactMethod =====
 export type ContactType = 'Email' | 'Phone' | 'LinkedIn' | 'GitHub' | 'Facebook' | 'Twitter' | 'Instagram' | 'Discord' | 'Other'
 
