@@ -177,11 +177,6 @@ interface Props {
 const props = defineProps<Props>()
 
 // Emits
-defineEmits<{
-  'view-project': [project: ProjectStats]
-  'edit-project': [project: ProjectStats]
-}>()
-
 // Computed
 const totalCompletedTasks = computed(() => {
   return props.projects.reduce((sum, project) => sum + project.completedTasks, 0)
@@ -230,9 +225,12 @@ function getRecentActivity(project: ProjectStats): string {
   }
 }
 
+const emit = defineEmits<{
+  'view-project': [project: ProjectStats]
+  'edit-project': [project: ProjectStats]
+}>()
+
 function addTaskToProject(project: ProjectStats) {
-  // This would emit an event to add a new task to the specific project
-  // For now, just log the action
-  console.log('Add task to project:', project.name)
+  emit('view-project', project)
 }
 </script>

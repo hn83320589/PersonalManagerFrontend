@@ -133,8 +133,9 @@
             <BaseButton
               variant="outline"
               size="small"
-              @click="syncToGoogle"
+              disabled
               class="w-full justify-start"
+              title="Google Calendar 同步功能尚未開放"
             >
               <CloudArrowUpIcon class="w-4 h-4 mr-2" />
               同步到 Google
@@ -409,8 +410,6 @@ function syncToGoogle() {
    * - src/services/googleCalendarService.ts
    * - src/components/admin/GoogleCalendarSync.vue
    */
-  alert('Google Calendar 同步功能開發中，敬請期待')
-  console.log('同步到 Google Calendar:', props.event)
 }
 
 function viewRelatedEvent(event: CalendarEvent) {
@@ -431,8 +430,6 @@ function viewRelatedEvent(event: CalendarEvent) {
    * - CalendarEvent 可能需要新增 relatedEventIds?: number[] 屬性
    * - 後端 API 需要支援 /api/calendarevents/{id}/related 端點
    */
-  console.log('查看相關事件:', event)
-  // 暫時功能未實作，可使用 emit 事件通知父組件
   emit('view-related', event)
 }
 </script>

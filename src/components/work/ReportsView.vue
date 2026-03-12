@@ -175,21 +175,24 @@
     <div class="flex justify-end space-x-3">
       <BaseButton
         variant="outline"
-        @click="exportReport('pdf')"
+        disabled
+        title="PDF 匯出功能尚未開放"
       >
         <DocumentArrowDownIcon class="w-4 h-4 mr-2" />
         匯出 PDF
       </BaseButton>
       <BaseButton
         variant="outline"
-        @click="exportReport('excel')"
+        disabled
+        title="Excel 匯出功能尚未開放"
       >
         <TableCellsIcon class="w-4 h-4 mr-2" />
         匯出 Excel
       </BaseButton>
       <BaseButton
         variant="primary"
-        @click="shareReport"
+        disabled
+        title="分享功能尚未開放"
       >
         <ShareIcon class="w-4 h-4 mr-2" />
         分享報表
@@ -452,13 +455,4 @@ function formatShortDate(date: string): string {
   })
 }
 
-function exportReport(format: 'pdf' | 'excel') {
-  console.log(`Export report as ${format}`)
-  // Implementation would depend on chosen export library
-}
-
-function shareReport() {
-  console.log('Share report')
-  // Implementation for sharing functionality
-}
 </script>

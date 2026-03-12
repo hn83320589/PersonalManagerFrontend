@@ -265,13 +265,13 @@ export const skillService = {
 
 ### UserLayout 與 provide/inject
 
-`UserLayout.vue` 透過 `provide('userId', userId)` 傳遞 userId 給子頁面，子頁面用 `inject<Ref<number>>('userId')` 取得：
+`UserLayout.vue` 透過 `provide('userId', ...)` 傳遞 userId 給子頁面，子頁面用 `inject<ComputedRef<number | null>>('userId')` 取得：
 ```typescript
 // UserLayout.vue
-provide('userId', userId)  // userId = ref<number>(resolved from username)
+provide('userId', computed(() => publicUser.value?.id ?? null))  // ComputedRef<number | null>
 
 // UserAboutView.vue
-const userId = inject<Ref<number>>('userId')!
+const userId = inject<ComputedRef<number | null>>('userId')
 ```
 
 ---
