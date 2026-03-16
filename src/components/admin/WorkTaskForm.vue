@@ -69,24 +69,14 @@
         <label for="project" class="block text-sm font-medium text-gray-700">
           關聯專案
         </label>
-        <div class="mt-1 flex space-x-2">
-          <BaseInput
-            id="project"
-            v-model="formData.project"
-            type="text"
-            placeholder="輸入專案名稱"
-            class="flex-1"
-          />
-          <BaseButton
-            type="button"
-            variant="outline"
-            size="small"
-            @click="showProjectSelector = true"
-            title="選擇現有專案"
-          >
-            <FolderIcon class="w-4 h-4" />
-          </BaseButton>
-        </div>
+        <select
+          id="project"
+          v-model="formData.projectId"
+          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        >
+          <option :value="null">無專案</option>
+          <option v-for="p in projects" :key="p.id" :value="p.id">{{ p.name }}</option>
+        </select>
       </div>
 
       <!-- Tags -->
@@ -198,63 +188,32 @@
       </BaseButton>
     </div>
 
-    <!-- Project Selector Modal -->
-    <BaseModal
-      :show="showProjectSelector"
-      @close="showProjectSelector = false"
-      title="選擇專案"
-      max-width="md"
-    >
-      <div class="space-y-4">
-        <div class="max-h-60 overflow-y-auto space-y-2">
-          <div
-            v-for="project in availableProjects"
-            :key="project"
-            @click="selectProject(project)"
-            class="p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
-          >
-            <div class="flex items-center justify-between">
-              <span class="font-medium">{{ project }}</span>
-              <CheckIcon 
-                v-if="formData.project === project"
-                class="w-5 h-5 text-green-600"
-              />
-            </div>
-          </div>
-        </div>
-        <div v-if="availableProjects.length === 0" class="text-center py-8 text-gray-500">
-          沒有可用的專案
-        </div>
-      </div>
-    </BaseModal>
   </form>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
-import { FolderIcon, CheckIcon } from '@heroicons/vue/24/outline'
-import type { WorkTask, WorkTaskStatus, WorkTaskPriority } from '@/types/api'
+import { ref, computed, watch, withDefaults } from 'vue'
+import type { WorkTask, WorkTaskStatus, WorkTaskPriority, Project } from '@/types/api'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseTextarea from '@/components/ui/BaseTextarea.vue'
 import BaseSelect from '@/components/ui/BaseSelect.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import BaseModal from '@/components/ui/BaseModal.vue'
 
 // Props
 interface Props {
   task?: WorkTask | null
+  projects?: Project[]
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  projects: () => []
+})
 
 // Emits
 const emit = defineEmits<{
-  save: [data: Partial<WorkTask>]
+  save: [data: any]
   cancel: []
 }>()
-
-// State
-const showProjectSelector = ref(false)
 
 const formData = ref({
   title: '',
@@ -264,7 +223,7 @@ const formData = ref({
   dueDate: '',
   estimatedHours: 0,
   actualHours: 0,
-  project: '',
+  projectId: null as number | null,
   tags: ''
 })
 
@@ -286,15 +245,6 @@ const taskPriorities = [
   { value: 'Urgent', label: '緊急' }
 ]
 
-// Mock available projects (should come from store or API)
-const availableProjects = ref([
-  'Personal Manager',
-  'E-commerce Platform',
-  'Mobile App Development',
-  'Data Analytics Dashboard',
-  'Content Management System'
-])
-
 // Computed
 const isFormValid = computed(() => {
   return formData.value.title.trim().length > 0 &&
@@ -312,15 +262,10 @@ const progressPercentage = computed(() => {
 })
 
 // Methods
-function selectProject(project: string) {
-  formData.value.project = project
-  showProjectSelector.value = false
-}
-
 function handleSubmit() {
   if (!isFormValid.value) return
 
-  const submitData: Partial<WorkTask> = {
+  const submitData = {
     title: formData.value.title.trim(),
     description: formData.value.description?.trim() || undefined,
     status: formData.value.status,
@@ -328,16 +273,9 @@ function handleSubmit() {
     dueDate: formData.value.dueDate || undefined,
     estimatedHours: formData.value.estimatedHours || undefined,
     actualHours: formData.value.actualHours || undefined,
-    project: formData.value.project?.trim() || undefined,
+    projectId: formData.value.projectId ?? undefined,
     tags: formData.value.tags?.trim() || undefined
   }
-
-  // Remove undefined values
-  Object.keys(submitData).forEach(key => {
-    if (submitData[key as keyof typeof submitData] === undefined) {
-      delete submitData[key as keyof typeof submitData]
-    }
-  })
 
   emit('save', submitData)
 }
@@ -351,7 +289,7 @@ function resetForm() {
     dueDate: '',
     estimatedHours: 0,
     actualHours: 0,
-    project: '',
+    projectId: null,
     tags: ''
   }
 }
@@ -367,19 +305,13 @@ watch(() => props.task, (newTask) => {
       dueDate: newTask.dueDate || '',
       estimatedHours: newTask.estimatedHours || 0,
       actualHours: newTask.actualHours || 0,
-      project: newTask.project || '',
+      projectId: newTask.projectId ?? null,
       tags: newTask.tags || ''
     }
   } else {
     resetForm()
   }
 }, { immediate: true })
-
-// Lifecycle
-onMounted(() => {
-  // Load available projects from store or API
-  // This would typically fetch from a projects API
-})
 </script>
 
 <style scoped>

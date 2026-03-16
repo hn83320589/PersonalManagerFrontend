@@ -26,6 +26,14 @@ class AuthService {
     return httpService.get<User>('/auth/me')
   }
 
+  async forgotPassword(email: string): Promise<ApiResponse<null>> {
+    return httpService.post<null>('/auth/forgot-password', { email })
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<ApiResponse<null>> {
+    return httpService.post<null>('/auth/reset-password', { token, newPassword })
+  }
+
   async logout(): Promise<void> {
     const refreshToken = localStorage.getItem('refresh_token')
     if (refreshToken) {

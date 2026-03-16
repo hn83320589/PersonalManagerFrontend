@@ -27,7 +27,7 @@ function makePost(overrides: Partial<BlogPost> = {}): BlogPost {
     content: 'Hello world',
     summary: '',
     category: 'Tech',
-    tags: '',
+    tags: [],
     status: 'Published',
     isPublic: true,
     viewCount: 0,

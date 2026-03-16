@@ -154,7 +154,8 @@ function estimateReadTime(content: string): number {
   return Math.max(1, Math.ceil(content.trim().split(/\s+/).length / 200))
 }
 
-function parseTags(tags: string): string[] {
+function parseTags(tags: string[] | string): string[] {
+  if (Array.isArray(tags)) return tags.filter(Boolean)
   return tags.split(',').map(t => t.trim()).filter(Boolean)
 }
 

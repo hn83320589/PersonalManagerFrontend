@@ -153,7 +153,20 @@ export interface CalendarEvent {
   isAllDay: boolean
   isPublic: boolean
   color: string
+  recurrenceRule: string
   createdAt: string
+}
+
+// ===== Project =====
+export interface Project {
+  id: number
+  userId: number
+  name: string
+  description: string
+  color: string
+  sortOrder: number
+  createdAt: string
+  updatedAt: string
 }
 
 // ===== TodoItem =====
@@ -182,7 +195,8 @@ export interface WorkTask {
   userId: number
   title: string
   description: string
-  project: string
+  projectId?: number | null
+  projectName?: string | null
   priority: WorkTaskPriority
   status: WorkTaskStatus
   estimatedHours: number
@@ -205,7 +219,7 @@ export interface BlogPost {
   content: string
   summary: string
   category: string
-  tags: string
+  tags: string[]
   status: BlogPostStatus
   isPublic: boolean
   viewCount: number

@@ -176,7 +176,8 @@ watch(searchTerm, () => {
 })
 watch([selectedCategory, selectedTag], onFilterChange)
 
-function parseTags(tags: string): string[] {
+function parseTags(tags: string[] | string): string[] {
+  if (Array.isArray(tags)) return tags.filter(Boolean)
   return tags.split(',').map(t => t.trim()).filter(Boolean)
 }
 

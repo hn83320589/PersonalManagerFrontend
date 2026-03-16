@@ -23,6 +23,20 @@ const router = createRouter({
       meta: { title: '登入', requiresGuest: true }
     },
 
+    // 忘記密碼 / 重設密碼
+    {
+      path: '/forgot-password',
+      name: 'forgot-password',
+      component: () => import('../views/ForgotPasswordView.vue'),
+      meta: { title: '忘記密碼', requiresGuest: true }
+    },
+    {
+      path: '/reset-password',
+      name: 'reset-password',
+      component: () => import('../views/ResetPasswordView.vue'),
+      meta: { title: '重設密碼' }
+    },
+
     // /@:username — 個人公開頁面（UserLayout 包覆）
     {
       path: '/@:username',

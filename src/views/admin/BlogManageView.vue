@@ -425,7 +425,7 @@ const categories = computed(() => {
 const allTags = computed(() => {
   const tags = new Set<string>()
   posts.value.forEach(p => {
-    if (p.tags) p.tags.split(',').forEach(t => { const s = t.trim(); if (s) tags.add(s) })
+    if (p.tags) p.tags.forEach(t => { const s = t.trim(); if (s) tags.add(s) })
   })
   return Array.from(tags).sort()
 })
@@ -448,7 +448,7 @@ const filteredAndSortedPosts = computed(() => {
       post.title.toLowerCase().includes(query) ||
       post.content?.toLowerCase().includes(query) ||
       post.summary?.toLowerCase().includes(query) ||
-      post.tags?.toLowerCase().includes(query)
+      post.tags?.join(',').toLowerCase().includes(query)
     )
   }
 
@@ -465,7 +465,7 @@ const filteredAndSortedPosts = computed(() => {
   // Tag filter
   if (selectedTag.value) {
     filtered = filtered.filter(post =>
-      post.tags?.split(',').map(t => t.trim()).includes(selectedTag.value)
+      post.tags?.includes(selectedTag.value)
     )
   }
 

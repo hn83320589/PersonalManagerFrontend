@@ -150,7 +150,7 @@
         重複設定
       </label>
       <select
-        v-model="formData.recurrence"
+        v-model="formData.recurrenceRule"
         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
       >
         <option value="">不重複</option>
@@ -286,7 +286,7 @@ const formData = ref({
   endTime: '',
   isAllDay: false,
   color: '#3B82F6',
-  recurrence: '',
+  recurrenceRule: '',
   reminders: [] as Array<{ value: number, type: string }>,
   isPublic: false
 })
@@ -375,6 +375,7 @@ async function handleSubmit() {
       endTime: endTimeISO,
       isAllDay: submitData.isAllDay,
       color: submitData.color,
+      recurrenceRule: submitData.recurrenceRule || '',
       isPublic: submitData.isPublic
     }
     
@@ -404,6 +405,7 @@ function initializeForm() {
     formData.value.endTime = endTimePart || ''
     formData.value.isAllDay = event.isAllDay
     formData.value.color = event.color || '#3B82F6'
+    formData.value.recurrenceRule = event.recurrenceRule || ''
     formData.value.isPublic = event.isPublic
   } else {
     // Reset form for new event
@@ -420,7 +422,7 @@ function initializeForm() {
       endTime: '',
       isAllDay: false,
       color: '#3B82F6',
-      recurrence: '',
+      recurrenceRule: '',
       reminders: [],
       isPublic: false
     }

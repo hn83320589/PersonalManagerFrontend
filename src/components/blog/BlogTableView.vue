@@ -316,8 +316,9 @@ function formatDate(dateString: string | undefined): string {
   })
 }
 
-function getTagsList(tags: string | undefined): string[] {
+function getTagsList(tags: string[] | string | undefined): string[] {
   if (!tags) return []
+  if (Array.isArray(tags)) return tags
   return tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
 }
 </script>

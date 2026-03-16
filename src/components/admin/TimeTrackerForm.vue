@@ -82,7 +82,7 @@
                   <p class="text-xs text-gray-500 mt-1">{{ task.description }}</p>
                   <div class="flex items-center space-x-4 mt-2">
                     <span class="text-xs text-gray-500">
-                      專案: {{ task.project || '無' }}
+                      專案: {{ task.projectName || '無' }}
                     </span>
                     <span :class="getStatusStyle(task.status)">
                       {{ getStatusLabel(task.status) }}
@@ -230,7 +230,7 @@
       <h3 class="text-sm font-medium text-blue-900 mb-2">即將開始追蹤</h3>
       <div class="text-sm text-blue-800">
         <p><strong>任務:</strong> {{ selectedTask.title }}</p>
-        <p v-if="selectedTask.project"><strong>專案:</strong> {{ selectedTask.project }}</p>
+        <p v-if="selectedTask.projectName"><strong>專案:</strong> {{ selectedTask.projectName }}</p>
         <p><strong>狀態:</strong> {{ getStatusLabel(selectedTask.status) }}</p>
         <p><strong>預估時間:</strong> {{ selectedTask.estimatedHours || 0 }} 小時</p>
         <p><strong>已用時間:</strong> {{ selectedTask.actualHours || 0 }} 小時</p>
@@ -317,7 +317,7 @@ const filteredTasks = computed(() => {
     task.status !== 'Completed' && (
       task.title.toLowerCase().includes(query) ||
       task.description?.toLowerCase().includes(query) ||
-      task.project?.toLowerCase().includes(query)
+      task.projectName?.toLowerCase().includes(query)
     )
   )
 })

@@ -276,9 +276,10 @@ function formatDate(dateString: string | undefined): string {
   })
 }
 
-function getTagsList(tags: string | undefined): string[] {
+function getTagsList(tags: string[] | string | undefined): string[] {
   if (!tags) return []
-  return tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0).slice(0, 3) // Limit to 3 tags for display
+  if (Array.isArray(tags)) return tags.slice(0, 3)
+  return tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0).slice(0, 3)
 }
 </script>
 

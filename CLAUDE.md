@@ -338,6 +338,33 @@ const userId = inject<ComputedRef<number | null>>('userId')
 
 ## 最新異動記錄
 
+### 2026/03/16（密碼重設功能）
+- **密碼重設功能實作完成**：
+  - `src/services/authService.ts`：新增 `forgotPassword(email)` (`POST /auth/forgot-password`)、`resetPassword(token, newPassword)` (`POST /auth/reset-password`)
+  - 新增 `src/views/ForgotPasswordView.vue`：Email 輸入表單 → 呼叫 `authService.forgotPassword` → 顯示確認畫面（永遠成功，防枚舉）
+  - 新增 `src/views/ResetPasswordView.vue`：從 `?token=` query param 讀取 token → 新密碼 + 確認密碼驗證 → 呼叫 `authService.resetPassword` → 成功顯示導向登入按鈕
+  - `src/router/index.ts`：新增 `/forgot-password`（`requiresGuest: true`）、`/reset-password` 路由（lazy load）
+  - `src/views/LoginView.vue`：「忘記密碼？」從 `<a href="#">` 改為 `<router-link to="/forgot-password">`
+
+### 2026/03/16（DB Schema 正規化前端對應）
+- **三項 DB Schema 正規化前端同步**：
+  - **CalendarEvent.recurrenceRule**：
+    - `src/types/api.ts`：`CalendarEvent` 新增 `recurrenceRule: string`
+    - `CalendarEventForm.vue`：`formData.recurrence` 改為 `recurrenceRule`；`finalData` 加入 `recurrenceRule`；`initializeForm()` 從 `event.recurrenceRule` 初始化
+  - **WorkTask.Project 正規化**：
+    - `src/types/api.ts`：`WorkTask.project: string` 改為 `projectId?: number | null`、新增 `projectName?: string | null`；新增 `Project` interface
+    - 新增 `src/services/projectService.ts`（getAll/getByUserId/getById/create/update/delete）
+    - `WorkTaskForm.vue`：移除文字輸入 + 彈窗選擇器；改為 `<select>` 綁定 `projectId`；接受 `projects: Project[]` prop；`handleSubmit` emit `projectId`
+    - `WorkTrackingView.vue`：import `projectService`；新增 `projectList` ref；`onMounted` 載入專案清單；`projects` computed 改用 `projectList`；所有 `task.project` 改為 `task.projectName`；`projectStats` 改用 `task.projectId`；`confirmEditProject` 改呼叫 `projectService.update(id, { name })`；傳 `:projects="projectList"` 給 `WorkTaskForm`
+    - `TasksView.vue`、`TimeEntryForm.vue`、`TimeTrackerForm.vue`：`task.project` → `task.projectName`
+  - **BlogPost.tags 正規化**：
+    - `src/types/api.ts`：`BlogPost.tags: string` 改為 `tags: string[]`
+    - `BlogEditorView.vue`：載入時 `(existingPost.tags || []).join(',')`（內部仍用逗號字串）；`saveDraft`/`publishPost` 傳送 `tags: tagsList.value`（陣列）
+    - `BlogManageView.vue`：`allTags` computed、搜尋過濾、tag 過濾全部改為直接操作 `string[]`
+    - `BlogGridView.vue`、`BlogTableView.vue`：`getTagsList` 接受 `string[] | string | undefined`
+    - `UserBlogDetailView.vue`、`UserBlogListView.vue`：`parseTags` 接受 `string[] | string`
+  - `src/stores/__tests__/blog.spec.ts`：mock post `tags: ''` → `tags: []`
+
 ### 2026/03/16（TOC + 測試）
 - **文章目錄（TOC）自動生成**：
   - `UserBlogDetailView.vue` template：`lg:flex` 雙欄佈局，右側 `w-52` sticky TOC sidebar（lg+ 顯示）

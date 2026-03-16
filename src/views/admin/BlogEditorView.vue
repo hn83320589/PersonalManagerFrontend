@@ -575,7 +575,7 @@ function applyPost(existingPost: BlogPost) {
     summary: existingPost.summary || '',
     featuredImage: '',
     category: existingPost.category || '',
-    tags: existingPost.tags || '',
+    tags: Array.isArray(existingPost.tags) ? existingPost.tags.join(',') : (existingPost.tags || ''),
     status: existingPost.status,
     isPublic: existingPost.isPublic ?? true,
     publishedAt: existingPost.publishedAt ? new Date(existingPost.publishedAt).toISOString().slice(0, 16) : '',
@@ -643,7 +643,8 @@ async function saveDraft(isAutoSave = false) {
     const postData = {
       ...formData.value,
       slug: formData.value.slug || generateSlug(formData.value.title),
-      status: 'Draft' as const
+      status: 'Draft' as const,
+      tags: tagsList.value
     }
 
     if (post.value) {
@@ -677,7 +678,8 @@ async function publishPost() {
     const postData = {
       ...formData.value,
       slug: formData.value.slug || generateSlug(formData.value.title),
-      publishedAt: formData.value.status === 'Published' ? new Date().toISOString() : formData.value.publishedAt
+      publishedAt: formData.value.status === 'Published' ? new Date().toISOString() : formData.value.publishedAt,
+      tags: tagsList.value
     }
 
     if (post.value) {

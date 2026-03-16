@@ -292,6 +292,7 @@
     >
       <WorkTaskForm
         :task="editingTask"
+        :projects="projectList"
         @save="handleSave"
         @cancel="handleCancel"
       />
@@ -395,7 +396,9 @@ import {
   DocumentChartBarIcon,
 } from "@heroicons/vue/24/outline";
 import { useTaskStore } from "@/stores/task";
-import type { WorkTask, WorkTaskStatus, WorkTaskPriority } from "@/types/api";
+import { useAuthStore } from "@/stores/auth";
+import { projectService } from "@/services/projectService";
+import type { WorkTask, WorkTaskStatus, WorkTaskPriority, Project } from "@/types/api";
 import AdminLayout from "@/components/layout/AdminLayout.vue";
 import BaseButton from "@/components/ui/BaseButton.vue";
 import BaseCard from "@/components/ui/BaseCard.vue";
@@ -410,6 +413,10 @@ import ReportsView from "@/components/work/ReportsView.vue";
 
 // Stores
 const taskStore = useTaskStore();
+const authStore = useAuthStore();
+
+// Projects
+const projectList = ref<Project[]>([]);
 
 // State
 const searchQuery = ref("");
@@ -479,10 +486,7 @@ const tasks = computed(() => taskStore.workTasks);
 const timeEntries = computed(() => taskStore.timeEntries || []);
 
 const projects = computed(() => {
-  const projectSet = new Set(
-    tasks.value.map((task) => task.project).filter(Boolean),
-  );
-  return Array.from(projectSet).sort();
+  return projectList.value.map(p => p.name).sort();
 });
 
 const todayWorkedHours = computed(() => {
@@ -512,7 +516,7 @@ const overdueTasks = computed(() => {
 });
 
 const activeProjectsCount = computed(() => {
-  return projects.value.length;
+  return projectList.value.length;
 });
 
 const filteredTasks = computed(() => {
@@ -525,14 +529,14 @@ const filteredTasks = computed(() => {
       (task) =>
         task.title.toLowerCase().includes(query) ||
         task.description?.toLowerCase().includes(query) ||
-        task.project?.toLowerCase().includes(query),
+        task.projectName?.toLowerCase().includes(query),
     );
   }
 
   // Project filter
   if (selectedProject.value) {
     filtered = filtered.filter(
-      (task) => task.project === selectedProject.value,
+      (task) => task.projectName === selectedProject.value,
     );
   }
 
@@ -569,8 +573,8 @@ const filteredTasks = computed(() => {
 });
 
 const projectStats = computed(() => {
-  return projects.value.map((project) => {
-    const projectTasks = tasks.value.filter((task) => task.project === project);
+  return projectList.value.map((project) => {
+    const projectTasks = tasks.value.filter((task) => task.projectId === project.id);
     const completedTasks = projectTasks.filter(
       (task) => task.status === "Completed",
     );
@@ -584,7 +588,8 @@ const projectStats = computed(() => {
     );
 
     return {
-      name: project || "無專案",
+      id: project.id,
+      name: project.name,
       totalTasks: projectTasks.length,
       completedTasks: completedTasks.length,
       completionRate:
@@ -606,7 +611,7 @@ function startTaskTimer(task: WorkTask) {
 
   activeTimer.value = {
     task,
-    project: task.project || null,
+    project: task.projectName || null,
     startTime: new Date(),
     elapsed: 0,
     isPaused: false,
@@ -817,10 +822,11 @@ async function confirmEditProject() {
   const newName = newProjectName.value.trim();
   if (!newName || newName === oldName) return;
 
-  const tasksToUpdate = tasks.value.filter((t) => t.project === oldName);
-  await Promise.all(
-    tasksToUpdate.map((t) => taskStore.updateWorkTask(t.id, { project: newName }))
-  );
+  const project = projectList.value.find(p => p.name === oldName);
+  if (project) {
+    await projectService.update(project.id, { name: newName });
+    project.name = newName;
+  }
 
   showEditProjectModal.value = false;
 }
@@ -829,6 +835,12 @@ async function confirmEditProject() {
 onMounted(async () => {
   await taskStore.fetchWorkTasks();
   await taskStore.fetchTimeEntries?.();
+  try {
+    const resp = await projectService.getAll();
+    projectList.value = resp.data ?? [];
+  } catch {
+    // silently fail — projects section just won't show
+  }
 });
 
 onUnmounted(() => {

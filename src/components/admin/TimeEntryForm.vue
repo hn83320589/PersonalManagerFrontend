@@ -228,7 +228,7 @@
                 <h4 class="text-sm font-medium text-gray-900">{{ task.title }}</h4>
                 <p class="text-xs text-gray-500 mt-1">{{ task.description }}</p>
                 <div class="flex items-center space-x-2 mt-2">
-                  <span class="text-xs text-gray-500">{{ task.project || '無專案' }}</span>
+                  <span class="text-xs text-gray-500">{{ task.projectName || '無專案' }}</span>
                   <span :class="getStatusStyle(task.status)">
                     {{ getStatusLabel(task.status) }}
                   </span>
@@ -334,7 +334,7 @@ const filteredAvailableTasks = computed(() => {
   return props.availableTasks.filter(task =>
     task.title.toLowerCase().includes(query) ||
     task.description?.toLowerCase().includes(query) ||
-    task.project?.toLowerCase().includes(query)
+    task.projectName?.toLowerCase().includes(query)
   )
 })
 
@@ -397,7 +397,7 @@ function useDurationFromTimes() {
 function selectTaskFromModal(task: WorkTask) {
   formData.value.taskId = task.id
   formData.value.task = task.title
-  formData.value.project = task.project || ''
+  formData.value.project = task.projectName || ''
   showTaskSelector.value = false
 }
 
