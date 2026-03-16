@@ -95,6 +95,7 @@ import { ref, computed, onMounted, provide, watch } from 'vue'
 import { useRoute, RouterLink, RouterView } from 'vue-router'
 import { MapPinIcon, Squares2X2Icon, ArrowRightEndOnRectangleIcon } from '@heroicons/vue/24/outline'
 import { useTheme } from '@/composables/useTheme'
+import { setPageSeo } from '@/composables/useSeo'
 import { useAuthStore } from '@/stores/auth'
 import userDirectoryService from '@/services/userDirectoryService'
 import profileService from '@/services/profileService'
@@ -142,6 +143,16 @@ function isActiveNav(path: string) {
   return currentPath.startsWith(base + path)
 }
 
+function applyUserSeo() {
+  if (!publicUser.value) return
+  setPageSeo({
+    title: publicUser.value.fullName || publicUser.value.username,
+    description: profile.value?.summary || undefined,
+    ogImage: profile.value?.profileImageUrl || undefined,
+    ogType: 'profile',
+  })
+}
+
 async function loadUser(uname: string) {
   isLoading.value = true
   try {
@@ -153,6 +164,7 @@ async function loadUser(uname: string) {
       if (profileResponse.success && profileResponse.data) {
         profile.value = profileResponse.data
       }
+      applyUserSeo()
     } else {
       publicUser.value = null
     }
@@ -172,4 +184,7 @@ onMounted(() => loadUser(username.value))
 watch(username, (newName) => {
   if (newName) loadUser(newName)
 })
+
+// Re-apply user-level SEO on intra-user navigation (so child-specific overrides get reset)
+watch(() => route.path, () => applyUserSeo())
 </script>

@@ -3,26 +3,16 @@ import { ref, computed } from "vue";
 import type {
   TodoItem,
   WorkTask,
+  TimeEntry,
+  CreateTimeEntryDto,
+  UpdateTimeEntryDto,
   TodoPriority,
   WorkTaskStatus,
   WorkTaskPriority,
 } from "@/types/api";
 import taskService from "@/services/taskService";
+import timeEntryService from "@/services/timeEntryService";
 
-// Time Entry Interface for work tracking
-interface TimeEntry {
-  id: number;
-  taskId?: number;
-  task: string;
-  project?: string;
-  date: string;
-  startTime?: string;
-  endTime?: string;
-  duration: number;
-  description?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
 
 export const useTaskStore = defineStore(
   "task",
@@ -311,51 +301,72 @@ export const useTaskStore = defineStore(
     currentWorkTask.value = null;
   }
 
-  // Time Entries Actions (local-only, persisted to localStorage)
+  // Time Entries Actions (API-backed)
   async function fetchTimeEntries() {
-    // Data is loaded from localStorage via persistedstate; no API call needed
+    try {
+      const response = await timeEntryService.getAll();
+      if (response.success) timeEntries.value = response.data || [];
+    } catch (err) {
+      console.error("Failed to fetch time entries", err);
+    }
   }
 
   async function createTimeEntry(entryData: Partial<TimeEntry>) {
-    const newId =
-      timeEntries.value.length > 0
-        ? Math.max(...timeEntries.value.map((e) => e.id)) + 1
-        : 1;
-    const entry: TimeEntry = {
-      id: newId,
-      taskId: entryData.taskId,
-      task: entryData.task || "",
-      project: entryData.project,
-      date: entryData.date || new Date().toISOString().split("T")[0],
-      startTime: entryData.startTime,
-      endTime: entryData.endTime,
-      duration: entryData.duration || 0,
-      description: entryData.description,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    timeEntries.value.push(entry);
-    return entry;
+    try {
+      const dto: CreateTimeEntryDto = {
+        workTaskId: entryData.workTaskId,
+        task: entryData.task || "",
+        project: entryData.project,
+        date: entryData.date || new Date().toISOString().split("T")[0],
+        startTime: entryData.startTime,
+        endTime: entryData.endTime,
+        duration: entryData.duration || 0,
+        description: entryData.description,
+      };
+      const response = await timeEntryService.create(dto);
+      if (response.success && response.data) {
+        timeEntries.value.push(response.data);
+        return response.data;
+      }
+    } catch (err) {
+      console.error("Failed to create time entry", err);
+    }
+    return null;
   }
 
   async function updateTimeEntry(id: number, entryData: Partial<TimeEntry>) {
-    const index = timeEntries.value.findIndex((e) => e.id === id);
-    if (index !== -1) {
-      timeEntries.value[index] = {
-        ...timeEntries.value[index],
-        ...entryData,
-        id,
-        updatedAt: new Date().toISOString(),
+    try {
+      const dto: UpdateTimeEntryDto = {
+        workTaskId: entryData.workTaskId,
+        task: entryData.task,
+        project: entryData.project,
+        date: entryData.date,
+        startTime: entryData.startTime,
+        endTime: entryData.endTime,
+        duration: entryData.duration,
+        description: entryData.description,
       };
-      return timeEntries.value[index];
+      const response = await timeEntryService.update(id, dto);
+      if (response.success && response.data) {
+        const index = timeEntries.value.findIndex((e) => e.id === id);
+        if (index !== -1) timeEntries.value[index] = response.data;
+        return response.data;
+      }
+    } catch (err) {
+      console.error("Failed to update time entry", err);
     }
     return null;
   }
 
   async function deleteTimeEntry(id: number) {
-    const before = timeEntries.value.length;
-    timeEntries.value = timeEntries.value.filter((e) => e.id !== id);
-    return timeEntries.value.length < before;
+    try {
+      await timeEntryService.delete(id);
+      timeEntries.value = timeEntries.value.filter((e) => e.id !== id);
+      return true;
+    } catch (err) {
+      console.error("Failed to delete time entry", err);
+      return false;
+    }
   }
 
   return {
@@ -401,10 +412,5 @@ export const useTaskStore = defineStore(
     clearCurrentTodo,
     clearCurrentWorkTask,
   };
-  },
-  {
-    persist: {
-      pick: ["timeEntries"],
-    },
   },
 );

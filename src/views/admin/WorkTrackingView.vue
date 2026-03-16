@@ -661,7 +661,7 @@ async function stopTimer() {
 
     // Save time entry
     await taskStore.createTimeEntry({
-      taskId: timer.task?.id,
+      workTaskId: timer.task?.id,
       task: timer.task?.title,
       project: timer.project || undefined,
       date: new Date().toISOString().split("T")[0],

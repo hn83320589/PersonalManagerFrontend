@@ -6,18 +6,7 @@ class AuthService {
     const response = await httpService.post<AuthResponse>('/auth/login', credentials)
 
     if (response.success && response.data) {
-      localStorage.setItem('auth_token', response.data.token)
-      localStorage.setItem('user_data', JSON.stringify({
-        id: response.data.userId,
-        username: response.data.username,
-        email: response.data.email,
-        fullName: response.data.fullName,
-        role: response.data.role,
-      }))
-
-      if (response.data.expiresAt) {
-        localStorage.setItem('token_expiry', new Date(response.data.expiresAt).getTime().toString())
-      }
+      this.saveAuthData(response.data)
     }
 
     return response
@@ -27,18 +16,7 @@ class AuthService {
     const response = await httpService.post<AuthResponse>('/auth/register', data)
 
     if (response.success && response.data) {
-      localStorage.setItem('auth_token', response.data.token)
-      localStorage.setItem('user_data', JSON.stringify({
-        id: response.data.userId,
-        username: response.data.username,
-        email: response.data.email,
-        fullName: response.data.fullName,
-        role: response.data.role,
-      }))
-
-      if (response.data.expiresAt) {
-        localStorage.setItem('token_expiry', new Date(response.data.expiresAt).getTime().toString())
-      }
+      this.saveAuthData(response.data)
     }
 
     return response
@@ -49,6 +27,12 @@ class AuthService {
   }
 
   async logout(): Promise<void> {
+    const refreshToken = localStorage.getItem('refresh_token')
+    if (refreshToken) {
+      try {
+        await httpService.post('/auth/logout', { refreshToken })
+      } catch { /* ignore — best effort */ }
+    }
     this.clearAuthData()
   }
 
@@ -58,8 +42,13 @@ class AuthService {
 
     const expiryTime = localStorage.getItem('token_expiry')
     if (expiryTime && Date.now() > parseInt(expiryTime)) {
-      this.clearAuthData()
-      return false
+      // Access token expired, but refresh token might still be valid
+      // Let the interceptor handle the refresh
+      const refreshToken = localStorage.getItem('refresh_token')
+      if (!refreshToken) {
+        this.clearAuthData()
+        return false
+      }
     }
 
     return true
@@ -81,8 +70,28 @@ class AuthService {
     return localStorage.getItem('auth_token')
   }
 
-  private clearAuthData(): void {
+  getRefreshToken(): string | null {
+    return localStorage.getItem('refresh_token')
+  }
+
+  private saveAuthData(data: AuthResponse): void {
+    localStorage.setItem('auth_token', data.token)
+    localStorage.setItem('refresh_token', data.refreshToken)
+    localStorage.setItem('user_data', JSON.stringify({
+      id: data.userId,
+      username: data.username,
+      email: data.email,
+      fullName: data.fullName,
+      role: data.role,
+    }))
+    if (data.expiresAt) {
+      localStorage.setItem('token_expiry', new Date(data.expiresAt).getTime().toString())
+    }
+  }
+
+  clearAuthData(): void {
     localStorage.removeItem('auth_token')
+    localStorage.removeItem('refresh_token')
     localStorage.removeItem('user_data')
     localStorage.removeItem('token_expiry')
   }

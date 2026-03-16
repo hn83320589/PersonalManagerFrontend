@@ -233,8 +233,8 @@ onMounted(async () => {
   try {
     const [postsRes, portfoliosRes, commentsRes, todosRes] = await Promise.all([
       httpService.get<BlogPost[]>(`/blogposts/user/${uid}`),
-      httpService.get<Portfolio[]>('/portfolios'),
-      httpService.get<GuestBookEntry[]>('/guestbookentries'),
+      httpService.get<Portfolio[]>(`/portfolios/user/${uid}`),
+      httpService.get<GuestBookEntry[]>('/guestbookentries/all'),
       httpService.get<TodoItem[]>('/todoitems'),
     ])
 

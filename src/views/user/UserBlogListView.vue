@@ -32,11 +32,11 @@
 
     <LoadingSpinner v-if="isLoading" size="medium" text="載入中..." />
 
-    <template v-else-if="allPosts.length > 0">
+    <template v-else-if="posts.length > 0">
       <!-- Posts List -->
-      <div v-if="paginatedPosts.length > 0" class="space-y-4">
+      <div class="space-y-4">
         <RouterLink
-          v-for="post in paginatedPosts"
+          v-for="post in posts"
           :key="post.id"
           :to="`/@${username}/blog/${post.slug}`"
           class="block bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 group"
@@ -74,27 +74,26 @@
         </RouterLink>
       </div>
 
-      <!-- No search results -->
-      <div v-else class="text-center py-12 text-gray-400">
-        <p>找不到符合的文章</p>
-        <button @click="clearFilters" class="mt-3 text-sm text-sky-600 hover:text-sky-800">清除篩選</button>
-      </div>
-
       <!-- Pagination -->
       <div v-if="totalPages > 1" class="mt-8 flex justify-center items-center gap-2">
         <button
           :disabled="currentPage === 1"
-          @click="currentPage--"
+          @click="goToPage(currentPage - 1)"
           class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >上一頁</button>
         <span class="text-sm text-gray-500">{{ currentPage }} / {{ totalPages }}</span>
         <button
           :disabled="currentPage === totalPages"
-          @click="currentPage++"
+          @click="goToPage(currentPage + 1)"
           class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >下一頁</button>
       </div>
     </template>
+
+    <div v-else-if="!isLoading && isFiltered" class="text-center py-12 text-gray-400">
+      <p>找不到符合的文章</p>
+      <button @click="clearFilters" class="mt-3 text-sm text-sky-600 hover:text-sky-800">清除篩選</button>
+    </div>
 
     <div v-else-if="!isLoading" class="text-center text-gray-400 py-12">尚無文章</div>
   </div>
@@ -107,58 +106,75 @@ import { RouterLink } from 'vue-router'
 import { ClockIcon } from '@heroicons/vue/24/outline'
 import httpService from '@/services/http'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
-import type { BlogPost } from '@/types/api'
+import type { BlogPost, PagedResult } from '@/types/api'
 
 const userId = inject<ComputedRef<number | null>>('userId')
 const username = inject<ComputedRef<string>>('username')
 
 const isLoading = ref(true)
-const allPosts = ref<BlogPost[]>([])
+const posts = ref<BlogPost[]>([])
+const totalPages = ref(0)
 const searchTerm = ref('')
 const selectedCategory = ref('')
 const selectedTag = ref('')
 const currentPage = ref(1)
+const allTags = ref<string[]>([])
+const categories = ref<string[]>([])
+
 const perPage = 8
+let searchDebounce: ReturnType<typeof setTimeout> | null = null
 
-const categories = computed(() => {
-  const cats = new Set<string>()
-  allPosts.value.forEach(p => { if (p.category) cats.add(p.category) })
-  return Array.from(cats).sort()
-})
+const isFiltered = computed(() => !!searchTerm.value || !!selectedCategory.value || !!selectedTag.value)
 
-const allTags = computed(() => {
-  const tags = new Set<string>()
-  allPosts.value.forEach(p => {
-    if (p.tags) p.tags.split(',').forEach(t => { const s = t.trim(); if (s) tags.add(s) })
-  })
-  return Array.from(tags).sort()
-})
+async function loadMeta(uid: number) {
+  const [tagsRes, catsRes] = await Promise.all([
+    httpService.get<string[]>(`/blogposts/user/${uid}/tags`),
+    httpService.get<string[]>(`/blogposts/user/${uid}/categories`),
+  ])
+  if (tagsRes.success) allTags.value = tagsRes.data || []
+  if (catsRes.success) categories.value = catsRes.data || []
+}
 
-const filteredPosts = computed(() => {
-  let list = allPosts.value
-  if (searchTerm.value) {
-    const q = searchTerm.value.toLowerCase()
-    list = list.filter(p =>
-      p.title.toLowerCase().includes(q) ||
-      (p.summary?.toLowerCase().includes(q)) ||
-      (p.tags?.toLowerCase().includes(q))
-    )
+async function loadPosts(uid: number) {
+  isLoading.value = true
+  try {
+    const res = await httpService.get<PagedResult<BlogPost>>(`/blogposts/user/${uid}/public/paged`, {
+      page: currentPage.value,
+      pageSize: perPage,
+      keyword: searchTerm.value || undefined,
+      tag: selectedTag.value || undefined,
+      category: selectedCategory.value || undefined,
+    })
+    if (res.success && res.data) {
+      posts.value = res.data.items
+      totalPages.value = res.data.totalPages
+    }
+  } catch {
+    posts.value = []
+  } finally {
+    isLoading.value = false
   }
-  if (selectedCategory.value) {
-    list = list.filter(p => p.category === selectedCategory.value)
-  }
-  if (selectedTag.value) {
-    list = list.filter(p => p.tags?.split(',').map(t => t.trim()).includes(selectedTag.value))
-  }
-  return list
-})
+}
 
-const totalPages = computed(() => Math.ceil(filteredPosts.value.length / perPage))
+async function load(uid: number) {
+  await Promise.all([loadMeta(uid), loadPosts(uid)])
+}
 
-const paginatedPosts = computed(() => {
-  const start = (currentPage.value - 1) * perPage
-  return filteredPosts.value.slice(start, start + perPage)
+function goToPage(page: number) {
+  currentPage.value = page
+  if (userId?.value) loadPosts(userId.value)
+}
+
+function onFilterChange() {
+  currentPage.value = 1
+  if (userId?.value) loadPosts(userId.value)
+}
+
+watch(searchTerm, () => {
+  if (searchDebounce) clearTimeout(searchDebounce)
+  searchDebounce = setTimeout(onFilterChange, 300)
 })
+watch([selectedCategory, selectedTag], onFilterChange)
 
 function parseTags(tags: string): string[] {
   return tags.split(',').map(t => t.trim()).filter(Boolean)
@@ -177,20 +193,7 @@ function clearFilters() {
   selectedCategory.value = ''
   selectedTag.value = ''
   currentPage.value = 1
-}
-
-watch([searchTerm, selectedCategory, selectedTag], () => { currentPage.value = 1 })
-
-async function load(uid: number) {
-  isLoading.value = true
-  try {
-    const res = await httpService.get<BlogPost[]>(`/blogposts/user/${uid}/public`)
-    if (res.success) allPosts.value = res.data || []
-  } catch {
-    allPosts.value = []
-  } finally {
-    isLoading.value = false
-  }
+  if (userId?.value) loadPosts(userId.value)
 }
 
 onMounted(() => { if (userId?.value) load(userId.value) })

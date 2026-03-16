@@ -53,14 +53,14 @@
     <!-- Comments List -->
     <div>
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold text-gray-900">留言 <span class="text-gray-400 font-normal text-sm">({{ entries.length }})</span></h2>
+        <h2 class="text-lg font-semibold text-gray-900">留言 <span class="text-gray-400 font-normal text-sm">({{ totalCount }})</span></h2>
       </div>
 
       <LoadingSpinner v-if="isLoading" size="medium" text="載入中..." />
 
       <div v-else-if="entries.length > 0" class="space-y-4">
         <article
-          v-for="entry in paginatedEntries"
+          v-for="entry in entries"
           :key="entry.id"
           class="bg-white rounded-xl border border-gray-200 shadow-sm p-5"
         >
@@ -103,13 +103,13 @@
       <div v-if="totalPages > 1" class="mt-6 flex justify-center items-center gap-2">
         <button
           :disabled="currentPage === 1"
-          @click="currentPage--"
+          @click="goToPage(currentPage - 1)"
           class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >上一頁</button>
         <span class="text-sm text-gray-500">{{ currentPage }} / {{ totalPages }}</span>
         <button
           :disabled="currentPage === totalPages"
-          @click="currentPage++"
+          @click="goToPage(currentPage + 1)"
           class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >下一頁</button>
       </div>
@@ -118,28 +118,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, inject, onMounted, watch } from 'vue'
+import { ref, reactive, inject, onMounted, watch } from 'vue'
 import type { ComputedRef } from 'vue'
+import httpService from '@/services/http'
 import commentService from '@/services/commentService'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
-import type { GuestBookEntry } from '@/types/api'
+import type { GuestBookEntry, PagedResult } from '@/types/api'
 
 const userId = inject<ComputedRef<number | null>>('userId')
 
 const isLoading = ref(true)
 const isSubmitting = ref(false)
 const entries = ref<GuestBookEntry[]>([])
+const totalCount = ref(0)
+const totalPages = ref(0)
 const submitStatus = ref<{ success: boolean; message: string } | null>(null)
 const currentPage = ref(1)
 const perPage = 10
 
 const form = reactive({ name: '', email: '', message: '' })
-
-const totalPages = computed(() => Math.ceil(entries.value.length / perPage))
-const paginatedEntries = computed(() => {
-  const start = (currentPage.value - 1) * perPage
-  return entries.value.slice(start, start + perPage)
-})
 
 // Deterministic gradient based on name
 const gradientColors = [
@@ -175,13 +172,25 @@ function formatDate(dateStr: string): string {
 async function load(uid: number) {
   isLoading.value = true
   try {
-    const res = await commentService.getApprovedByUser(uid)
-    if (res.success) entries.value = res.data || []
+    const res = await httpService.get<PagedResult<GuestBookEntry>>(`/guestbookentries/user/${uid}/paged`, {
+      page: currentPage.value,
+      pageSize: perPage,
+    })
+    if (res.success && res.data) {
+      entries.value = res.data.items
+      totalCount.value = res.data.totalCount
+      totalPages.value = res.data.totalPages
+    }
   } catch {
     // ignore
   } finally {
     isLoading.value = false
   }
+}
+
+function goToPage(page: number) {
+  currentPage.value = page
+  if (userId?.value) load(userId.value)
 }
 
 async function handleSubmit() {

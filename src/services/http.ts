@@ -51,24 +51,36 @@ class HttpService {
         if (import.meta.env.VITE_DEBUG === 'true') {
           console.log('[HTTP Response]', response)
         }
-        
+
         return response
       },
-      (error: AxiosError<ApiResponse>) => {
-        console.error('[HTTP Response Error]', error)
-        
-        // Handle common HTTP errors
+      async (error: AxiosError<ApiResponse>) => {
+        const originalRequest = error.config as any
+
         if (error.response?.status === 401) {
-          // Unauthorized - redirect to login
-          this.handleUnauthorized()
+          // Don't retry if already retried, or if this is the refresh/logout endpoint
+          const isAuthEndpoint = originalRequest?.url?.includes('/auth/refresh') ||
+                                  originalRequest?.url?.includes('/auth/logout')
+
+          if (!originalRequest?._isRetry && !isAuthEndpoint) {
+            originalRequest._isRetry = true
+            try {
+              const newToken = await this.tryRefreshToken()
+              originalRequest.headers = originalRequest.headers || {}
+              originalRequest.headers.Authorization = `Bearer ${newToken}`
+              return this.client.request(originalRequest)
+            } catch {
+              this.handleUnauthorized()
+            }
+          } else {
+            this.handleUnauthorized()
+          }
         } else if (error.response?.status === 403) {
-          // Forbidden
           console.error('Access forbidden')
         } else if (error.response && error.response.status >= 500) {
-          // Server error
           console.error('Server error occurred')
         }
-        
+
         return Promise.reject(error)
       }
     )
@@ -76,6 +88,24 @@ class HttpService {
 
   private getAuthToken(): string | null {
     return localStorage.getItem('auth_token')
+  }
+
+  private async tryRefreshToken(): Promise<string> {
+    const refreshToken = localStorage.getItem('refresh_token')
+    if (!refreshToken) throw new Error('No refresh token')
+
+    const response = await this.client.post<ApiResponse<{ token: string; expiresAt: string; refreshToken: string }>>(
+      '/auth/refresh',
+      { refreshToken }
+    )
+
+    const data = response.data.data
+    localStorage.setItem('auth_token', data.token)
+    localStorage.setItem('refresh_token', data.refreshToken)
+    if (data.expiresAt) {
+      localStorage.setItem('token_expiry', new Date(data.expiresAt).getTime().toString())
+    }
+    return data.token
   }
 
   private handleUnauthorized() {

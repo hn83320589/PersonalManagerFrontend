@@ -6,6 +6,16 @@ export interface ApiResponse<T = any> {
   errors: string[]
 }
 
+export interface PagedResult<T> {
+  items: T[]
+  totalCount: number
+  page: number
+  pageSize: number
+  totalPages: number
+  hasPreviousPage: boolean
+  hasNextPage: boolean
+}
+
 // ===== Auth =====
 export interface LoginRequest {
   username: string
@@ -27,6 +37,8 @@ export interface AuthResponse {
   fullName: string
   role: string
   expiresAt: string
+  refreshToken: string
+  refreshTokenExpiresAt: string
 }
 
 // ===== User =====
@@ -264,4 +276,42 @@ export interface ContactMethod {
   icon: string
   isPublic: boolean
   sortOrder: number
+}
+
+// ===== TimeEntry =====
+export interface TimeEntry {
+  id: number
+  userId: number
+  workTaskId?: number
+  task: string
+  project: string
+  date: string
+  startTime?: string
+  endTime?: string
+  duration: number
+  description: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreateTimeEntryDto {
+  workTaskId?: number
+  task: string
+  project?: string
+  date: string
+  startTime?: string
+  endTime?: string
+  duration: number
+  description?: string
+}
+
+export interface UpdateTimeEntryDto {
+  workTaskId?: number
+  task?: string
+  project?: string
+  date?: string
+  startTime?: string
+  endTime?: string
+  duration?: number
+  description?: string
 }

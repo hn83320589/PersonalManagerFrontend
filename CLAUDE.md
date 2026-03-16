@@ -338,6 +338,54 @@ const userId = inject<ComputedRef<number | null>>('userId')
 
 ## 最新異動記錄
 
+### 2026/03/16（TOC + 測試）
+- **文章目錄（TOC）自動生成**：
+  - `UserBlogDetailView.vue` template：`lg:flex` 雙欄佈局，右側 `w-52` sticky TOC sidebar（lg+ 顯示）
+  - `UserBlogDetailView.vue` script：新增 `contentRef`、`TocItem` interface、`tocItems`/`activeId` refs；`buildToc()` 解析 h1~h3 並指定 ID；`scrollTo(id)` 平滑捲動；`IntersectionObserver` 追蹤 activeId；`onUnmounted` 清除 observer；`nextTick` 後呼叫 `buildToc`
+- **Vitest blogStore 測試**：
+  - 新增 `src/stores/__tests__/blog.spec.ts`（16 個測試：initial state、getters、searchPosts、createPost/deletePost）
+  - `vitest.config.ts`：新增 `environmentOptions.jsdom.url`、`globalSetup`、`pool: 'threads'` + `execArgv: ['--localstorage-file', ...]`
+  - 新增 `src/test-utils/globalSetup.ts`：修復 Node.js 25 + `@vue/devtools-kit` localStorage 衝突
+- **E2E Playwright 測試改寫**：
+  - `e2e/auth.spec.ts`：登入流程（錯誤帳密/正確帳密）、受保護路由重導向、登出測試
+  - `e2e/home.spec.ts`：用戶目錄頁、個人頁面導覽（`/@admin`、`/@admin/blog`）
+  - 新增 `e2e/guestbook.spec.ts`：留言板顯示 + 提交表單流程
+  - `e2e/portfolio.spec.ts`：作品集列表 + 響應式設計
+  - `e2e/vue.spec.ts`：首頁載入驗證
+
+### 2026/03/16（SEO）
+- **SEO / Open Graph 標籤**：
+  - 新增 `src/composables/useSeo.ts`：`setPageSeo(meta: SeoMeta)` utility + `stripHtml()` helper（無需外部 library）；操作 `document.title`、`og:title`/`og:description`/`og:image`/`og:type`/`og:url`、Twitter Card meta
+  - `src/components/layout/UserLayout.vue`：loadUser 後呼叫 `applyUserSeo()`（fullName、summary、profileImageUrl）；新增 `watch(route.path, applyUserSeo)` — 在用戶頁面內部導覽時重置 SEO（避免文章頁 SEO 殘留）
+  - `src/views/user/UserBlogDetailView.vue`：post 載入後呼叫 `setPageSeo({ title, description, ogType: 'article' })`；description 優先用 `post.summary`，否則用 `stripHtml(content).slice(0, 160)`
+
+### 2026/03/16（分頁 + 搜尋）
+- **分頁 + 部落格搜尋**：
+  - `src/types/api.ts` 新增 `PagedResult<T>` 介面
+  - `UserBlogListView.vue`：
+    - 不再一次載入所有文章；改呼叫 `GET /blogposts/user/{uid}/public/paged`（server-side 分頁 + 搜尋）
+    - 新增 `loadMeta()` — 同時呼叫 `/tags` 和 `/categories` 端點取得篩選選項
+    - 搜尋欄 debounce 300ms 再呼叫 API；tag/category 篩選即時呼叫
+    - 換頁改呼叫 API（`goToPage()`）
+    - `isFiltered` computed — 用於區分「無文章」vs「搜尋無結果」
+  - `UserGuestbookView.vue`：
+    - 改呼叫 `GET /guestbookentries/user/{uid}/paged`（server-side 分頁）
+    - 新增 `goToPage()`；留言數顯示 `totalCount`（server 回傳）
+
+### 2026/03/16
+- **Refresh Token 機制（TD-04）**：
+  - `src/types/api.ts`：`AuthResponse` 加 `refreshToken`/`refreshTokenExpiresAt`
+  - `src/services/authService.ts`：login/register 時存 `refresh_token` 到 localStorage；`logout()` 呼叫 `POST /auth/logout` 撤銷伺服器端 token；新增 `getRefreshToken()`；`clearAuthData()` 補清 `refresh_token`
+  - `src/services/http.ts`：401 時嘗試呼叫 `POST /auth/refresh` 換新 token 並重試原始請求；只在非 auth endpoint 且未重試過時執行（防止無限迴圈）
+- **TimeEntry API 串接（TD-01）**：
+  - `src/types/api.ts` 新增 `TimeEntry`、`CreateTimeEntryDto`、`UpdateTimeEntryDto` 介面
+  - 新增 `src/services/timeEntryService.ts`（getAll/getById/create/update/delete）
+  - `src/stores/task.ts`：移除本地 `TimeEntry` interface（改用 api.ts）；`fetchTimeEntries`/`createTimeEntry`/`updateTimeEntry`/`deleteTimeEntry` 全部改為 API 呼叫；移除 `persist: { pick: ['timeEntries'] }` 設定
+  - `src/views/admin/WorkTrackingView.vue`：`stopTimer()` 中 `taskId` 改為 `workTaskId`
+- **文章瀏覽計數 + Dashboard 修復**：
+  - `UserBlogDetailView.vue`：文章載入後 fire-and-forget 呼叫 `POST /blogposts/{id}/view`
+  - `DashboardView.vue`：修正 `/portfolios` → `/portfolios/user/${uid}`；`/guestbookentries` → `/guestbookentries/all`（修正作品集計數顯示所有用戶資料的 bug、留言待審核計數顯示錯誤的 bug）
+
 ### 2026/03/12
 - **檔案管理系統**：
   - 新增 `src/services/fileUploadService.ts`、`src/services/portfolioAttachmentService.ts`
